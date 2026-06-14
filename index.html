@@ -461,13 +461,15 @@ function roadStyle(feature) {
   };
 }
 
-function supplementalRoadStyle() {
+function supplementalRoadStyle(feature) {
+  const surface = (feature.properties.surface || "").toLowerCase();
+  const isUnpaved = ["dirt", "gravel", "ground", "unpaved"].includes(surface);
   return {
     color: "#c26d1f",
     weight: 3,
     opacity: 0.95,
-    dashArray: "8 5",
-    lineCap: "butt",
+    dashArray: isUnpaved ? "8 5" : null,
+    lineCap: isUnpaved ? "butt" : "round",
     smoothFactor: 1.5
   };
 }
@@ -525,13 +527,7 @@ function buildPublicRoadsQuery(bounds) {
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
-    [!"surface"]
-    (${south},${west},${north},${east});
-  way["highway"~"track|service|unclassified"]
-    ["access"!~"private|no|destination"]
-    ["motor_vehicle"!~"private|no|destination"]
-    ["service"!~"parking_aisle|driveway"]
-    ["surface"!~"asphalt|concrete|paved|chipseal|paving_stones|sett|cobblestone|bricks"]
+    ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass"]
     (${south},${west},${north},${east});
 );
 out geom 1000;`;
