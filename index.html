@@ -338,6 +338,7 @@ body { color: #15231a; }
     <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
     <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
     <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Unpaved/minor roads (OSM, zoomed in)</div>
+    <div class="legend-item"><div class="legend-color" style="background:rgba(46,125,50,0.5);height:10px;border-radius:2px"></div>National Forest (boondocking OK)</div>
   </div>
 </aside>
 
@@ -428,6 +429,8 @@ const map = L.map("map", { center: [37.5, -119.5], zoom: 7, zoomControl: false, 
 L.control.zoom({ position: "bottomright" }).addTo(map);
 const forestRenderer = L.canvas({ padding: 0.5 });
 const publicRoadsRenderer = L.canvas({ padding: 0.5 });
+const publicLandsPane = map.createPane("publicLandsPane");
+publicLandsPane.style.zIndex = 250;
 const publicRoadsPane = map.createPane("publicRoadsPane");
 publicRoadsPane.style.zIndex = 300;
 L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
@@ -447,6 +450,7 @@ let publicRoadsLayer = null;
 let publicRoadsAbortController = null;
 let publicRoadsFetchTimer = null;
 let publicRoadsRequestKey = null;
+let publicLandsLayer = null;
 
 function roadStyle(feature) {
   const symbol = feature.properties.symbol || "0";
@@ -645,6 +649,35 @@ function schedulePublicRoadRefresh() {
   publicRoadsFetchTimer = setTimeout(() => {
     refreshPublicRoadsForView();
   }, 100);
+}
+
+function forestBoundaryStyle() {
+  return {
+    fillColor: "#2e7d32",
+    fillOpacity: 0.12,
+    color: "#2e7d32",
+    weight: 1,
+    opacity: 0.3
+  };
+}
+
+async function loadPublicLands() {
+  if (isFileProtocol) return;
+  try {
+    const resp = await fetch("_public_lands/ca_forest_boundaries.geojson");
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (publicLandsLayer) map.removeLayer(publicLandsLayer);
+    publicLandsLayer = L.geoJSON(data, {
+      style: forestBoundaryStyle,
+      pane: "publicLandsPane",
+      interactive: false,
+      bubblingMouseEvents: false
+    });
+    map.addLayer(publicLandsLayer);
+  } catch (error) {
+    console.error("Failed to load public lands overlay", error);
+  }
 }
 
 function updateInteractivityHint() {
@@ -987,6 +1020,7 @@ async function init() {
     DEFAULTS.forEach((id) => toggleForest(id, true));
     fitVisibleBounds(true);
     schedulePublicRoadRefresh();
+    loadPublicLands();
     updateInteractivityHint();
   }
 
