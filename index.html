@@ -527,7 +527,13 @@ function buildPublicRoadsQuery(bounds) {
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
-    (if: !t["surface"] || t["surface"]!~"asphalt|concrete|paved|chipseal|paving_stones|sett|cobblestone|bricks")
+    [!"surface"]
+    (${south},${west},${north},${east});
+  way["highway"~"track|service|unclassified"]
+    ["access"!~"private|no|destination"]
+    ["motor_vehicle"!~"private|no|destination"]
+    ["service"!~"parking_aisle|driveway"]
+    ["surface"!~"asphalt|concrete|paved|chipseal|paving_stones|sett|cobblestone|bricks"]
     (${south},${west},${north},${east});
 );
 out geom 1000;`;
@@ -583,9 +589,16 @@ async function refreshPublicRoadsForView() {
     return;
   }
 
-  const bounds = map.getBounds().pad(-0.15);
+  const zoom = map.getZoom();
+  let bounds = map.getBounds().pad(-0.15);
+  const center = bounds.getCenter();
+  const maxHalfSpan = Math.max(0.05, 1.0 / Math.pow(2, zoom - 10));
+  bounds = L.latLngBounds(
+    L.latLng(Math.max(bounds.getSouth(), center.lat - maxHalfSpan), Math.max(bounds.getWest(), center.lng - maxHalfSpan)),
+    L.latLng(Math.min(bounds.getNorth(), center.lat + maxHalfSpan), Math.min(bounds.getEast(), center.lng + maxHalfSpan))
+  );
   const requestKey = [
-    map.getZoom(),
+    zoom,
     bounds.getSouth().toFixed(3),
     bounds.getWest().toFixed(3),
     bounds.getNorth().toFixed(3),
