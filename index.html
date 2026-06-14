@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Forest Service Roads</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<script src="vendor/leaflet/leaflet.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #eef3ef; }
+body { color: #15231a; }
+#map { height: 100%; width: 100%; }
+
+.notice {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 1100;
+  max-width: min(440px, calc(100vw - 36px));
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 248, 227, 0.96);
+  border: 1px solid rgba(186, 144, 51, 0.35);
+  box-shadow: 0 10px 30px rgba(38, 44, 35, 0.15);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.notice strong { display: block; margin-bottom: 4px; }
+.notice code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: min(360px, calc(100vw - 40px));
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+  background: rgba(250, 252, 249, 0.96);
+  border: 1px solid rgba(39, 71, 50, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 22px 60px rgba(16, 24, 20, 0.18);
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.controls-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid rgba(39, 71, 50, 0.08);
+  background: linear-gradient(180deg, rgba(234, 242, 232, 0.92), rgba(250, 252, 249, 0.96));
+}
+
+.controls-header h1 {
+  font-size: 21px;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.controls-header p {
+  font-size: 13px;
+  color: #4d6252;
+  line-height: 1.45;
+}
+
+.search-panel {
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(39, 71, 50, 0.08);
+  background: rgba(246, 249, 245, 0.92);
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.search-input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(39, 71, 50, 0.16);
+  background: #fff;
+  font: inherit;
+  color: #173321;
+}
+
+.search-input:focus {
+  outline: 2px solid rgba(82, 183, 136, 0.35);
+  outline-offset: 1px;
+}
+
+.search-button {
+  border: 0;
+  border-radius: 12px;
+  padding: 0 14px;
+  background: #214f37;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.search-button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+.search-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #5d705f;
+}
+
+.search-status {
+  min-height: 18px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #49604f;
+}
+
+.search-results {
+  display: none;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.search-results.has-results {
+  display: grid;
+}
+
+.search-result {
+  text-align: left;
+  border: 1px solid rgba(39, 71, 50, 0.1);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.search-result:hover {
+  background: #f0f6f1;
+}
+
+.search-result-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a3b28;
+}
+
+.search-result-subtitle {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #5a6d5d;
+}
+
+.forest-list {
+  overflow-y: auto;
+  padding: 10px 12px 14px;
+  flex: 1;
+}
+
+.forest-item {
+  padding: 10px 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(34, 66, 44, 0.08);
+}
+
+.forest-item + .forest-item { margin-top: 10px; }
+
+.forest-toggle {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.forest-toggle input { accent-color: #2d6a4f; }
+
+.forest-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #173321;
+}
+
+.forest-meta {
+  margin: 8px 0 0 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 22px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.pill-neutral { color: #51685b; background: #edf3ee; }
+.pill-ok { color: #1f5138; background: #dff2e6; }
+.pill-warn { color: #8a5b0a; background: #fff1cf; }
+.pill-bad { color: #8d1d2c; background: #ffe0e6; }
+.pill-disabled { color: #6d6457; background: #f2ede4; }
+
+.forest-pdfs {
+  margin: 10px 0 0 28px;
+  border-top: 1px solid rgba(34, 66, 44, 0.08);
+  padding-top: 10px;
+}
+
+.forest-pdfs summary {
+  cursor: pointer;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: #284734;
+}
+
+.forest-pdfs summary::-webkit-details-marker { display: none; }
+
+.pdf-links {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.pdf-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: #eef5ef;
+  color: #1f4d35;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.pdf-link:hover { background: #dfece2; }
+
+.legend {
+  border-top: 1px solid rgba(39, 71, 50, 0.08);
+  padding: 14px 18px 16px;
+  font-size: 11px;
+  color: #506456;
+  background: rgba(244, 247, 243, 0.92);
+}
+
+.legend-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  color: #67806d;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend-item + .legend-item { margin-top: 5px; }
+
+.legend-color {
+  width: 18px;
+  height: 4px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.legend-color-dashed {
+  background-image: repeating-linear-gradient(
+    to right,
+    currentColor 0 8px,
+    transparent 8px 12px
+  );
+  background-color: transparent !important;
+}
+
+@media (max-width: 900px) {
+  .controls {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 12px;
+    width: auto;
+    max-height: min(60vh, 560px);
+  }
+
+  .notice {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="notice" class="notice" hidden></div>
+
+<aside class="controls">
+  <div class="controls-header">
+    <h1>CA Forest Service Roads</h1>
+    <p>Road layers come from local GeoJSON. PDF MVUM sheets are linked as a fallback for forests with missing or partial vector data.</p>
+  </div>
+  <div class="search-panel">
+    <div class="search-row">
+      <input id="searchInput" class="search-input" type="search" placeholder="Search for a city, trailhead, lake, or campground">
+      <button id="searchButton" class="search-button" type="button">Search</button>
+    </div>
+    <div id="searchStatus" class="search-status"></div>
+    <div id="searchResults" class="search-results"></div>
+    <div class="search-hint">Search runs only when you submit. Results are powered by OpenStreetMap Nominatim and biased to the current map view when possible.</div>
+  </div>
+  <div id="forestList" class="forest-list"></div>
+  <div class="legend">
+    <div class="legend-title">Road Legend</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1b4332"></div>All Vehicles</div>
+    <div class="legend-item"><div class="legend-color" style="background:#52b788"></div>All Vehicles (Seasonal)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1d3557"></div>Highway Legal Only</div>
+    <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
+    <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
+    <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Supplemental public roads (OSM, zoomed in)</div>
+  </div>
+</aside>
+
+<script>
+const FORESTS = [
+  "angeles_national_forest", "cleveland_national_forest", "eldorado_national_forest",
+  "inyo_national_forest", "klamath_national_forest", "lake_tahoe_basin_management_unit",
+  "lassen_national_forest", "los_padres_national_forest", "mendocino_national_forest",
+  "modoc_national_forest", "plumas_national_forest", "san_bernardino_national_forest",
+  "sequoia_national_forest", "shasta_trinity_national_forest", "sierra_national_forest",
+  "six_rivers_national_forest", "stanislaus_national_forest", "tahoe_national_forest"
+];
+
+const DISPLAY = {
+  angeles_national_forest: "Angeles",
+  cleveland_national_forest: "Cleveland",
+  eldorado_national_forest: "Eldorado",
+  inyo_national_forest: "Inyo",
+  klamath_national_forest: "Klamath",
+  lake_tahoe_basin_management_unit: "Lake Tahoe Basin",
+  lassen_national_forest: "Lassen",
+  los_padres_national_forest: "Los Padres",
+  mendocino_national_forest: "Mendocino",
+  modoc_national_forest: "Modoc",
+  plumas_national_forest: "Plumas",
+  san_bernardino_national_forest: "San Bernardino",
+  sequoia_national_forest: "Sequoia",
+  shasta_trinity_national_forest: "Shasta-Trinity",
+  sierra_national_forest: "Sierra",
+  six_rivers_national_forest: "Six Rivers",
+  stanislaus_national_forest: "Stanislaus",
+  tahoe_national_forest: "Tahoe"
+};
+
+const DEFAULTS = [...FORESTS];
+const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
+const PUBLIC_ROADS_OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
+const PUBLIC_ROADS_MIN_ZOOM = 13;
+const PUBLIC_ROADS_TRACK_ZOOM = 14;
+const FOREST_INTERACTIVE_MIN_ZOOM = 11;
+const PUBLIC_ROADS_MAX_FEATURES = 1000;
+const publicRoadsCache = new Map();
+const PUBLIC_ROADS_CACHE_MAX = 30;
+
+const EMBEDDED_CATALOG = {
+  "angeles_national_forest": [{ "label": "East", "href": "angeles/East.pdf" }, { "label": "West", "href": "angeles/West.pdf" }],
+  "cleveland_national_forest": [{ "label": "Descanso Palomar South", "href": "cleveland/Descanso_Palomar_South.pdf" }, { "label": "Palomar North", "href": "cleveland/Palomar_North.pdf" }, { "label": "Trabuco", "href": "cleveland/Trabuco.pdf" }],
+  "eldorado_national_forest": [{ "label": "Amador", "href": "eldorado/Amador.pdf" }, { "label": "Georgetown", "href": "eldorado/Georgetown.pdf" }, { "label": "Pacific", "href": "eldorado/Pacific.pdf" }, { "label": "Placerville", "href": "eldorado/Placerville.pdf" }],
+  "inyo_national_forest": [{ "label": "Bald Mountain", "href": "inyo/Bald_Mountain.pdf" }, { "label": "Big Pine", "href": "inyo/Big_Pine.pdf" }, { "label": "Bishop", "href": "inyo/Bishop.pdf" }, { "label": "Casa Diablo", "href": "inyo/Casa_Diablo.pdf" }, { "label": "Glass Mountain", "href": "inyo/Glass_Mountain.pdf" }, { "label": "Inyo Mountains", "href": "inyo/Inyo_Mountains.pdf" }, { "label": "June Lake", "href": "inyo/June_Lake.pdf" }, { "label": "Little Antelope", "href": "inyo/Little_Antelope.pdf" }, { "label": "Mammoth", "href": "inyo/Mammoth.pdf" }, { "label": "Monache", "href": "inyo/Monache.pdf" }, { "label": "Mono Lake", "href": "inyo/Mono_Lake.pdf" }, { "label": "Pizona Montgomery Peak", "href": "inyo/Pizona_Montgomery_Peak.pdf" }, { "label": "Southern Sierra", "href": "inyo/Southern_Sierra.pdf" }, { "label": "White Mountains", "href": "inyo/White_Mountains.pdf" }],
+  "klamath_national_forest": [{ "label": "Goosenest north", "href": "klamath/Goosenest_north.pdf" }, { "label": "Goosenest south", "href": "klamath/Goosenest_south.pdf" }, { "label": "Happy Camp north", "href": "klamath/Happy_Camp_north.pdf" }, { "label": "Happy Camp south", "href": "klamath/Happy_Camp_south.pdf" }, { "label": "Oak Knoll north", "href": "klamath/Oak_Knoll_north.pdf" }, { "label": "Oak Knoll south", "href": "klamath/Oak_Knoll_south.pdf" }, { "label": "Salmon River north", "href": "klamath/Salmon_River_north.pdf" }, { "label": "Salmon River south", "href": "klamath/Salmon_River_south.pdf" }, { "label": "Scott River north", "href": "klamath/Scott_River_north.pdf" }, { "label": "Scott River south", "href": "klamath/Scott_River_south.pdf" }, { "label": "Ukonom", "href": "klamath/Ukonom.pdf" }],
+  "lake_tahoe_basin_management_unit": [{ "label": "North", "href": "lake_tahoe_basin/North.pdf" }, { "label": "South", "href": "lake_tahoe_basin/South.pdf" }],
+  "lassen_national_forest": [{ "label": "Map 1a", "href": "lassen/Map_1a.pdf" }, { "label": "Map 1b", "href": "lassen/Map_1b.pdf" }, { "label": "Map 2a", "href": "lassen/Map_2a.pdf" }, { "label": "Map 2b", "href": "lassen/Map_2b.pdf" }, { "label": "Map 3a", "href": "lassen/Map_3a.pdf" }, { "label": "Map 3b", "href": "lassen/Map_3b.pdf" }, { "label": "Map 4a", "href": "lassen/Map_4a.pdf" }, { "label": "Map 4b", "href": "lassen/Map_4b.pdf" }],
+  "los_padres_national_forest": [{ "label": "Monterey North", "href": "los_padres/Monterey_North.pdf" }, { "label": "Monterey South", "href": "los_padres/Monterey_South.pdf" }, { "label": "Mt Pinos Ojai Santa Barbara", "href": "los_padres/Mt_Pinos_Ojai_Santa_Barbara.pdf" }, { "label": "Santa Lucia", "href": "los_padres/Santa_Lucia.pdf" }],
+  "mendocino_national_forest": [{ "label": "North", "href": "mendocino/North.pdf" }, { "label": "North Central", "href": "mendocino/North_Central.pdf" }, { "label": "South", "href": "mendocino/South.pdf" }, { "label": "South Central", "href": "mendocino/South_Central.pdf" }],
+  "modoc_national_forest": [{ "label": "Big Valley North east", "href": "modoc/Big_Valley_North_east.pdf" }, { "label": "Big Valley North west", "href": "modoc/Big_Valley_North_west.pdf" }, { "label": "Big Valley South north", "href": "modoc/Big_Valley_South_north.pdf" }, { "label": "Big Valley South south", "href": "modoc/Big_Valley_South_south.pdf" }, { "label": "Devils Garden east", "href": "modoc/Devils_Garden_east.pdf" }, { "label": "Devils Garden west", "href": "modoc/Devils_Garden_west.pdf" }, { "label": "Doublehead north", "href": "modoc/Doublehead_north.pdf" }, { "label": "Doublehead south", "href": "modoc/Doublehead_south.pdf" }, { "label": "Warner Mtn north", "href": "modoc/Warner_Mtn_north.pdf" }, { "label": "Warner Mtn south", "href": "modoc/Warner_Mtn_south.pdf" }],
+  "plumas_national_forest": [{ "label": "Greenville", "href": "plumas/Greenville.pdf" }, { "label": "Janesville", "href": "plumas/Janesville.pdf" }, { "label": "Jarbo Gap", "href": "plumas/Jarbo_Gap.pdf" }, { "label": "LaPorte", "href": "plumas/LaPorte.pdf" }, { "label": "Portola", "href": "plumas/Portola.pdf" }, { "label": "Quincy", "href": "plumas/Quincy.pdf" }],
+  "san_bernardino_national_forest": [{ "label": "North", "href": "san_bernardino/North.pdf" }, { "label": "South", "href": "san_bernardino/South.pdf" }],
+  "sequoia_national_forest": [{ "label": "Hume Lake", "href": "sequoia/Hume_Lake.pdf" }, { "label": "Kern River North", "href": "sequoia/Kern_River_North.pdf" }, { "label": "Kern River South", "href": "sequoia/Kern_River_South.pdf" }, { "label": "Western Divide", "href": "sequoia/Western_Divide.pdf" }],
+  "shasta_trinity_national_forest": [{ "label": "Big Bar", "href": "shasta_trinity/Big_Bar.pdf" }, { "label": "Hayfork Yolla Bolla north", "href": "shasta_trinity/Hayfork_Yolla_Bolla_north.pdf" }, { "label": "McCloud north", "href": "shasta_trinity/McCloud_north.pdf" }, { "label": "McCloud south", "href": "shasta_trinity/McCloud_south.pdf" }, { "label": "Mt Shasta north", "href": "shasta_trinity/Mt_Shasta_north.pdf" }, { "label": "Mt Shasta south", "href": "shasta_trinity/Mt_Shasta_south.pdf" }, { "label": "Shasta Lake east", "href": "shasta_trinity/Shasta_Lake_east.pdf" }, { "label": "Shasta Lake west", "href": "shasta_trinity/Shasta_Lake_west.pdf" }, { "label": "Weaverville north", "href": "shasta_trinity/Weaverville_north.pdf" }, { "label": "Weaverville south", "href": "shasta_trinity/Weaverville_south.pdf" }, { "label": "Yolla Bolla south", "href": "shasta_trinity/Yolla_Bolla_south.pdf" }],
+  "sierra_national_forest": [{ "label": "Bass Lake Mariposa", "href": "sierra/Bass_Lake_Mariposa.pdf" }, { "label": "Bass Lake Miami", "href": "sierra/Bass_Lake_Miami.pdf" }, { "label": "Bass Lake Sierra Vista east", "href": "sierra/Bass_Lake_Sierra_Vista_east.pdf" }, { "label": "Bass Lake Sierra Vista west", "href": "sierra/Bass_Lake_Sierra_Vista_west.pdf" }, { "label": "Bass Lake Whiskey Ridge", "href": "sierra/Bass_Lake_Whiskey_Ridge.pdf" }, { "label": "High Sierra Dinkey east", "href": "sierra/High_Sierra_Dinkey_east.pdf" }, { "label": "High Sierra Dinkey west", "href": "sierra/High_Sierra_Dinkey_west.pdf" }, { "label": "High Sierra Kaiser", "href": "sierra/High_Sierra_Kaiser.pdf" }, { "label": "High Sierra Kings", "href": "sierra/High_Sierra_Kings.pdf" }, { "label": "High Sierra Tamarack", "href": "sierra/High_Sierra_Tamarack.pdf" }],
+  "six_rivers_national_forest": [{ "label": "Gasquet north", "href": "six_rivers/Gasquet_north.pdf" }, { "label": "Gasquet south", "href": "six_rivers/Gasquet_south.pdf" }, { "label": "Lower Trinity North central", "href": "six_rivers/Lower_Trinity_North_central.pdf" }, { "label": "Lower Trinity North north", "href": "six_rivers/Lower_Trinity_North_north.pdf" }, { "label": "Lower Trinity South", "href": "six_rivers/Lower_Trinity_South.pdf" }, { "label": "Mad River North central", "href": "six_rivers/Mad_River_North_central.pdf" }, { "label": "Mad River North north", "href": "six_rivers/Mad_River_North_north.pdf" }, { "label": "Mad River South", "href": "six_rivers/Mad_River_South.pdf" }, { "label": "Orleans north", "href": "six_rivers/Orleans_north.pdf" }, { "label": "Orleans south", "href": "six_rivers/Orleans_south.pdf" }],
+  "stanislaus_national_forest": [{ "label": "Calaveras northeast", "href": "stanislaus/Calaveras_northeast.pdf" }, { "label": "Calaveras southwest", "href": "stanislaus/Calaveras_southwest.pdf" }, { "label": "Groveland north", "href": "stanislaus/Groveland_north.pdf" }, { "label": "Groveland south", "href": "stanislaus/Groveland_south.pdf" }, { "label": "MiWok north", "href": "stanislaus/MiWok_north.pdf" }, { "label": "MiWok south", "href": "stanislaus/MiWok_south.pdf" }, { "label": "Summit north", "href": "stanislaus/Summit_north.pdf" }, { "label": "Summit south", "href": "stanislaus/Summit_south.pdf" }],
+  "tahoe_national_forest": [{ "label": "American River", "href": "tahoe/American_River.pdf" }, { "label": "Sierraville", "href": "tahoe/Sierraville.pdf" }, { "label": "Truckee north", "href": "tahoe/Truckee_north.pdf" }, { "label": "Truckee south", "href": "tahoe/Truckee_south.pdf" }, { "label": "Yuba River north", "href": "tahoe/Yuba_River_north.pdf" }, { "label": "Yuba River south", "href": "tahoe/Yuba_River_south.pdf" }]
+};
+
+const SYMBOL_COLORS = { "1": "#1b4332", "2": "#52b788", "3": "#1d3557", "4": "#4895ef" };
+const SYMBOL_WIDTHS = { "1": 2.5, "2": 2, "3": 2.5, "4": 2 };
+const SYMBOL_LABELS = {
+  "1": "All Vehicles",
+  "2": "All Vehicles (Seasonal)",
+  "3": "Highway Legal Only",
+  "4": "Highway Legal (Seasonal)"
+};
+const UNPAVED_SURFACES = new Set([
+  "NAT - NATIVE MATERIAL",
+  "AGG - CRUSHED AGGREGATE OR GRAVEL",
+  "IMP - IMPROVED NATIVE MATERIAL",
+  "AGG - SCORIA",
+  "CSOIL - COMPACTED SOIL"
+]);
+const PAVED_SURFACES = new Set([
+  "AC - ASPHALT",
+  "P - PAVED",
+  "PCC - PORTLAND CEMENT CONCRETE",
+  "BST - BITUMINOUS SURFACE TREATMENT"
+]);
+
+const map = L.map("map", { center: [37.5, -119.5], zoom: 7, zoomControl: false, preferCanvas: true });
+L.control.zoom({ position: "bottomright" }).addTo(map);
+const forestRenderer = L.canvas({ padding: 0.5 });
+const publicRoadsRenderer = L.canvas({ padding: 0.5 });
+const publicRoadsPane = map.createPane("publicRoadsPane");
+publicRoadsPane.style.zIndex = 300;
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> <a href="https://carto.com/">CARTO</a>',
+  subdomains: "abcd",
+  maxZoom: 20
+}).addTo(map);
+
+const catalog = {};
+const layers = {};
+const loaded = {};
+const forestState = {};
+const isFileProtocol = location.protocol === "file:";
+let searchMarker = null;
+let searchAbortController = null;
+let publicRoadsLayer = null;
+let publicRoadsAbortController = null;
+let publicRoadsFetchTimer = null;
+let publicRoadsRequestKey = null;
+
+function roadStyle(feature) {
+  const symbol = feature.properties.symbol || "0";
+  const surface = feature.properties.surfacetype || "";
+  const isUnpaved = UNPAVED_SURFACES.has(surface);
+  return {
+    color: SYMBOL_COLORS[symbol] || "#666",
+    weight: SYMBOL_WIDTHS[symbol] || 1.5,
+    opacity: 0.9,
+    dashArray: isUnpaved ? "7 5" : null,
+    lineCap: isUnpaved ? "butt" : "round"
+  };
+}
+
+function supplementalRoadStyle(feature) {
+  const surface = (feature.properties.surface || "").toLowerCase();
+  const isUnpaved = ["dirt", "gravel", "ground", "unpaved"].includes(surface);
+  return {
+    color: "#c26d1f",
+    weight: 3,
+    opacity: 0.95,
+    dashArray: isUnpaved ? "8 5" : null,
+    lineCap: isUnpaved ? "butt" : "round",
+    smoothFactor: 1.5
+  };
+}
+
+function bindLazyPopup(layerRef, htmlFactory) {
+  layerRef.on("click", () => {
+    if (!layerRef.getPopup()) layerRef.bindPopup(htmlFactory());
+    layerRef.openPopup();
+  });
+}
+
+function mkPopup(feature) {
+  const p = feature.properties || {};
+  const symbol = p.symbol || "0";
+  const name = p.name || "(unnamed road)";
+  const surfaceClass = UNPAVED_SURFACES.has(p.surfacetype || "")
+    ? "Unpaved"
+    : PAVED_SURFACES.has(p.surfacetype || "")
+      ? "Paved"
+      : "Surface unknown";
+  const parts = [
+    `<strong>${name}</strong>`,
+    `<span style="color:${SYMBOL_COLORS[symbol] || "#666"}">${SYMBOL_LABELS[symbol] || "Unknown access"}</span>`
+  ];
+  if (p.districtname) parts.push(`${p.districtname} District`);
+  if (p.system) parts.push(p.system);
+  parts.push(surfaceClass);
+  if (p.surfacetype) parts.push(`Surface: ${p.surfacetype}`);
+  if (p.seasonal) parts.push(`Seasonal: ${p.seasonal}`);
+  return parts.join("<br>");
+}
+
+function mkSupplementalPopup(feature) {
+  const p = feature.properties || {};
+  const parts = [
+    `<strong>${p.name || "Supplemental public road"}</strong>`,
+    "Supplemental public road overlay",
+    p.road_class ? `Class: ${p.road_class}` : "",
+    p.surface ? `Surface: ${p.surface}` : "",
+    p.note || "",
+    p.source_detail ? `Source: ${p.source_detail}` : (p.source ? `Source: ${p.source}` : "")
+  ].filter(Boolean);
+  return parts.join("<br>");
+}
+
+function buildPublicRoadsQuery(bounds) {
+  const south = bounds.getSouth().toFixed(5);
+  const west = bounds.getWest().toFixed(5);
+  const north = bounds.getNorth().toFixed(5);
+  const east = bounds.getEast().toFixed(5);
+
+  const isHighZoom = map.getZoom() >= PUBLIC_ROADS_TRACK_ZOOM;
+  const highwayPattern = isHighZoom
+    ? "motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|track|living_street|road"
+    : "motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|road";
+
+  return `[out:json][timeout:15][maxsize:1048576];
+(
+  way["highway"~"${highwayPattern}"]
+    ["access"!~"private|no|destination"]
+    ["motor_vehicle"!~"private|no|destination"]
+    ["service"!~"parking_aisle|driveway"]
+    (${south},${west},${north},${east});
+);
+out geom 1000;`;
+}
+
+function overpassToGeoJson(data) {
+  const features = (data.elements || [])
+    .filter((element) => element.type === "way" && Array.isArray(element.geometry) && element.geometry.length > 1)
+    .slice(0, PUBLIC_ROADS_MAX_FEATURES)
+    .map((element) => ({
+      type: "Feature",
+      properties: {
+        name: element.tags?.name || "(unnamed public road)",
+        road_class: element.tags?.highway || "",
+        surface: element.tags?.surface || "",
+        source: "OpenStreetMap via Overpass",
+        source_detail: `osm way ${element.id}`
+      },
+      geometry: {
+        type: "LineString",
+        coordinates: element.geometry.map((point) => [Math.round(point.lon * 1e5) / 1e5, Math.round(point.lat * 1e5) / 1e5])
+      }
+    }));
+
+  return { type: "FeatureCollection", features };
+}
+
+function applyPublicRoadsLayer(geojson) {
+  if (publicRoadsLayer) map.removeLayer(publicRoadsLayer);
+  publicRoadsLayer = L.geoJSON(geojson, {
+    style: supplementalRoadStyle,
+    pane: "publicRoadsPane",
+    renderer: publicRoadsRenderer,
+    smoothFactor: 1.5,
+    interactive: map.getZoom() >= FOREST_INTERACTIVE_MIN_ZOOM,
+    bubblingMouseEvents: false,
+    onEachFeature: (feature, layerRef) => {
+      bindLazyPopup(layerRef, () => mkSupplementalPopup(feature));
+    }
+  });
+  map.addLayer(publicRoadsLayer);
+}
+
+async function refreshPublicRoadsForView() {
+  if (isFileProtocol) return;
+
+  if (map.getZoom() < PUBLIC_ROADS_MIN_ZOOM) {
+    if (publicRoadsLayer) {
+      map.removeLayer(publicRoadsLayer);
+      publicRoadsLayer = null;
+    }
+    publicRoadsRequestKey = null;
+    return;
+  }
+
+  const bounds = map.getBounds().pad(-0.15);
+  const requestKey = [
+    map.getZoom(),
+    bounds.getSouth().toFixed(3),
+    bounds.getWest().toFixed(3),
+    bounds.getNorth().toFixed(3),
+    bounds.getEast().toFixed(3)
+  ].join("|");
+
+  if (requestKey === publicRoadsRequestKey) return;
+  publicRoadsRequestKey = requestKey;
+
+  const cached = publicRoadsCache.get(requestKey);
+  if (cached) {
+    applyPublicRoadsLayer(cached);
+    return;
+  }
+
+  if (publicRoadsAbortController) publicRoadsAbortController.abort();
+  publicRoadsAbortController = new AbortController();
+
+  try {
+    const response = await fetch(PUBLIC_ROADS_OVERPASS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "Accept": "application/json"
+      },
+      body: new URLSearchParams({ data: buildPublicRoadsQuery(bounds) }),
+      signal: publicRoadsAbortController.signal
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const geojson = overpassToGeoJson(data);
+
+    publicRoadsCache.set(requestKey, geojson);
+    if (publicRoadsCache.size > PUBLIC_ROADS_CACHE_MAX) {
+      const oldest = publicRoadsCache.keys().next().value;
+      publicRoadsCache.delete(oldest);
+    }
+
+    applyPublicRoadsLayer(geojson);
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    console.error("Failed to load supplemental public roads", error);
+  }
+}
+
+function schedulePublicRoadRefresh() {
+  if (publicRoadsFetchTimer) clearTimeout(publicRoadsFetchTimer);
+  publicRoadsFetchTimer = setTimeout(() => {
+    refreshPublicRoadsForView();
+  }, 350);
+}
+
+function updateInteractivityHint() {
+  const zoom = map.getZoom();
+  const searchHasText = document.getElementById("searchInput")?.value.trim();
+  if (searchHasText) return;
+
+  if (zoom < PUBLIC_ROADS_MIN_ZOOM) {
+    setSearchStatus(`Zoom to ${PUBLIC_ROADS_MIN_ZOOM}+ to show supplemental public roads.`);
+    return;
+  }
+
+  if (zoom < FOREST_INTERACTIVE_MIN_ZOOM) {
+    setSearchStatus(`OSM public roads are on. Zoom to ${FOREST_INTERACTIVE_MIN_ZOOM}+ for easier road inspection.`);
+    return;
+  }
+
+  setSearchStatus("");
+}
+
+function setNotice(message) {
+  const el = document.getElementById("notice");
+  if (!message) {
+    el.hidden = true;
+    el.innerHTML = "";
+    return;
+  }
+  el.hidden = false;
+  el.innerHTML = message;
+}
+
+function metaPill(text, kind = "neutral") {
+  const span = document.createElement("span");
+  span.className = `pill pill-${kind}`;
+  span.textContent = text;
+  return span;
+}
+
+function renderForestMeta(id) {
+  const meta = document.getElementById(`meta_${id}`);
+  if (!meta) return;
+  meta.innerHTML = "";
+
+  const state = forestState[id] || {};
+  const pdfs = catalog[id] || [];
+
+  if (state.status === "loading") meta.appendChild(metaPill("Loading roads...", "neutral"));
+  if (state.status === "ready") meta.appendChild(metaPill(`${state.count.toLocaleString()} road segments`, "ok"));
+  if (state.status === "empty") meta.appendChild(metaPill("No vector road data loaded", "warn"));
+  if (state.status === "error") meta.appendChild(metaPill("Road layer failed to load", "bad"));
+  if (state.status === "disabled") meta.appendChild(metaPill("Road overlay needs ./serve.sh", "disabled"));
+
+  if (pdfs.length) meta.appendChild(metaPill(`${pdfs.length} PDF map${pdfs.length === 1 ? "" : "s"}`, "neutral"));
+}
+
+function renderPdfLinks(id) {
+  const wrap = document.getElementById(`pdfs_${id}`);
+  if (!wrap) return;
+  const pdfs = catalog[id] || [];
+
+  if (!pdfs.length) {
+    wrap.hidden = true;
+    wrap.innerHTML = "";
+    return;
+  }
+
+  wrap.hidden = false;
+  wrap.innerHTML = `
+    <summary>Open MVUM PDFs</summary>
+    <div class="pdf-links">
+      ${pdfs.map((pdf) => `<a class="pdf-link" href="${pdf.href}" target="_blank" rel="noreferrer">${pdf.label}</a>`).join("")}
+    </div>
+  `;
+}
+
+function buildForestItem(id) {
+  const div = document.createElement("section");
+  div.className = "forest-item";
+  div.innerHTML = `
+    <label class="forest-toggle" for="cb_${id}">
+      <input type="checkbox" id="cb_${id}">
+      <span class="forest-name">${DISPLAY[id] || id}</span>
+      <span></span>
+    </label>
+    <div id="meta_${id}" class="forest-meta"></div>
+    <details id="pdfs_${id}" class="forest-pdfs" hidden></details>
+  `;
+
+  div.querySelector("input").addEventListener("change", async function () {
+    if (isFileProtocol) {
+      this.checked = false;
+      forestState[id] = { status: "disabled" };
+      renderForestMeta(id);
+      return;
+    }
+    if (this.checked) {
+      await ensureForestLoaded(id);
+      toggleForest(id, true);
+      fitVisibleBounds(false);
+      const pdfs = document.getElementById(`pdfs_${id}`);
+      if (pdfs) pdfs.open = true;
+    } else {
+      toggleForest(id, false);
+      fitVisibleBounds(false);
+    }
+  });
+
+  renderForestMeta(id);
+  renderPdfLinks(id);
+  return div;
+}
+
+function toggleForest(id, show) {
+  if (!layers[id]) return;
+  if (show) map.addLayer(layers[id]);
+  else map.removeLayer(layers[id]);
+}
+
+function fitVisibleBounds(isInitial) {
+  const visibleLayers = Object.entries(layers)
+    .filter(([id, layer]) => map.hasLayer(layer) && layer.getLayers().length)
+    .map(([, layer]) => layer);
+
+  if (!visibleLayers.length) return;
+
+  const group = L.featureGroup(visibleLayers);
+  const bounds = group.getBounds();
+  if (!bounds.isValid()) return;
+
+  map.fitBounds(bounds, {
+    padding: isInitial ? [30, 30] : [40, 40],
+    maxZoom: 11
+  });
+}
+
+function clearSearchMarker() {
+  if (searchMarker) {
+    map.removeLayer(searchMarker);
+    searchMarker = null;
+  }
+}
+
+function setSearchStatus(message) {
+  document.getElementById("searchStatus").textContent = message || "";
+}
+
+function getSearchViewbox() {
+  const bounds = map.getBounds();
+  if (!bounds || !bounds.isValid()) return null;
+  return [
+    bounds.getWest().toFixed(5),
+    bounds.getNorth().toFixed(5),
+    bounds.getEast().toFixed(5),
+    bounds.getSouth().toFixed(5)
+  ].join(",");
+}
+
+function chooseResultLabel(result) {
+  return result.display_name.split(",").slice(0, 2).join(", ");
+}
+
+function renderSearchResults(results) {
+  const container = document.getElementById("searchResults");
+  container.innerHTML = "";
+  container.classList.toggle("has-results", results.length > 0);
+
+  results.forEach((result) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "search-result";
+    button.innerHTML = `
+      <span class="search-result-title">${chooseResultLabel(result)}</span>
+      <span class="search-result-subtitle">${result.display_name}</span>
+    `;
+    button.addEventListener("click", () => focusSearchResult(result));
+    container.appendChild(button);
+  });
+}
+
+function focusSearchResult(result) {
+  clearSearchMarker();
+  const lat = Number(result.lat);
+  const lon = Number(result.lon);
+
+  searchMarker = L.marker([lat, lon]).addTo(map);
+  searchMarker.bindPopup(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`).openPopup();
+
+  if (result.boundingbox && result.boundingbox.length === 4) {
+    const [south, north, west, east] = result.boundingbox.map(Number);
+    const bounds = L.latLngBounds([south, west], [north, east]);
+    if (bounds.isValid() && Math.abs(north - south) + Math.abs(east - west) > 0.002) {
+      map.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
+      return;
+    }
+  }
+
+  map.setView([lat, lon], 12);
+}
+
+async function runSearch() {
+  const input = document.getElementById("searchInput");
+  const button = document.getElementById("searchButton");
+  const query = input.value.trim();
+
+  if (!query) {
+    setSearchStatus("Enter a place name to search.");
+    renderSearchResults([]);
+    return;
+  }
+
+  if (searchAbortController) searchAbortController.abort();
+  searchAbortController = new AbortController();
+  button.disabled = true;
+  setSearchStatus(`Searching for "${query}"...`);
+  renderSearchResults([]);
+
+  const params = new URLSearchParams({
+    q: query,
+    format: "jsonv2",
+    limit: "5",
+    addressdetails: "1",
+    countrycodes: "us"
+  });
+
+  const viewbox = getSearchViewbox();
+  if (viewbox) params.set("viewbox", viewbox);
+
+  try {
+    const response = await fetch(`${SEARCH_ENDPOINT}?${params.toString()}`, {
+      signal: searchAbortController.signal,
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const results = await response.json();
+
+    if (!Array.isArray(results) || results.length === 0) {
+      setSearchStatus("No matches found. Try a nearby city, trailhead, lake, campground, or pass.");
+      renderSearchResults([]);
+      return;
+    }
+
+    setSearchStatus(`Found ${results.length} match${results.length === 1 ? "" : "es"}.`);
+    renderSearchResults(results);
+    focusSearchResult(results[0]);
+  } catch (error) {
+    if (error.name === "AbortError") return;
+    console.error("Search failed", error);
+    setSearchStatus("Search failed. If this keeps happening, try again in a moment or swap to another geocoder.");
+    renderSearchResults([]);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function ensureForestLoaded(id) {
+  if (loaded[id]) return;
+
+  loaded[id] = "pending";
+  forestState[id] = { status: "loading" };
+  renderForestMeta(id);
+
+  try {
+    const response = await fetch(`_roads_geojson/${id}.geojson`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const features = Array.isArray(data.features) ? data.features : [];
+
+    const layer = L.geoJSON(data, {
+      style: roadStyle,
+      renderer: forestRenderer,
+      smoothFactor: 1.5,
+      bubblingMouseEvents: false,
+      onEachFeature: (feature, layerRef) => {
+        bindLazyPopup(layerRef, () => mkPopup(feature));
+      }
+    });
+
+    layers[id] = layer;
+    loaded[id] = true;
+    forestState[id] = features.length
+      ? { status: "ready", count: features.length }
+      : { status: "empty", count: 0 };
+  } catch (error) {
+    loaded[id] = false;
+    forestState[id] = { status: "error", error: String(error) };
+    console.error("Failed to load forest", id, error);
+  }
+
+  renderForestMeta(id);
+}
+
+async function loadCatalog() {
+  Object.assign(catalog, EMBEDDED_CATALOG);
+
+  if (isFileProtocol) return;
+
+  try {
+    const response = await fetch("pdf_manifest.json");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    Object.assign(catalog, await response.json());
+  } catch (error) {
+    console.error("Failed to load PDF manifest", error);
+    setNotice("Using the built-in PDF catalog because <code>pdf_manifest.json</code> could not be fetched. Road layers may still work if the page is served over <code>http://127.0.0.1:8080</code>.");
+  }
+}
+
+async function init() {
+  if (isFileProtocol) {
+    setNotice("<strong>PDF links are available, but road overlays need a local web server.</strong>Open <code>./serve.sh</code> and then visit <code>http://127.0.0.1:8080</code>. Browsers block local GeoJSON fetches when <code>index.html</code> is opened directly.");
+  }
+
+  await loadCatalog();
+
+  const list = document.getElementById("forestList");
+  FORESTS.forEach((id) => list.appendChild(buildForestItem(id)));
+
+  document.getElementById("searchButton").addEventListener("click", runSearch);
+  document.getElementById("searchInput").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      runSearch();
+    }
+  });
+  map.on("moveend", schedulePublicRoadRefresh);
+  map.on("zoomend", updateInteractivityHint);
+
+  if (!isFileProtocol) {
+    for (const id of DEFAULTS) {
+      const checkbox = document.getElementById(`cb_${id}`);
+      if (!checkbox) continue;
+      checkbox.checked = true;
+    }
+
+    await Promise.all(DEFAULTS.map((id) => ensureForestLoaded(id)));
+    DEFAULTS.forEach((id) => toggleForest(id, true));
+    fitVisibleBounds(true);
+    schedulePublicRoadRefresh();
+    updateInteractivityHint();
+  }
+
+  const weakDataForests = Object.entries(catalog)
+    .filter(([id]) => forestState[id] && (forestState[id].status === "empty" || forestState[id].count < 10))
+    .map(([id]) => DISPLAY[id] || id);
+
+  if (!location.protocol.startsWith("http")) return;
+
+  if (weakDataForests.length) {
+    setNotice(`<strong>Some forests only have PDF coverage right now.</strong>${weakDataForests.join(", ")} have missing or very sparse vector data in the current GeoJSON set, so the linked MVUM PDFs are the safer source for those areas.`);
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+{
+  "angeles_national_forest": [
+    { "label": "East", "href": "angeles/East.pdf" },
+    { "label": "West", "href": "angeles/West.pdf" }
+  ],
+  "cleveland_national_forest": [
+    { "label": "Descanso Palomar South", "href": "cleveland/Descanso_Palomar_South.pdf" },
+    { "label": "Palomar North", "href": "cleveland/Palomar_North.pdf" },
+    { "label": "Trabuco", "href": "cleveland/Trabuco.pdf" }
+  ],
+  "eldorado_national_forest": [
+    { "label": "Amador", "href": "eldorado/Amador.pdf" },
+    { "label": "Georgetown", "href": "eldorado/Georgetown.pdf" },
+    { "label": "Pacific", "href": "eldorado/Pacific.pdf" },
+    { "label": "Placerville", "href": "eldorado/Placerville.pdf" }
+  ],
+  "inyo_national_forest": [
+    { "label": "Bald Mountain", "href": "inyo/Bald_Mountain.pdf" },
+    { "label": "Big Pine", "href": "inyo/Big_Pine.pdf" },
+    { "label": "Bishop", "href": "inyo/Bishop.pdf" },
+    { "label": "Casa Diablo", "href": "inyo/Casa_Diablo.pdf" },
+    { "label": "Glass Mountain", "href": "inyo/Glass_Mountain.pdf" },
+    { "label": "Inyo Mountains", "href": "inyo/Inyo_Mountains.pdf" },
+    { "label": "June Lake", "href": "inyo/June_Lake.pdf" },
+    { "label": "Little Antelope", "href": "inyo/Little_Antelope.pdf" },
+    { "label": "Mammoth", "href": "inyo/Mammoth.pdf" },
+    { "label": "Monache", "href": "inyo/Monache.pdf" },
+    { "label": "Mono Lake", "href": "inyo/Mono_Lake.pdf" },
+    { "label": "Pizona Montgomery Peak", "href": "inyo/Pizona_Montgomery_Peak.pdf" },
+    { "label": "Southern Sierra", "href": "inyo/Southern_Sierra.pdf" },
+    { "label": "White Mountains", "href": "inyo/White_Mountains.pdf" }
+  ],
+  "klamath_national_forest": [
+    { "label": "Goosenest north", "href": "klamath/Goosenest_north.pdf" },
+    { "label": "Goosenest south", "href": "klamath/Goosenest_south.pdf" },
+    { "label": "Happy Camp north", "href": "klamath/Happy_Camp_north.pdf" },
+    { "label": "Happy Camp south", "href": "klamath/Happy_Camp_south.pdf" },
+    { "label": "Oak Knoll north", "href": "klamath/Oak_Knoll_north.pdf" },
+    { "label": "Oak Knoll south", "href": "klamath/Oak_Knoll_south.pdf" },
+    { "label": "Salmon River north", "href": "klamath/Salmon_River_north.pdf" },
+    { "label": "Salmon River south", "href": "klamath/Salmon_River_south.pdf" },
+    { "label": "Scott River north", "href": "klamath/Scott_River_north.pdf" },
+    { "label": "Scott River south", "href": "klamath/Scott_River_south.pdf" },
+    { "label": "Ukonom", "href": "klamath/Ukonom.pdf" }
+  ],
+  "lake_tahoe_basin_management_unit": [
+    { "label": "North", "href": "lake_tahoe_basin/North.pdf" },
+    { "label": "South", "href": "lake_tahoe_basin/South.pdf" }
+  ],
+  "lassen_national_forest": [
+    { "label": "Map 1a", "href": "lassen/Map_1a.pdf" },
+    { "label": "Map 1b", "href": "lassen/Map_1b.pdf" },
+    { "label": "Map 2a", "href": "lassen/Map_2a.pdf" },
+    { "label": "Map 2b", "href": "lassen/Map_2b.pdf" },
+    { "label": "Map 3a", "href": "lassen/Map_3a.pdf" },
+    { "label": "Map 3b", "href": "lassen/Map_3b.pdf" },
+    { "label": "Map 4a", "href": "lassen/Map_4a.pdf" },
+    { "label": "Map 4b", "href": "lassen/Map_4b.pdf" }
+  ],
+  "los_padres_national_forest": [
+    { "label": "Monterey North", "href": "los_padres/Monterey_North.pdf" },
+    { "label": "Monterey South", "href": "los_padres/Monterey_South.pdf" },
+    { "label": "Mt Pinos Ojai Santa Barbara", "href": "los_padres/Mt_Pinos_Ojai_Santa_Barbara.pdf" },
+    { "label": "Santa Lucia", "href": "los_padres/Santa_Lucia.pdf" }
+  ],
+  "mendocino_national_forest": [
+    { "label": "North", "href": "mendocino/North.pdf" },
+    { "label": "North Central", "href": "mendocino/North_Central.pdf" },
+    { "label": "South", "href": "mendocino/South.pdf" },
+    { "label": "South Central", "href": "mendocino/South_Central.pdf" }
+  ],
+  "modoc_national_forest": [
+    { "label": "Big Valley North east", "href": "modoc/Big_Valley_North_east.pdf" },
+    { "label": "Big Valley North west", "href": "modoc/Big_Valley_North_west.pdf" },
+    { "label": "Big Valley South north", "href": "modoc/Big_Valley_South_north.pdf" },
+    { "label": "Big Valley South south", "href": "modoc/Big_Valley_South_south.pdf" },
+    { "label": "Devils Garden east", "href": "modoc/Devils_Garden_east.pdf" },
+    { "label": "Devils Garden west", "href": "modoc/Devils_Garden_west.pdf" },
+    { "label": "Doublehead north", "href": "modoc/Doublehead_north.pdf" },
+    { "label": "Doublehead south", "href": "modoc/Doublehead_south.pdf" },
+    { "label": "Warner Mtn north", "href": "modoc/Warner_Mtn_north.pdf" },
+    { "label": "Warner Mtn south", "href": "modoc/Warner_Mtn_south.pdf" }
+  ],
+  "plumas_national_forest": [
+    { "label": "Greenville", "href": "plumas/Greenville.pdf" },
+    { "label": "Janesville", "href": "plumas/Janesville.pdf" },
+    { "label": "Jarbo Gap", "href": "plumas/Jarbo_Gap.pdf" },
+    { "label": "LaPorte", "href": "plumas/LaPorte.pdf" },
+    { "label": "Portola", "href": "plumas/Portola.pdf" },
+    { "label": "Quincy", "href": "plumas/Quincy.pdf" }
+  ],
+  "san_bernardino_national_forest": [
+    { "label": "North", "href": "san_bernardino/North.pdf" },
+    { "label": "South", "href": "san_bernardino/South.pdf" }
+  ],
+  "sequoia_national_forest": [
+    { "label": "Hume Lake", "href": "sequoia/Hume_Lake.pdf" },
+    { "label": "Kern River North", "href": "sequoia/Kern_River_North.pdf" },
+    { "label": "Kern River South", "href": "sequoia/Kern_River_South.pdf" },
+    { "label": "Western Divide", "href": "sequoia/Western_Divide.pdf" }
+  ],
+  "shasta_trinity_national_forest": [
+    { "label": "Big Bar", "href": "shasta_trinity/Big_Bar.pdf" },
+    { "label": "Hayfork Yolla Bolla north", "href": "shasta_trinity/Hayfork_Yolla_Bolla_north.pdf" },
+    { "label": "McCloud north", "href": "shasta_trinity/McCloud_north.pdf" },
+    { "label": "McCloud south", "href": "shasta_trinity/McCloud_south.pdf" },
+    { "label": "Mt Shasta north", "href": "shasta_trinity/Mt_Shasta_north.pdf" },
+    { "label": "Mt Shasta south", "href": "shasta_trinity/Mt_Shasta_south.pdf" },
+    { "label": "Shasta Lake east", "href": "shasta_trinity/Shasta_Lake_east.pdf" },
+    { "label": "Shasta Lake west", "href": "shasta_trinity/Shasta_Lake_west.pdf" },
+    { "label": "Weaverville north", "href": "shasta_trinity/Weaverville_north.pdf" },
+    { "label": "Weaverville south", "href": "shasta_trinity/Weaverville_south.pdf" },
+    { "label": "Yolla Bolla south", "href": "shasta_trinity/Yolla_Bolla_south.pdf" }
+  ],
+  "sierra_national_forest": [
+    { "label": "Bass Lake Mariposa", "href": "sierra/Bass_Lake_Mariposa.pdf" },
+    { "label": "Bass Lake Miami", "href": "sierra/Bass_Lake_Miami.pdf" },
+    { "label": "Bass Lake Sierra Vista east", "href": "sierra/Bass_Lake_Sierra_Vista_east.pdf" },
+    { "label": "Bass Lake Sierra Vista west", "href": "sierra/Bass_Lake_Sierra_Vista_west.pdf" },
+    { "label": "Bass Lake Whiskey Ridge", "href": "sierra/Bass_Lake_Whiskey_Ridge.pdf" },
+    { "label": "High Sierra Dinkey east", "href": "sierra/High_Sierra_Dinkey_east.pdf" },
+    { "label": "High Sierra Dinkey west", "href": "sierra/High_Sierra_Dinkey_west.pdf" },
+    { "label": "High Sierra Kaiser", "href": "sierra/High_Sierra_Kaiser.pdf" },
+    { "label": "High Sierra Kings", "href": "sierra/High_Sierra_Kings.pdf" },
+    { "label": "High Sierra Tamarack", "href": "sierra/High_Sierra_Tamarack.pdf" }
+  ],
+  "six_rivers_national_forest": [
+    { "label": "Gasquet north", "href": "six_rivers/Gasquet_north.pdf" },
+    { "label": "Gasquet south", "href": "six_rivers/Gasquet_south.pdf" },
+    { "label": "Lower Trinity North central", "href": "six_rivers/Lower_Trinity_North_central.pdf" },
+    { "label": "Lower Trinity North north", "href": "six_rivers/Lower_Trinity_North_north.pdf" },
+    { "label": "Lower Trinity South", "href": "six_rivers/Lower_Trinity_South.pdf" },
+    { "label": "Mad River North central", "href": "six_rivers/Mad_River_North_central.pdf" },
+    { "label": "Mad River North north", "href": "six_rivers/Mad_River_North_north.pdf" },
+    { "label": "Mad River South", "href": "six_rivers/Mad_River_South.pdf" },
+    { "label": "Orleans north", "href": "six_rivers/Orleans_north.pdf" },
+    { "label": "Orleans south", "href": "six_rivers/Orleans_south.pdf" }
+  ],
+  "stanislaus_national_forest": [
+    { "label": "Calaveras northeast", "href": "stanislaus/Calaveras_northeast.pdf" },
+    { "label": "Calaveras southwest", "href": "stanislaus/Calaveras_southwest.pdf" },
+    { "label": "Groveland north", "href": "stanislaus/Groveland_north.pdf" },
+    { "label": "Groveland south", "href": "stanislaus/Groveland_south.pdf" },
+    { "label": "MiWok north", "href": "stanislaus/MiWok_north.pdf" },
+    { "label": "MiWok south", "href": "stanislaus/MiWok_south.pdf" },
+    { "label": "Summit north", "href": "stanislaus/Summit_north.pdf" },
+    { "label": "Summit south", "href": "stanislaus/Summit_south.pdf" }
+  ],
+  "tahoe_national_forest": [
+    { "label": "American River", "href": "tahoe/American_River.pdf" },
+    { "label": "Sierraville", "href": "tahoe/Sierraville.pdf" },
+    { "label": "Truckee north", "href": "tahoe/Truckee_north.pdf" },
+    { "label": "Truckee south", "href": "tahoe/Truckee_south.pdf" },
+    { "label": "Yuba River north", "href": "tahoe/Yuba_River_north.pdf" },
+    { "label": "Yuba River south", "href": "tahoe/Yuba_River_south.pdf" }
+  ]
+}
