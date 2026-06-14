@@ -461,15 +461,13 @@ function roadStyle(feature) {
   };
 }
 
-function supplementalRoadStyle(feature) {
-  const surface = (feature.properties.surface || "").toLowerCase();
-  const isUnpaved = ["dirt", "gravel", "ground", "unpaved"].includes(surface);
+function supplementalRoadStyle() {
   return {
     color: "#c26d1f",
     weight: 3,
     opacity: 0.95,
-    dashArray: isUnpaved ? "8 5" : null,
-    lineCap: isUnpaved ? "butt" : "round",
+    dashArray: "8 5",
+    lineCap: "butt",
     smoothFactor: 1.5
   };
 }
