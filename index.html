@@ -521,7 +521,7 @@ function buildPublicRoadsQuery(bounds) {
   const north = bounds.getNorth().toFixed(5);
   const east = bounds.getEast().toFixed(5);
 
-  return `[out:json][timeout:10][maxsize:1048576];
+  return `[out:json][timeout:5][maxsize:1048576];
 (
   way["highway"~"track|service|unclassified"]
     ["access"!~"private|no|destination"]
@@ -644,7 +644,7 @@ function schedulePublicRoadRefresh() {
   if (publicRoadsFetchTimer) clearTimeout(publicRoadsFetchTimer);
   publicRoadsFetchTimer = setTimeout(() => {
     refreshPublicRoadsForView();
-  }, 350);
+  }, 100);
 }
 
 function updateInteractivityHint() {
