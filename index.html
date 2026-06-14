@@ -337,7 +337,7 @@ body { color: #15231a; }
     <div class="legend-item"><div class="legend-color" style="background:#1d3557"></div>Highway Legal Only</div>
     <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
     <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
-    <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Supplemental public roads (OSM, zoomed in)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Unpaved/minor roads (OSM, zoomed in)</div>
   </div>
 </aside>
 
@@ -376,7 +376,6 @@ const DEFAULTS = [...FORESTS];
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
 const PUBLIC_ROADS_OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
 const PUBLIC_ROADS_MIN_ZOOM = 13;
-const PUBLIC_ROADS_TRACK_ZOOM = 14;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const PUBLIC_ROADS_MAX_FEATURES = 1000;
 const publicRoadsCache = new Map();
@@ -522,17 +521,13 @@ function buildPublicRoadsQuery(bounds) {
   const north = bounds.getNorth().toFixed(5);
   const east = bounds.getEast().toFixed(5);
 
-  const isHighZoom = map.getZoom() >= PUBLIC_ROADS_TRACK_ZOOM;
-  const highwayPattern = isHighZoom
-    ? "motorway|trunk|primary|secondary|tertiary|unclassified|residential|service|track|living_street|road"
-    : "motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|road";
-
   return `[out:json][timeout:15][maxsize:1048576];
 (
-  way["highway"~"${highwayPattern}"]
+  way["highway"~"track|service|unclassified"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
+    (if: !t["surface"] || t["surface"]!~"asphalt|concrete|paved|chipseal|paving_stones|sett|cobblestone|bricks")
     (${south},${west},${north},${east});
 );
 out geom 1000;`;
