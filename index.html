@@ -374,7 +374,7 @@ const DISPLAY = {
 
 const DEFAULTS = [...FORESTS];
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
-const PUBLIC_ROADS_OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
+const PUBLIC_ROADS_OVERPASS_URL = "https://overpass-api.de/api/interpreter";
 const PUBLIC_ROADS_MIN_ZOOM = 7;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const PUBLIC_ROADS_MAX_FEATURES = 1000;
@@ -521,7 +521,7 @@ function buildPublicRoadsQuery(bounds) {
   const north = bounds.getNorth().toFixed(5);
   const east = bounds.getEast().toFixed(5);
 
-  return `[out:json][timeout:15][maxsize:1048576];
+  return `[out:json][timeout:10][maxsize:1048576];
 (
   way["highway"~"track|service|unclassified"]
     ["access"!~"private|no|destination"]
@@ -592,7 +592,7 @@ async function refreshPublicRoadsForView() {
   const zoom = map.getZoom();
   let bounds = map.getBounds().pad(-0.15);
   const center = bounds.getCenter();
-  const maxHalfSpan = Math.max(0.05, 1.0 / Math.pow(2, zoom - 10));
+  const maxHalfSpan = Math.max(0.02, 0.1 * Math.pow(1.8, zoom - 9));
   bounds = L.latLngBounds(
     L.latLng(Math.max(bounds.getSouth(), center.lat - maxHalfSpan), Math.max(bounds.getWest(), center.lng - maxHalfSpan)),
     L.latLng(Math.min(bounds.getNorth(), center.lat + maxHalfSpan), Math.min(bounds.getEast(), center.lng + maxHalfSpan))
