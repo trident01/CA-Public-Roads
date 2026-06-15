@@ -1,0 +1,1235 @@
+{
+  "forest_counts": {
+    "angeles_national_forest": 0,
+    "cleveland_national_forest": 188,
+    "eldorado_national_forest": 1151,
+    "inyo_national_forest": 3635,
+    "klamath_national_forest": 2318,
+    "lake_tahoe_basin_management_unit": 163,
+    "lassen_national_forest": 2444,
+    "los_padres_national_forest": 209,
+    "mendocino_national_forest": 987,
+    "modoc_national_forest": 7,
+    "plumas_national_forest": 2081,
+    "san_bernardino_national_forest": 471,
+    "sequoia_national_forest": 1254,
+    "shasta_trinity_national_forest": 3244,
+    "sierra_national_forest": 2553,
+    "six_rivers_national_forest": 2,
+    "stanislaus_national_forest": 1561,
+    "tahoe_national_forest": 2108
+  },
+  "tile_count": 193,
+  "tile_zoom": 10,
+  "tiles": {
+    "10/160/380": {
+      "feature_count": 99,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/160/381": {
+      "feature_count": 139,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/160/382": {
+      "feature_count": 64,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/160/383": {
+      "feature_count": 1,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/160/384": {
+      "feature_count": 53,
+      "forests": [
+        "shasta_trinity_national_forest",
+        "six_rivers_national_forest"
+      ]
+    },
+    "10/160/385": {
+      "feature_count": 56,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/160/386": {
+      "feature_count": 6,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/161/380": {
+      "feature_count": 196,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/161/381": {
+      "feature_count": 218,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/161/382": {
+      "feature_count": 144,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/161/383": {
+      "feature_count": 190,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/161/384": {
+      "feature_count": 86,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/161/385": {
+      "feature_count": 198,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/161/386": {
+      "feature_count": 199,
+      "forests": [
+        "shasta_trinity_national_forest",
+        "six_rivers_national_forest"
+      ]
+    },
+    "10/161/387": {
+      "feature_count": 20,
+      "forests": [
+        "mendocino_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/161/388": {
+      "feature_count": 28,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/161/389": {
+      "feature_count": 9,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/162/379": {
+      "feature_count": 33,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/162/380": {
+      "feature_count": 273,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/162/381": {
+      "feature_count": 114,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/162/382": {
+      "feature_count": 104,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/383": {
+      "feature_count": 141,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/384": {
+      "feature_count": 165,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/385": {
+      "feature_count": 17,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/386": {
+      "feature_count": 147,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/387": {
+      "feature_count": 117,
+      "forests": [
+        "mendocino_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/162/388": {
+      "feature_count": 347,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/162/389": {
+      "feature_count": 247,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/162/390": {
+      "feature_count": 139,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/162/391": {
+      "feature_count": 2,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/163/379": {
+      "feature_count": 4,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/163/380": {
+      "feature_count": 23,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/163/381": {
+      "feature_count": 10,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/163/382": {
+      "feature_count": 238,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/163/383": {
+      "feature_count": 262,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/163/384": {
+      "feature_count": 177,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/163/385": {
+      "feature_count": 4,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/163/387": {
+      "feature_count": 16,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/163/388": {
+      "feature_count": 49,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/163/389": {
+      "feature_count": 65,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/163/390": {
+      "feature_count": 60,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/164/380": {
+      "feature_count": 128,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/164/381": {
+      "feature_count": 206,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/164/382": {
+      "feature_count": 348,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/164/383": {
+      "feature_count": 111,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/164/384": {
+      "feature_count": 167,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/164/387": {
+      "feature_count": 3,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/165/380": {
+      "feature_count": 3,
+      "forests": [
+        "klamath_national_forest"
+      ]
+    },
+    "10/165/381": {
+      "feature_count": 444,
+      "forests": [
+        "klamath_national_forest",
+        "modoc_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/165/382": {
+      "feature_count": 583,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/165/383": {
+      "feature_count": 261,
+      "forests": [
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/165/384": {
+      "feature_count": 53,
+      "forests": [
+        "lassen_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/165/385": {
+      "feature_count": 29,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/165/386": {
+      "feature_count": 40,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/165/387": {
+      "feature_count": 7,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/165/388": {
+      "feature_count": 17,
+      "forests": [
+        "mendocino_national_forest"
+      ]
+    },
+    "10/165/400": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/165/401": {
+      "feature_count": 2,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/166/381": {
+      "feature_count": 29,
+      "forests": [
+        "klamath_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/166/382": {
+      "feature_count": 168,
+      "forests": [
+        "modoc_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/166/383": {
+      "feature_count": 74,
+      "forests": [
+        "lassen_national_forest",
+        "modoc_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/166/384": {
+      "feature_count": 242,
+      "forests": [
+        "lassen_national_forest",
+        "shasta_trinity_national_forest"
+      ]
+    },
+    "10/166/385": {
+      "feature_count": 416,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/166/386": {
+      "feature_count": 329,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/166/387": {
+      "feature_count": 176,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/166/388": {
+      "feature_count": 250,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/166/389": {
+      "feature_count": 17,
+      "forests": [
+        "plumas_national_forest"
+      ]
+    },
+    "10/166/400": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/166/401": {
+      "feature_count": 10,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/166/402": {
+      "feature_count": 24,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/167/384": {
+      "feature_count": 303,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/167/385": {
+      "feature_count": 457,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/167/386": {
+      "feature_count": 224,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/167/387": {
+      "feature_count": 289,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/167/388": {
+      "feature_count": 556,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/167/389": {
+      "feature_count": 349,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/167/390": {
+      "feature_count": 6,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/167/401": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/167/402": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/168/384": {
+      "feature_count": 68,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/168/385": {
+      "feature_count": 143,
+      "forests": [
+        "lassen_national_forest"
+      ]
+    },
+    "10/168/386": {
+      "feature_count": 219,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/168/387": {
+      "feature_count": 221,
+      "forests": [
+        "plumas_national_forest"
+      ]
+    },
+    "10/168/388": {
+      "feature_count": 250,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/168/389": {
+      "feature_count": 346,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/168/390": {
+      "feature_count": 390,
+      "forests": [
+        "tahoe_national_forest"
+      ]
+    },
+    "10/168/391": {
+      "feature_count": 161,
+      "forests": [
+        "eldorado_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/168/392": {
+      "feature_count": 34,
+      "forests": [
+        "eldorado_national_forest"
+      ]
+    },
+    "10/168/404": {
+      "feature_count": 2,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/169/386": {
+      "feature_count": 55,
+      "forests": [
+        "lassen_national_forest",
+        "plumas_national_forest"
+      ]
+    },
+    "10/169/387": {
+      "feature_count": 180,
+      "forests": [
+        "plumas_national_forest"
+      ]
+    },
+    "10/169/388": {
+      "feature_count": 180,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/169/389": {
+      "feature_count": 384,
+      "forests": [
+        "tahoe_national_forest"
+      ]
+    },
+    "10/169/390": {
+      "feature_count": 245,
+      "forests": [
+        "eldorado_national_forest",
+        "lake_tahoe_basin_management_unit",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/169/391": {
+      "feature_count": 434,
+      "forests": [
+        "eldorado_national_forest",
+        "lake_tahoe_basin_management_unit",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/169/392": {
+      "feature_count": 484,
+      "forests": [
+        "eldorado_national_forest"
+      ]
+    },
+    "10/169/393": {
+      "feature_count": 145,
+      "forests": [
+        "eldorado_national_forest",
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/169/394": {
+      "feature_count": 103,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/169/404": {
+      "feature_count": 16,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/169/405": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/170/387": {
+      "feature_count": 44,
+      "forests": [
+        "plumas_national_forest"
+      ]
+    },
+    "10/170/388": {
+      "feature_count": 38,
+      "forests": [
+        "plumas_national_forest",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/170/389": {
+      "feature_count": 432,
+      "forests": [
+        "tahoe_national_forest"
+      ]
+    },
+    "10/170/390": {
+      "feature_count": 112,
+      "forests": [
+        "lake_tahoe_basin_management_unit",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/170/391": {
+      "feature_count": 151,
+      "forests": [
+        "eldorado_national_forest",
+        "lake_tahoe_basin_management_unit",
+        "tahoe_national_forest"
+      ]
+    },
+    "10/170/392": {
+      "feature_count": 159,
+      "forests": [
+        "eldorado_national_forest",
+        "lake_tahoe_basin_management_unit",
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/170/393": {
+      "feature_count": 347,
+      "forests": [
+        "eldorado_national_forest",
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/170/394": {
+      "feature_count": 537,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/170/395": {
+      "feature_count": 467,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/170/396": {
+      "feature_count": 60,
+      "forests": [
+        "sierra_national_forest",
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/170/404": {
+      "feature_count": 2,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/170/405": {
+      "feature_count": 19,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/170/406": {
+      "feature_count": 18,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/170/407": {
+      "feature_count": 2,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/171/390": {
+      "feature_count": 1,
+      "forests": [
+        "lake_tahoe_basin_management_unit"
+      ]
+    },
+    "10/171/391": {
+      "feature_count": 2,
+      "forests": [
+        "lake_tahoe_basin_management_unit"
+      ]
+    },
+    "10/171/392": {
+      "feature_count": 1,
+      "forests": [
+        "eldorado_national_forest"
+      ]
+    },
+    "10/171/393": {
+      "feature_count": 74,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/171/394": {
+      "feature_count": 2,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/171/395": {
+      "feature_count": 59,
+      "forests": [
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/171/396": {
+      "feature_count": 304,
+      "forests": [
+        "sierra_national_forest",
+        "stanislaus_national_forest"
+      ]
+    },
+    "10/171/397": {
+      "feature_count": 267,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/171/405": {
+      "feature_count": 4,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/171/406": {
+      "feature_count": 6,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/171/407": {
+      "feature_count": 32,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/172/394": {
+      "feature_count": 3,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/172/395": {
+      "feature_count": 25,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/172/396": {
+      "feature_count": 340,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/172/397": {
+      "feature_count": 788,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/172/398": {
+      "feature_count": 307,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/172/399": {
+      "feature_count": 9,
+      "forests": [
+        "sequoia_national_forest",
+        "sierra_national_forest"
+      ]
+    },
+    "10/172/405": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/172/406": {
+      "feature_count": 27,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/172/407": {
+      "feature_count": 13,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/173/394": {
+      "feature_count": 56,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/173/395": {
+      "feature_count": 1126,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/173/396": {
+      "feature_count": 759,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/173/397": {
+      "feature_count": 182,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/173/398": {
+      "feature_count": 444,
+      "forests": [
+        "sierra_national_forest"
+      ]
+    },
+    "10/173/399": {
+      "feature_count": 362,
+      "forests": [
+        "sequoia_national_forest",
+        "sierra_national_forest"
+      ]
+    },
+    "10/173/401": {
+      "feature_count": 1,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/173/402": {
+      "feature_count": 1,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/173/406": {
+      "feature_count": 33,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/173/407": {
+      "feature_count": 8,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/174/394": {
+      "feature_count": 25,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/174/395": {
+      "feature_count": 181,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/174/396": {
+      "feature_count": 601,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/174/397": {
+      "feature_count": 154,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/174/399": {
+      "feature_count": 54,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/400": {
+      "feature_count": 2,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/401": {
+      "feature_count": 171,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/402": {
+      "feature_count": 206,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/403": {
+      "feature_count": 97,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/404": {
+      "feature_count": 10,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/174/407": {
+      "feature_count": 1,
+      "forests": [
+        "los_padres_national_forest"
+      ]
+    },
+    "10/175/394": {
+      "feature_count": 5,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/395": {
+      "feature_count": 167,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/396": {
+      "feature_count": 59,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/397": {
+      "feature_count": 126,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/398": {
+      "feature_count": 116,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/399": {
+      "feature_count": 94,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/400": {
+      "feature_count": 31,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/175/401": {
+      "feature_count": 160,
+      "forests": [
+        "inyo_national_forest",
+        "sequoia_national_forest"
+      ]
+    },
+    "10/175/402": {
+      "feature_count": 131,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/175/403": {
+      "feature_count": 143,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/175/404": {
+      "feature_count": 12,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/176/396": {
+      "feature_count": 5,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/397": {
+      "feature_count": 40,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/398": {
+      "feature_count": 70,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/399": {
+      "feature_count": 24,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/400": {
+      "feature_count": 16,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/401": {
+      "feature_count": 10,
+      "forests": [
+        "inyo_national_forest"
+      ]
+    },
+    "10/176/403": {
+      "feature_count": 1,
+      "forests": [
+        "sequoia_national_forest"
+      ]
+    },
+    "10/177/407": {
+      "feature_count": 27,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/177/408": {
+      "feature_count": 29,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/177/409": {
+      "feature_count": 12,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/177/410": {
+      "feature_count": 18,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/178/407": {
+      "feature_count": 10,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/178/408": {
+      "feature_count": 73,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/178/410": {
+      "feature_count": 20,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/179/407": {
+      "feature_count": 46,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/179/408": {
+      "feature_count": 202,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/179/409": {
+      "feature_count": 39,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/179/410": {
+      "feature_count": 14,
+      "forests": [
+        "cleveland_national_forest",
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/179/411": {
+      "feature_count": 28,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/179/412": {
+      "feature_count": 9,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/179/413": {
+      "feature_count": 4,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/180/408": {
+      "feature_count": 25,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/180/409": {
+      "feature_count": 10,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/180/410": {
+      "feature_count": 46,
+      "forests": [
+        "san_bernardino_national_forest"
+      ]
+    },
+    "10/180/411": {
+      "feature_count": 8,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/180/412": {
+      "feature_count": 47,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    },
+    "10/180/413": {
+      "feature_count": 50,
+      "forests": [
+        "cleveland_national_forest"
+      ]
+    }
+  }
+}

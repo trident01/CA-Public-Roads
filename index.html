@@ -318,7 +318,7 @@ body { color: #15231a; }
 <aside class="controls">
   <div class="controls-header">
     <h1>CA Forest Service Roads</h1>
-    <p>Road layers come from local GeoJSON. PDF MVUM sheets are linked as a fallback for forests with missing or partial vector data.</p>
+    <p>Road layers stream from local road tiles. PDF MVUM sheets are linked as a fallback for forests with missing or partial vector data.</p>
   </div>
   <div class="search-panel">
     <div class="search-row">
@@ -378,10 +378,11 @@ const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
 const PUBLIC_ROADS_OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
 const FOREST_RENDER_MIN_ZOOM = 9;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
+const ROAD_TILE_ZOOM = 10;
+const ROAD_TILE_VIEW_PAD = 0.2;
 const PUBLIC_ROADS_MAX_FEATURES = 1000;
 const publicRoadsCache = new Map();
 const PUBLIC_ROADS_CACHE_MAX = 30;
-const FOREST_VIEW_PAD = 0.35;
 const FOREST_INDEX = {
   angeles_national_forest: { count: 0, bbox: null },
   cleveland_national_forest: { count: 188, bbox: [-117.65973, 32.69288, -116.39169, 33.875] },
@@ -461,9 +462,6 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
 }).addTo(map);
 
 const catalog = {};
-const layers = {};
-const loaded = {};
-const forestState = {};
 const isFileProtocol = location.protocol === "file:";
 let searchMarker = null;
 let searchAbortController = null;
@@ -472,7 +470,11 @@ let publicRoadsAbortController = null;
 let publicRoadsFetchTimer = null;
 let publicRoadsRequestKey = null;
 let publicLandsLayer = null;
-let forestSyncTimer = null;
+let roadTileSyncTimer = null;
+let roadTileManifest = null;
+const roadTileCache = new Map();
+const roadTileLayers = new Map();
+const roadTileInflight = new Map();
 
 function roadStyle(feature) {
   const symbol = feature.properties.symbol || "0";
@@ -507,6 +509,33 @@ function getForestBounds(id) {
     L.latLng(bbox[1], bbox[0]),
     L.latLng(bbox[3], bbox[2])
   );
+}
+
+function clampLat(lat) {
+  return Math.max(Math.min(lat, 85.05112878), -85.05112878);
+}
+
+function lonLatToTile(lon, lat, zoom) {
+  const clampedLat = clampLat(lat);
+  const scale = 2 ** zoom;
+  const x = Math.floor(((lon + 180) / 360) * scale);
+  const latRad = clampedLat * Math.PI / 180;
+  const y = Math.floor(((1 - Math.asinh(Math.tan(latRad)) / Math.PI) / 2) * scale);
+  return {
+    x: Math.max(0, Math.min(scale - 1, x)),
+    y: Math.max(0, Math.min(scale - 1, y))
+  };
+}
+
+function tileKey(x, y, zoom = ROAD_TILE_ZOOM) {
+  return `${zoom}/${x}/${y}`;
+}
+
+function updateDebugStamp() {
+  document.body.dataset.roadTileManifest = roadTileManifest ? "1" : "0";
+  document.body.dataset.roadTileCache = String(roadTileCache.size);
+  document.body.dataset.roadTileLayers = String(roadTileLayers.size);
+  document.body.dataset.roadZoom = String(map.getZoom());
 }
 
 function bindLazyPopup(layerRef, htmlFactory) {
@@ -743,14 +772,16 @@ function renderForestMeta(id) {
   if (!meta) return;
   meta.innerHTML = "";
 
-  const state = forestState[id] || {};
   const pdfs = catalog[id] || [];
+  const count = FOREST_INDEX[id]?.count ?? 0;
 
-  if (state.status === "loading") meta.appendChild(metaPill("Loading roads...", "neutral"));
-  if (state.status === "ready") meta.appendChild(metaPill(`${state.count.toLocaleString()} road segments`, "ok"));
-  if (state.status === "empty") meta.appendChild(metaPill("No vector road data loaded", "warn"));
-  if (state.status === "error") meta.appendChild(metaPill("Road layer failed to load", "bad"));
-  if (state.status === "disabled") meta.appendChild(metaPill("Road overlay needs ./serve.sh", "disabled"));
+  if (isFileProtocol) {
+    meta.appendChild(metaPill("Road overlay needs ./serve.sh", "disabled"));
+  } else if (count > 0) {
+    meta.appendChild(metaPill(`${count.toLocaleString()} road segments`, "ok"));
+  } else {
+    meta.appendChild(metaPill("PDF only / sparse vectors", "warn"));
+  }
 
   if (pdfs.length) meta.appendChild(metaPill(`${pdfs.length} PDF map${pdfs.length === 1 ? "" : "s"}`, "neutral"));
 }
@@ -779,41 +810,124 @@ function forestIsChecked(id) {
   return Boolean(document.getElementById(`cb_${id}`)?.checked);
 }
 
-function forestShouldBeVisible(id, paddedBounds) {
-  if (!forestIsChecked(id)) return false;
-  if (map.getZoom() < FOREST_RENDER_MIN_ZOOM) return false;
-
-  const bounds = getForestBounds(id);
-  if (!bounds) return false;
-  return paddedBounds.intersects(bounds);
+function selectedForests() {
+  return new Set(FORESTS.filter((id) => forestIsChecked(id)));
 }
 
-async function syncVisibleForests() {
-  const paddedBounds = map.getBounds().pad(FOREST_VIEW_PAD);
-  const idsToLoad = [];
-
-  FORESTS.forEach((id) => {
-    const shouldShow = forestShouldBeVisible(id, paddedBounds);
-    if (!shouldShow) {
-      toggleForest(id, false);
-      return;
-    }
-    idsToLoad.push(id);
-  });
-
-  await Promise.all(idsToLoad.map((id) => ensureForestLoaded(id)));
-
-  idsToLoad.forEach((id) => {
-    if (forestShouldBeVisible(id, map.getBounds().pad(FOREST_VIEW_PAD))) {
-      toggleForest(id, true);
+function buildForestRoadLayer(geojson) {
+  return L.geoJSON(geojson, {
+    style: roadStyle,
+    renderer: forestRenderer,
+    smoothFactor: 1.5,
+    bubblingMouseEvents: false,
+    onEachFeature: (feature, layerRef) => {
+      bindLazyPopup(layerRef, () => mkPopup(feature));
     }
   });
 }
 
-function scheduleForestSync() {
-  if (forestSyncTimer) clearTimeout(forestSyncTimer);
-  forestSyncTimer = setTimeout(() => {
-    syncVisibleForests();
+function filterTileGeoJson(geojson) {
+  const allowedForests = selectedForests();
+  return {
+    type: "FeatureCollection",
+    features: (geojson.features || []).filter((feature) => allowedForests.has(feature.properties?.forest_id))
+  };
+}
+
+function renderRoadTile(tileKeyRef) {
+  const geojson = roadTileCache.get(tileKeyRef);
+  if (!geojson) return;
+
+  const filtered = filterTileGeoJson(geojson);
+  const existing = roadTileLayers.get(tileKeyRef);
+  if (existing) {
+    map.removeLayer(existing);
+    roadTileLayers.delete(tileKeyRef);
+  }
+
+  if (!filtered.features.length) return;
+
+  const layer = buildForestRoadLayer(filtered);
+  roadTileLayers.set(tileKeyRef, layer);
+  map.addLayer(layer);
+}
+
+function clearRoadTile(tileKeyRef) {
+  const layer = roadTileLayers.get(tileKeyRef);
+  if (!layer) return;
+  map.removeLayer(layer);
+  roadTileLayers.delete(tileKeyRef);
+}
+
+async function ensureRoadTileLoaded(tileKeyRef) {
+  if (roadTileCache.has(tileKeyRef)) return roadTileCache.get(tileKeyRef);
+  if (roadTileInflight.has(tileKeyRef)) return roadTileInflight.get(tileKeyRef);
+
+  const [, x, y] = tileKeyRef.split("/");
+  const request = fetch(`_roads_tiles/${ROAD_TILE_ZOOM}/${x}/${y}.geojson`)
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      roadTileCache.set(tileKeyRef, data);
+      roadTileInflight.delete(tileKeyRef);
+      return data;
+    })
+    .catch((error) => {
+      roadTileInflight.delete(tileKeyRef);
+      throw error;
+    });
+
+  roadTileInflight.set(tileKeyRef, request);
+  return request;
+}
+
+function getWantedRoadTileKeys() {
+  if (!roadTileManifest || map.getZoom() < FOREST_RENDER_MIN_ZOOM) return [];
+
+  const bounds = map.getBounds().pad(ROAD_TILE_VIEW_PAD);
+  const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), ROAD_TILE_ZOOM);
+  const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), ROAD_TILE_ZOOM);
+  const wanted = [];
+
+  for (let x = Math.min(nw.x, se.x); x <= Math.max(nw.x, se.x); x += 1) {
+    for (let y = Math.min(nw.y, se.y); y <= Math.max(nw.y, se.y); y += 1) {
+      const key = tileKey(x, y);
+      if (roadTileManifest.tiles[key]) wanted.push(key);
+    }
+  }
+
+  return wanted;
+}
+
+async function syncRoadTiles() {
+  updateDebugStamp();
+  const wanted = new Set(getWantedRoadTileKeys());
+
+  for (const key of Array.from(roadTileLayers.keys())) {
+    if (!wanted.has(key)) clearRoadTile(key);
+  }
+
+  if (!wanted.size) {
+    updateDebugStamp();
+    return;
+  }
+
+  try {
+    await Promise.all(Array.from(wanted).map((key) => ensureRoadTileLoaded(key)));
+    wanted.forEach((key) => renderRoadTile(key));
+    updateDebugStamp();
+  } catch (error) {
+    console.error("Failed to load road tiles", error);
+    setNotice("Road tiles could not be loaded. PDF links and other overlays may still work.");
+  }
+}
+
+function scheduleRoadTileSync() {
+  if (roadTileSyncTimer) clearTimeout(roadTileSyncTimer);
+  roadTileSyncTimer = setTimeout(() => {
+    syncRoadTiles();
   }, 120);
 }
 
@@ -833,7 +947,6 @@ function buildForestItem(id) {
   div.querySelector("input").addEventListener("change", async function () {
     if (isFileProtocol) {
       this.checked = false;
-      forestState[id] = { status: "disabled" };
       renderForestMeta(id);
       return;
     }
@@ -846,41 +959,18 @@ function buildForestItem(id) {
           maxZoom: 10
         });
       } else {
-        await syncVisibleForests();
+        await syncRoadTiles();
       }
       const pdfs = document.getElementById(`pdfs_${id}`);
       if (pdfs) pdfs.open = true;
     } else {
-      toggleForest(id, false);
+      await syncRoadTiles();
     }
   });
 
   renderForestMeta(id);
   renderPdfLinks(id);
   return div;
-}
-
-function toggleForest(id, show) {
-  if (!layers[id]) return;
-  if (show) map.addLayer(layers[id]);
-  else map.removeLayer(layers[id]);
-}
-
-function fitVisibleBounds(isInitial) {
-  const visibleLayers = Object.entries(layers)
-    .filter(([id, layer]) => map.hasLayer(layer) && layer.getLayers().length)
-    .map(([, layer]) => layer);
-
-  if (!visibleLayers.length) return;
-
-  const group = L.featureGroup(visibleLayers);
-  const bounds = group.getBounds();
-  if (!bounds.isValid()) return;
-
-  map.fitBounds(bounds, {
-    padding: isInitial ? [30, 30] : [40, 40],
-    maxZoom: 11
-  });
 }
 
 function clearSearchMarker() {
@@ -1006,42 +1096,13 @@ async function runSearch() {
   }
 }
 
-async function ensureForestLoaded(id) {
-  if (loaded[id]) return;
+async function loadRoadTileManifest() {
+  if (isFileProtocol) return;
 
-  loaded[id] = "pending";
-  forestState[id] = { status: "loading" };
-  renderForestMeta(id);
-
-  try {
-    const response = await fetch(`_roads_geojson/${id}.geojson`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const data = await response.json();
-    const features = Array.isArray(data.features) ? data.features : [];
-
-    const layer = L.geoJSON(data, {
-      style: roadStyle,
-      renderer: forestRenderer,
-      smoothFactor: 1.5,
-      bubblingMouseEvents: false,
-      onEachFeature: (feature, layerRef) => {
-        bindLazyPopup(layerRef, () => mkPopup(feature));
-      }
-    });
-
-    layers[id] = layer;
-    loaded[id] = true;
-    forestState[id] = features.length
-      ? { status: "ready", count: features.length }
-      : { status: "empty", count: 0 };
-  } catch (error) {
-    loaded[id] = false;
-    forestState[id] = { status: "error", error: String(error) };
-    console.error("Failed to load forest", id, error);
-  }
-
-  renderForestMeta(id);
+  const response = await fetch("roads_tiles_manifest.json");
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  roadTileManifest = await response.json();
+  updateDebugStamp();
 }
 
 async function loadCatalog() {
@@ -1077,13 +1138,14 @@ async function init() {
     }
   });
   map.on("moveend", () => {
-    scheduleForestSync();
+    scheduleRoadTileSync();
     schedulePublicRoadRefresh();
   });
   map.on("zoomend", () => {
-    scheduleForestSync();
+    scheduleRoadTileSync();
     schedulePublicRoadRefresh();
     updateInteractivityHint();
+    updateDebugStamp();
   });
 
   if (!isFileProtocol) {
@@ -1093,7 +1155,13 @@ async function init() {
       checkbox.checked = true;
     }
 
-    await syncVisibleForests();
+    try {
+      await loadRoadTileManifest();
+      await syncRoadTiles();
+    } catch (error) {
+      console.error("Failed to initialize road tiles", error);
+      setNotice("Road tiles could not be initialized. PDF links are still available, but the main road overlay may be missing.");
+    }
     schedulePublicRoadRefresh();
     loadPublicLands();
     updateInteractivityHint();

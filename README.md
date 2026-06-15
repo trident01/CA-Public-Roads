@@ -6,6 +6,7 @@ Interactive California forest-road map with:
 - linked PDF MVUM sheets
 - place search
 - supplemental public-road overlay from OpenStreetMap when zoomed in
+- static road tiles for faster pan/zoom on GitHub Pages
 
 ## Local Development
 
@@ -35,6 +36,17 @@ To publish:
 The site will publish all files in this repository as a static site, including:
 
 - `index.html`
+- `_roads_tiles/`
 - `_roads_geojson/`
 - forest PDF folders
 - `vendor/`
+
+## Road Tile Build
+
+The interactive road overlay now uses pre-generated road tiles from `_roads_tiles/` plus `roads_tiles_manifest.json`.
+
+To rebuild them from the source GeoJSON:
+
+```bash
+python3 scripts/generate_road_tiles.py
+```
