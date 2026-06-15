@@ -376,11 +376,32 @@ const DISPLAY = {
 const DEFAULTS = [...FORESTS];
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
 const PUBLIC_ROADS_OVERPASS_URL = "https://overpass.kumi.systems/api/interpreter";
-const PUBLIC_ROADS_MIN_ZOOM = 9;
+const FOREST_RENDER_MIN_ZOOM = 9;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const PUBLIC_ROADS_MAX_FEATURES = 1000;
 const publicRoadsCache = new Map();
 const PUBLIC_ROADS_CACHE_MAX = 30;
+const FOREST_VIEW_PAD = 0.35;
+const FOREST_INDEX = {
+  angeles_national_forest: { count: 0, bbox: null },
+  cleveland_national_forest: { count: 188, bbox: [-117.65973, 32.69288, -116.39169, 33.875] },
+  eldorado_national_forest: { count: 1151, bbox: [-120.87593, 38.45314, -119.86724, 39.09982] },
+  inyo_national_forest: { count: 3635, bbox: [-119.27356, 36.03906, -117.98431, 38.13629] },
+  klamath_national_forest: { count: 2318, bbox: [-123.68389, 41.06205, -121.60445, 42.08476] },
+  lake_tahoe_basin_management_unit: { count: 163, bbox: [-120.23542, 38.78956, -119.87812, 39.29232] },
+  lassen_national_forest: { count: 2444, bbox: [-121.87601, 39.84845, -120.57779, 41.0479] },
+  los_padres_national_forest: { count: 209, bbox: [-121.8149, 34.44854, -118.76138, 36.35436] },
+  mendocino_national_forest: { count: 987, bbox: [-123.2481, 39.09088, -121.77784, 40.1633] },
+  modoc_national_forest: { count: 7, bbox: [-121.64768, 41.23382, -121.36241, 41.57324] },
+  plumas_national_forest: { count: 2081, bbox: [-121.5099, 39.36825, -120.0805, 40.32081] },
+  san_bernardino_national_forest: { count: 471, bbox: [-117.71, 33.52833, -116.42603, 34.39575] },
+  sequoia_national_forest: { count: 1254, bbox: [-119.26892, 35.37696, -118.09909, 36.87627] },
+  shasta_trinity_national_forest: { count: 3244, bbox: [-123.58869, 40.13155, -121.33179, 41.58548] },
+  sierra_national_forest: { count: 2553, bbox: [-119.92586, 36.85683, -118.93819, 37.66961] },
+  six_rivers_national_forest: { count: 2, bbox: [-123.47372, 40.24895, -123.22898, 40.95899] },
+  stanislaus_national_forest: { count: 1561, bbox: [-120.41017, 37.65109, -119.63455, 38.54875] },
+  tahoe_national_forest: { count: 2108, bbox: [-121.146, 39.00204, -120.01775, 39.76357] }
+};
 
 const EMBEDDED_CATALOG = {
   "angeles_national_forest": [{ "label": "East", "href": "angeles/East.pdf" }, { "label": "West", "href": "angeles/West.pdf" }],
@@ -451,6 +472,7 @@ let publicRoadsAbortController = null;
 let publicRoadsFetchTimer = null;
 let publicRoadsRequestKey = null;
 let publicLandsLayer = null;
+let forestSyncTimer = null;
 
 function roadStyle(feature) {
   const symbol = feature.properties.symbol || "0";
@@ -476,6 +498,15 @@ function supplementalRoadStyle(feature) {
     lineCap: isUnpaved ? "butt" : "round",
     smoothFactor: 1.5
   };
+}
+
+function getForestBounds(id) {
+  const bbox = FOREST_INDEX[id]?.bbox;
+  if (!bbox) return null;
+  return L.latLngBounds(
+    L.latLng(bbox[1], bbox[0]),
+    L.latLng(bbox[3], bbox[2])
+  );
 }
 
 function bindLazyPopup(layerRef, htmlFactory) {
@@ -578,15 +609,6 @@ function applyPublicRoadsLayer(geojson) {
 async function refreshPublicRoadsForView() {
   if (isFileProtocol) return;
 
-  if (map.getZoom() < PUBLIC_ROADS_MIN_ZOOM) {
-    if (publicRoadsLayer) {
-      map.removeLayer(publicRoadsLayer);
-      publicRoadsLayer = null;
-    }
-    publicRoadsRequestKey = null;
-    return;
-  }
-
   const zoom = map.getZoom();
   let bounds = map.getBounds().pad(-0.15);
   const center = bounds.getCenter();
@@ -648,7 +670,7 @@ function schedulePublicRoadRefresh() {
   if (publicRoadsFetchTimer) clearTimeout(publicRoadsFetchTimer);
   publicRoadsFetchTimer = setTimeout(() => {
     refreshPublicRoadsForView();
-  }, 100);
+  }, 180);
 }
 
 function forestBoundaryStyle() {
@@ -685,8 +707,8 @@ function updateInteractivityHint() {
   const searchHasText = document.getElementById("searchInput")?.value.trim();
   if (searchHasText) return;
 
-  if (zoom < PUBLIC_ROADS_MIN_ZOOM) {
-    setSearchStatus(`Zoom to ${PUBLIC_ROADS_MIN_ZOOM}+ to show supplemental public roads.`);
+  if (zoom < FOREST_RENDER_MIN_ZOOM) {
+    setSearchStatus(`Forest roads load at zoom ${FOREST_RENDER_MIN_ZOOM}+. OSM public roads stay on while you explore.`);
     return;
   }
 
@@ -753,6 +775,48 @@ function renderPdfLinks(id) {
   `;
 }
 
+function forestIsChecked(id) {
+  return Boolean(document.getElementById(`cb_${id}`)?.checked);
+}
+
+function forestShouldBeVisible(id, paddedBounds) {
+  if (!forestIsChecked(id)) return false;
+  if (map.getZoom() < FOREST_RENDER_MIN_ZOOM) return false;
+
+  const bounds = getForestBounds(id);
+  if (!bounds) return false;
+  return paddedBounds.intersects(bounds);
+}
+
+async function syncVisibleForests() {
+  const paddedBounds = map.getBounds().pad(FOREST_VIEW_PAD);
+  const idsToLoad = [];
+
+  FORESTS.forEach((id) => {
+    const shouldShow = forestShouldBeVisible(id, paddedBounds);
+    if (!shouldShow) {
+      toggleForest(id, false);
+      return;
+    }
+    idsToLoad.push(id);
+  });
+
+  await Promise.all(idsToLoad.map((id) => ensureForestLoaded(id)));
+
+  idsToLoad.forEach((id) => {
+    if (forestShouldBeVisible(id, map.getBounds().pad(FOREST_VIEW_PAD))) {
+      toggleForest(id, true);
+    }
+  });
+}
+
+function scheduleForestSync() {
+  if (forestSyncTimer) clearTimeout(forestSyncTimer);
+  forestSyncTimer = setTimeout(() => {
+    syncVisibleForests();
+  }, 120);
+}
+
 function buildForestItem(id) {
   const div = document.createElement("section");
   div.className = "forest-item";
@@ -773,15 +837,21 @@ function buildForestItem(id) {
       renderForestMeta(id);
       return;
     }
+
     if (this.checked) {
-      await ensureForestLoaded(id);
-      toggleForest(id, true);
-      fitVisibleBounds(false);
+      const bounds = getForestBounds(id);
+      if (bounds && !map.getBounds().pad(0.1).intersects(bounds)) {
+        map.fitBounds(bounds, {
+          padding: [40, 40],
+          maxZoom: 10
+        });
+      } else {
+        await syncVisibleForests();
+      }
       const pdfs = document.getElementById(`pdfs_${id}`);
       if (pdfs) pdfs.open = true;
     } else {
       toggleForest(id, false);
-      fitVisibleBounds(false);
     }
   });
 
@@ -1006,8 +1076,15 @@ async function init() {
       runSearch();
     }
   });
-  map.on("moveend", schedulePublicRoadRefresh);
-  map.on("zoomend", updateInteractivityHint);
+  map.on("moveend", () => {
+    scheduleForestSync();
+    schedulePublicRoadRefresh();
+  });
+  map.on("zoomend", () => {
+    scheduleForestSync();
+    schedulePublicRoadRefresh();
+    updateInteractivityHint();
+  });
 
   if (!isFileProtocol) {
     for (const id of DEFAULTS) {
@@ -1016,16 +1093,14 @@ async function init() {
       checkbox.checked = true;
     }
 
-    await Promise.all(DEFAULTS.map((id) => ensureForestLoaded(id)));
-    DEFAULTS.forEach((id) => toggleForest(id, true));
-    fitVisibleBounds(true);
+    await syncVisibleForests();
     schedulePublicRoadRefresh();
     loadPublicLands();
     updateInteractivityHint();
   }
 
   const weakDataForests = Object.entries(catalog)
-    .filter(([id]) => forestState[id] && (forestState[id].status === "empty" || forestState[id].count < 10))
+    .filter(([id]) => (FOREST_INDEX[id]?.count ?? 0) < 10)
     .map(([id]) => DISPLAY[id] || id);
 
   if (!location.protocol.startsWith("http")) return;
