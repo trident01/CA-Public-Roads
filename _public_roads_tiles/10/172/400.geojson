@@ -1,0 +1,1 @@
+{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"(unnamed public road)","road_class":"service","surface":"unpaved","source":"OpenStreetMap","source_detail":"osm way 981497454","source_tile":"172/399"},"geometry":{"type":"LineString","coordinates":[[-119.33175,36.59577],[-119.32953,36.59574],[-119.32948,36.60039],[-119.32945,36.60299]]}}]}

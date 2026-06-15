@@ -7,7 +7,7 @@ Interactive California forest-road map with:
 - place search
 - supplemental public-road overlay from OpenStreetMap when zoomed in
 - static road tiles for faster pan/zoom on GitHub Pages
-- static public-road tiles where cached, with live fallback elsewhere
+- static public-road tiles covering the full forest road footprint
 
 ## Local Development
 
@@ -54,9 +54,8 @@ python3 scripts/generate_road_tiles.py
 
 ## Public Road Tile Build
 
-The brown supplemental-road overlay now prefers pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
-If the local public-road cache does not cover the current view yet, the app falls back to a live Overpass fetch for that area.
-The checked-in cache is an initial seed and can be expanded over time by rerunning the fetch/build scripts.
+The brown supplemental-road overlay uses pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
+The cache covers the full forest road tile footprint (no live Overpass fallback).
 
 To refresh the local OSM public-road cache:
 

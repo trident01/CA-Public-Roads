@@ -318,7 +318,7 @@ body { color: #15231a; }
 <aside class="controls">
   <div class="controls-header">
     <h1>CA Forest Service Roads</h1>
-    <p>Road layers stream from local road tiles. PDF MVUM sheets are linked as a fallback for forests with missing or partial vector data.</p>
+    <p>Road layers load at all zoom levels. PDF MVUM sheets are linked for forests with missing or partial vector data.</p>
   </div>
   <div class="search-panel">
     <div class="search-row">
@@ -337,7 +337,7 @@ body { color: #15231a; }
     <div class="legend-item"><div class="legend-color" style="background:#1d3557"></div>Highway Legal Only</div>
     <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
     <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
-    <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Unpaved/minor roads (OSM, zoomed in)</div>
+    <div class="legend-item"><div class="legend-color" style="background:#c26d1f"></div>Unpaved/minor roads (OSM)</div>
     <div class="legend-item"><div class="legend-color" style="background:rgba(46,125,50,0.5);height:10px;border-radius:2px"></div>National Forest (boondocking OK)</div>
   </div>
 </aside>
@@ -375,14 +375,14 @@ const DISPLAY = {
 
 const DEFAULTS = [...FORESTS];
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
-const FOREST_RENDER_MIN_ZOOM = 9;
+const FOREST_RENDER_MIN_ZOOM = 0;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const ROAD_TILE_ZOOM = 10;
 const ROAD_TILE_VIEW_PAD = 0.2;
-const PUBLIC_ROADS_MIN_ZOOM = 10;
+const PUBLIC_ROADS_MIN_ZOOM = 0;
 const PUBLIC_ROADS_TILE_ZOOM = 10;
 const PUBLIC_ROADS_TILE_VIEW_PAD = 0.15;
-const PUBLIC_ROADS_FALLBACK_CACHE_MAX = 24;
+
 const FOREST_INDEX = {
   angeles_national_forest: { count: 0, bbox: null },
   cleveland_national_forest: { count: 188, bbox: [-117.65973, 32.69288, -116.39169, 33.875] },
@@ -476,10 +476,15 @@ let publicRoadsManifest = null;
 const publicRoadTileCache = new Map();
 const publicRoadTileLayers = new Map();
 const publicRoadTileInflight = new Map();
-let publicRoadsFallbackLayer = null;
-let publicRoadsFallbackAbortController = null;
-let publicRoadsFallbackRequestKey = null;
-const publicRoadsFallbackCache = new Map();
+
+
+function unpavedDash() {
+  const z = map.getZoom();
+  if (z < 8) return "2 2";
+  if (z < 10) return "3 2";
+  if (z < 12) return "5 3";
+  return "7 5";
+}
 
 function roadStyle(feature) {
   const symbol = feature.properties.symbol || "0";
@@ -489,7 +494,7 @@ function roadStyle(feature) {
     color: SYMBOL_COLORS[symbol] || "#666",
     weight: SYMBOL_WIDTHS[symbol] || 1.5,
     opacity: 0.9,
-    dashArray: isUnpaved ? "7 5" : null,
+    dashArray: isUnpaved ? unpavedDash() : null,
     lineCap: isUnpaved ? "butt" : "round"
   };
 }
@@ -501,7 +506,7 @@ function supplementalRoadStyle(feature) {
     color: "#c26d1f",
     weight: 3,
     opacity: 0.95,
-    dashArray: isUnpaved ? "8 5" : null,
+    dashArray: isUnpaved ? unpavedDash() : null,
     lineCap: isUnpaved ? "butt" : "round",
     smoothFactor: 1.5
   };
@@ -601,56 +606,6 @@ function buildPublicRoadsTileLayer(geojson) {
   });
 }
 
-function buildPublicRoadsQuery(bounds) {
-  const south = bounds.getSouth().toFixed(5);
-  const west = bounds.getWest().toFixed(5);
-  const north = bounds.getNorth().toFixed(5);
-  const east = bounds.getEast().toFixed(5);
-
-  return `[out:json][timeout:20];
-(
-  way["highway"~"track|service|unclassified"]
-    ["access"!~"private|no|destination"]
-    ["motor_vehicle"!~"private|no|destination"]
-    ["service"!~"parking_aisle|driveway"]
-    ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone"]
-    (${south},${west},${north},${east});
-);
-out geom;`;
-}
-
-function overpassToGeoJson(data) {
-  const features = (data.elements || [])
-    .filter((element) => element.type === "way" && Array.isArray(element.geometry) && element.geometry.length > 1)
-    .map((element) => ({
-      type: "Feature",
-      properties: {
-        name: element.tags?.name || element.tags?.official_name || element.tags?.ref || "(unnamed public road)",
-        road_class: element.tags?.highway || "",
-        surface: element.tags?.surface || "",
-        tracktype: element.tags?.tracktype || "",
-        source: "OpenStreetMap via Overpass",
-        source_detail: `osm way ${element.id}`
-      },
-      geometry: {
-        type: "LineString",
-        coordinates: element.geometry.map((point) => [Math.round(point.lon * 1e5) / 1e5, Math.round(point.lat * 1e5) / 1e5])
-      }
-    }));
-
-  return { type: "FeatureCollection", features };
-}
-
-function applyPublicRoadsFallbackLayer(geojson) {
-  if (publicRoadsFallbackLayer) map.removeLayer(publicRoadsFallbackLayer);
-  if (!geojson.features.length) {
-    publicRoadsFallbackLayer = null;
-    return;
-  }
-  publicRoadsFallbackLayer = buildPublicRoadsTileLayer(geojson);
-  map.addLayer(publicRoadsFallbackLayer);
-}
-
 function clearPublicRoadTile(tileKeyRef) {
   const layer = publicRoadTileLayers.get(tileKeyRef);
   if (!layer) return;
@@ -712,98 +667,6 @@ function getWantedPublicRoadTileKeys() {
   return wanted;
 }
 
-function getCoveragePublicRoadTileKeys() {
-  if (!roadTileManifest || map.getZoom() < PUBLIC_ROADS_MIN_ZOOM) return [];
-
-  const bounds = map.getBounds().pad(PUBLIC_ROADS_TILE_VIEW_PAD);
-  const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), PUBLIC_ROADS_TILE_ZOOM);
-  const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), PUBLIC_ROADS_TILE_ZOOM);
-  const wanted = [];
-
-  for (let x = Math.min(nw.x, se.x); x <= Math.max(nw.x, se.x); x += 1) {
-    for (let y = Math.min(nw.y, se.y); y <= Math.max(nw.y, se.y); y += 1) {
-      const key = tileKey(x, y, PUBLIC_ROADS_TILE_ZOOM);
-      if (roadTileManifest.tiles[key]) wanted.push(key);
-    }
-  }
-
-  return wanted;
-}
-
-function publicRoadFallbackNeeded() {
-  const coverageKeys = getCoveragePublicRoadTileKeys();
-  if (!coverageKeys.length) return false;
-  if (!publicRoadsManifest) return true;
-
-  const queried = new Set(publicRoadsManifest.queried_tiles || []);
-  return coverageKeys.some((key) => !queried.has(key));
-}
-
-async function refreshPublicRoadFallbackForView() {
-  if (isFileProtocol || map.getZoom() < PUBLIC_ROADS_MIN_ZOOM) {
-    applyPublicRoadsFallbackLayer({ type: "FeatureCollection", features: [] });
-    publicRoadsFallbackRequestKey = null;
-    return;
-  }
-
-  if (!publicRoadFallbackNeeded()) {
-    applyPublicRoadsFallbackLayer({ type: "FeatureCollection", features: [] });
-    publicRoadsFallbackRequestKey = null;
-    return;
-  }
-
-  let bounds = map.getBounds().pad(-0.15);
-  const center = bounds.getCenter();
-  const maxHalfSpan = Math.max(0.02, 0.1 * Math.pow(1.8, map.getZoom() - 9));
-  bounds = L.latLngBounds(
-    L.latLng(Math.max(bounds.getSouth(), center.lat - maxHalfSpan), Math.max(bounds.getWest(), center.lng - maxHalfSpan)),
-    L.latLng(Math.min(bounds.getNorth(), center.lat + maxHalfSpan), Math.min(bounds.getEast(), center.lng + maxHalfSpan))
-  );
-  const requestKey = [
-    map.getZoom(),
-    bounds.getSouth().toFixed(3),
-    bounds.getWest().toFixed(3),
-    bounds.getNorth().toFixed(3),
-    bounds.getEast().toFixed(3)
-  ].join("|");
-
-  if (requestKey === publicRoadsFallbackRequestKey) return;
-  publicRoadsFallbackRequestKey = requestKey;
-
-  const cached = publicRoadsFallbackCache.get(requestKey);
-  if (cached) {
-    applyPublicRoadsFallbackLayer(cached);
-    return;
-  }
-
-  if (publicRoadsFallbackAbortController) publicRoadsFallbackAbortController.abort();
-  publicRoadsFallbackAbortController = new AbortController();
-
-  try {
-    const response = await fetch("https://overpass.kumi.systems/api/interpreter", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        "Accept": "application/json"
-      },
-      body: new URLSearchParams({ data: buildPublicRoadsQuery(bounds) }),
-      signal: publicRoadsFallbackAbortController.signal
-    });
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const geojson = overpassToGeoJson(await response.json());
-    publicRoadsFallbackCache.set(requestKey, geojson);
-    if (publicRoadsFallbackCache.size > PUBLIC_ROADS_FALLBACK_CACHE_MAX) {
-      const oldest = publicRoadsFallbackCache.keys().next().value;
-      publicRoadsFallbackCache.delete(oldest);
-    }
-    applyPublicRoadsFallbackLayer(geojson);
-  } catch (error) {
-    if (error.name === "AbortError") return;
-    console.error("Failed to load fallback public roads", error);
-  }
-}
-
 async function syncPublicRoadTiles() {
   const wanted = new Set(getWantedPublicRoadTileKeys());
 
@@ -811,18 +674,13 @@ async function syncPublicRoadTiles() {
     if (!wanted.has(key)) clearPublicRoadTile(key);
   }
 
-  if (!wanted.size) {
-    await refreshPublicRoadFallbackForView();
-    return;
-  }
+  if (!wanted.size) return;
 
   try {
     await Promise.all(Array.from(wanted).map((key) => ensurePublicRoadTileLoaded(key)));
     wanted.forEach((key) => renderPublicRoadTile(key));
-    await refreshPublicRoadFallbackForView();
   } catch (error) {
     console.error("Failed to load supplemental public-road tiles", error);
-    await refreshPublicRoadFallbackForView();
   }
 }
 
@@ -867,18 +725,8 @@ function updateInteractivityHint() {
   const searchHasText = document.getElementById("searchInput")?.value.trim();
   if (searchHasText) return;
 
-  if (zoom < FOREST_RENDER_MIN_ZOOM) {
-    setSearchStatus(`Forest roads load at zoom ${FOREST_RENDER_MIN_ZOOM}+. Public dirt-road tiles load at zoom ${PUBLIC_ROADS_MIN_ZOOM}+.`);
-    return;
-  }
-
-  if (zoom < PUBLIC_ROADS_MIN_ZOOM) {
-    setSearchStatus(`Forest roads are on. Public dirt-road tiles load at zoom ${PUBLIC_ROADS_MIN_ZOOM}+.`);
-    return;
-  }
-
   if (zoom < FOREST_INTERACTIVE_MIN_ZOOM) {
-    setSearchStatus(`Public dirt-road tiles are on. Zoom to ${FOREST_INTERACTIVE_MIN_ZOOM}+ for easier road inspection.`);
+    setSearchStatus(`Zoom to ${FOREST_INTERACTIVE_MIN_ZOOM}+ for clickable road details.`);
     return;
   }
 
