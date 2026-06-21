@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build everything needed for vector_preview.html in one go:
+# Build everything needed for vector mode in one go:
 # 1. Stage source GeoJSON
 # 2. Generate MBTiles with Tippecanoe
 # 3. Convert MBTiles -> PMTiles
@@ -59,18 +59,30 @@ echo "    $PMTILES_CMD    $("${PMTILES_VERSION_CMD[@]}" 2>&1 | head -1)"
 echo ""
 
 # ── step 1: stage ──────────────────────────────────────────────────────
-echo "── Step 1: Stage source GeoJSON ──────────────────────────────────"
+echo "── Step 1A: Stage forest-road GeoJSON ────────────────────────────"
 python3 "$SCRIPT_DIR/build_vector_tile_staging.py"
 echo ""
 
+echo "── Step 1B: Stage public-road GeoJSON ────────────────────────────"
+python3 "$SCRIPT_DIR/build_public_roads_vector_staging.py"
+echo ""
+
 # ── step 2: MBTiles ───────────────────────────────────────────────────
-echo "── Step 2: Generate MBTiles with Tippecanoe ──────────────────────"
+echo "── Step 2A: Generate forest-road MBTiles ─────────────────────────"
 bash "$SCRIPT_DIR/tippecanoe_build.sh"
 echo ""
 
+echo "── Step 2B: Generate public-road MBTiles ─────────────────────────"
+bash "$SCRIPT_DIR/tippecanoe_build_public_roads.sh"
+echo ""
+
 # ── step 3: PMTiles ───────────────────────────────────────────────────
-echo "── Step 3: Convert MBTiles -> PMTiles ────────────────────────────"
+echo "── Step 3A: Convert forest-road MBTiles -> PMTiles ───────────────"
 bash "$SCRIPT_DIR/pmtiles_convert.sh"
+echo ""
+
+echo "── Step 3B: Convert public-road MBTiles -> PMTiles ───────────────"
+bash "$SCRIPT_DIR/pmtiles_convert_public_roads.sh"
 echo ""
 
 # ── summary ────────────────────────────────────────────────────────────

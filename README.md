@@ -108,10 +108,12 @@ overlay with lightweight vector tiles (`.pbf` via Tippecanoe / MBTiles / PMTiles
 
 Today there are two ways to use it locally:
 - `vector_preview.html` is a dedicated MapLibre preview page
-- `index.html?mode=vector` enables the main map's `Vector Preview` renderer
+- `index.html?mode=vector` enables the main map's vector renderer
 
-The classic Leaflet/GeoJSON renderer is still the default and remains the more
-complete path for popups, forest toggles, and supplemental public roads.
+The classic Leaflet/GeoJSON renderer is still the more complete path for
+popups and forest toggles, but vector mode now expects two PMTiles sources:
+- `forest_roads.pmtiles` for MVUM forest roads
+- `public_roads.pmtiles` for the brown supplemental OSM/public roads
 
 ### Fast start
 
@@ -133,12 +135,18 @@ python3 scripts/check_vector_preview_outputs.py
 
 | File | Description |
 |------|-------------|
-| `build/vector_tiles/forest_roads_staging.geojson` | Combined, property-stripped GeoJSON (~25K features) |
-| `build/vector_tiles/forest_roads_staging_manifest.json` | Metadata: counts, bounds, zoom, layer name |
-| `build/vector_tiles/forest_roads.mbtiles` | Tippecanoe-generated vector tiles (MBTiles) |
-| `build/vector_tiles/forest_roads.pmtiles` | Converted PMTiles for direct browser loading |
-| `vector_tiles/forest_roads_staging_manifest.json` | Published manifest copy used by the browser and GitHub Pages |
-| `vector_tiles/forest_roads.pmtiles` | Published PMTiles copy used by the browser and GitHub Pages |
+| `build/vector_tiles/forest_roads_staging.geojson` | Combined, property-stripped MVUM GeoJSON |
+| `build/vector_tiles/forest_roads_staging_manifest.json` | MVUM metadata: counts, bounds, zoom, layer name |
+| `build/vector_tiles/forest_roads.mbtiles` | MVUM MBTiles |
+| `build/vector_tiles/forest_roads.pmtiles` | MVUM PMTiles |
+| `build/vector_tiles/public_roads_staging.geojson` | Combined statewide public-road GeoJSON |
+| `build/vector_tiles/public_roads_staging_manifest.json` | Public-road metadata: counts, bounds, zoom, layer name |
+| `build/vector_tiles/public_roads.mbtiles` | Public-road MBTiles |
+| `build/vector_tiles/public_roads.pmtiles` | Public-road PMTiles |
+| `vector_tiles/forest_roads_staging_manifest.json` | Published MVUM manifest copy |
+| `vector_tiles/forest_roads.pmtiles` | Published MVUM PMTiles copy |
+| `vector_tiles/public_roads_staging_manifest.json` | Published public-road manifest copy |
+| `vector_tiles/public_roads.pmtiles` | Published public-road PMTiles copy |
 
 ### Stage 1: Combine source data
 
@@ -156,6 +164,14 @@ Output:
 - `build/vector_tiles/forest_roads_staging_manifest.json` — source/staged counts, bounds, layer name, zoom settings, and canonical Tippecanoe command
 - `vector_tiles/forest_roads_staging_manifest.json` — published manifest copy for the site
 
+[`scripts/build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py)
+does the same for `_public_roads_raw_tiles/10/*.json`, deduping by OSM way id and
+writing:
+
+- `build/vector_tiles/public_roads_staging.geojson`
+- `build/vector_tiles/public_roads_staging_manifest.json`
+- `vector_tiles/public_roads_staging_manifest.json`
+
 ### Stage 2: Generate vector tiles (requires Tippecanoe)
 
 **Prerequisite:** Install [Tippecanoe](https://github.com/felt/tippecanoe).
@@ -172,6 +188,7 @@ Then run the build wrapper (or the `tippecanoe` command directly):
 
 ```bash
 bash scripts/tippecanoe_build.sh
+bash scripts/tippecanoe_build_public_roads.sh
 ```
 
 The command inside (also written to the manifest as `tippecanoe_command`) is:
@@ -189,7 +206,9 @@ tippecanoe \
   build/vector_tiles/forest_roads_staging.geojson
 ```
 
-Output: `build/vector_tiles/forest_roads.mbtiles`
+Outputs:
+- `build/vector_tiles/forest_roads.mbtiles`
+- `build/vector_tiles/public_roads.mbtiles`
 
 The manifest also records:
 - layer name: `forest_roads`
@@ -212,11 +231,14 @@ Then convert:
 
 ```bash
 bash scripts/pmtiles_convert.sh
+bash scripts/pmtiles_convert_public_roads.sh
 ```
 
 Output:
 - `build/vector_tiles/forest_roads.pmtiles`
 - `vector_tiles/forest_roads.pmtiles` — published site copy
+- `build/vector_tiles/public_roads.pmtiles`
+- `vector_tiles/public_roads.pmtiles` — published site copy
 
 ### One-command preview build
 

@@ -114,6 +114,9 @@ body { color: #15231a; }
 const MANIFEST_URL = 'vector_tiles/forest_roads_staging_manifest.json';
 const MBTILES_URL  = 'build/vector_tiles/forest_roads.mbtiles';
 const PMTILES_URL  = 'vector_tiles/forest_roads.pmtiles';
+const PUBLIC_MANIFEST_URL = 'vector_tiles/public_roads_staging_manifest.json';
+const PUBLIC_MBTILES_URL  = 'build/vector_tiles/public_roads.mbtiles';
+const PUBLIC_PMTILES_URL  = 'vector_tiles/public_roads.pmtiles';
 
 let MIN_ZOOM = 0;
 let MAX_ZOOM = 14;
@@ -126,6 +129,18 @@ const UNPAVED_SURFACES = [
   'AGG - SCORIA',
   'CSOIL - COMPACTED SOIL'
 ];
+
+function lineLayout() {
+  return {
+    'line-cap': 'round',
+    'line-join': 'round'
+  };
+}
+
+function dashArray(kind = 'unpaved') {
+  if (kind === 'inferred') return [0.8, 1.6];
+  return [2.2, 1.1];
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 function setNotice(html) {
@@ -174,10 +189,16 @@ async function init() {
   // ── Load manifest ──────────────────────────────────────────────────────
   let manifest = null;
   let manifestOk = false;
+  let publicManifest = null;
+  let publicManifestOk = false;
   try {
     const r = await fetch(MANIFEST_URL);
     if (r.ok) { manifest = await r.json(); manifestOk = true; }
   } catch { /* manifest not available */ }
+  try {
+    const r = await fetch(PUBLIC_MANIFEST_URL);
+    if (r.ok) { publicManifest = await r.json(); publicManifestOk = true; }
+  } catch { /* public manifest not available */ }
 
   if (manifest) {
     MIN_ZOOM = manifest.min_zoom || 0;
@@ -189,18 +210,32 @@ async function init() {
   let pmtilesExists = false;
   let mbtilesExists = false;
   let tileSource = null;
+  let publicPmtilesExists = false;
+  let publicMbtilesExists = false;
+  let publicTileSource = null;
 
   try {
     const r = await fetch(PMTILES_URL, { method: 'HEAD' });
     pmtilesExists = r.ok;
     if (r.ok) tileSource = `pmtiles://${PMTILES_URL}`;
   } catch { /* no PMTiles */ }
+  try {
+    const r = await fetch(PUBLIC_PMTILES_URL, { method: 'HEAD' });
+    publicPmtilesExists = r.ok;
+    if (r.ok) publicTileSource = `pmtiles://${PUBLIC_PMTILES_URL}`;
+  } catch { /* no public PMTiles */ }
 
   if (!tileSource) {
     try {
       const r = await fetch(MBTILES_URL, { method: 'HEAD' });
       mbtilesExists = r.ok;
     } catch { /* no MBTiles either */ }
+  }
+  if (!publicTileSource) {
+    try {
+      const r = await fetch(PUBLIC_MBTILES_URL, { method: 'HEAD' });
+      publicMbtilesExists = r.ok;
+    } catch { /* no public MBTiles either */ }
   }
 
   // ── Register PMTiles protocol with MapLibre (before map creation) ─────
@@ -254,6 +289,7 @@ async function init() {
           source: 'forest_roads',
           'source-layer': layerName,
           filter: ['all', ['==', ['get', 'symbol'], sym], makeSurfaceFilter(false)],
+          layout: lineLayout(),
           paint: {
             'line-color': SYMBOL_COLORS[sym],
             'line-width': ['match', ['get', 'symbol'], '1', 2.5, '2', 2, '3', 2.5, '4', 2, 1.5],
@@ -270,14 +306,69 @@ async function init() {
           source: 'forest_roads',
           'source-layer': layerName,
           filter: ['all', ['==', ['get', 'symbol'], sym], makeSurfaceFilter(true)],
+          layout: lineLayout(),
           paint: {
             'line-color': SYMBOL_COLORS[sym],
             'line-width': ['match', ['get', 'symbol'], '1', 2.5, '2', 2, '3', 2.5, '4', 2, 1.5],
             'line-opacity': 0.9,
-            'line-dasharray': [4, 3]
+            'line-dasharray': dashArray()
           }
         });
       });
+
+      if (publicTileSource && publicPmtilesExists) {
+        map.addSource('public_roads', {
+          type: 'vector',
+          url: publicTileSource,
+          minzoom: publicManifest?.min_zoom || 0,
+          maxzoom: publicManifest?.max_zoom || 14
+        });
+
+        const publicLayerName = publicManifest?.layer_name || 'public_roads';
+        const unpavedExpr = ['in', ['downcase', ['coalesce', ['get', 'surface'], '']], ['literal', ['dirt', 'gravel', 'ground', 'unpaved']]];
+        const inferredExpr = ['==', ['get', 'surface_inferred'], true];
+        map.addLayer({
+          id: 'public_roads_confirmed',
+          type: 'line',
+          source: 'public_roads',
+          'source-layer': publicLayerName,
+          filter: ['all', ['!', inferredExpr], ['!', unpavedExpr]],
+          layout: lineLayout(),
+          paint: {
+            'line-color': '#c26d1f',
+            'line-width': 3,
+            'line-opacity': 0.95
+          }
+        });
+        map.addLayer({
+          id: 'public_roads_unpaved',
+          type: 'line',
+          source: 'public_roads',
+          'source-layer': publicLayerName,
+          filter: unpavedExpr,
+          layout: lineLayout(),
+          paint: {
+            'line-color': '#c26d1f',
+            'line-width': 3,
+            'line-opacity': 0.95,
+            'line-dasharray': dashArray()
+          }
+        });
+        map.addLayer({
+          id: 'public_roads_inferred',
+          type: 'line',
+          source: 'public_roads',
+          'source-layer': publicLayerName,
+          filter: ['all', inferredExpr, ['!', unpavedExpr]],
+          layout: lineLayout(),
+          paint: {
+            'line-color': '#c26d1f',
+            'line-width': 3,
+            'line-opacity': 0.55,
+            'line-dasharray': dashArray('inferred')
+          }
+        });
+      }
 
       document.getElementById('legend').hidden = false;
       setNotice(null);
@@ -318,6 +409,12 @@ async function init() {
   statusLines.push(pmtilesExists
     ? `<span class="ok">&#x2713;</span> PMTiles: ${PMTILES_URL}`
     : `<span class="${mbtilesExists ? 'warn' : 'bad'}">&#x2717;</span> PMTiles: missing`);
+  statusLines.push(publicManifestOk
+    ? `<span class="ok">&#x2713;</span> Public manifest: ${publicManifest.staged_feature_count.toLocaleString()} features`
+    : `<span class="warn">&#x2717;</span> Public manifest: not found`);
+  statusLines.push(publicPmtilesExists
+    ? `<span class="ok">&#x2713;</span> Public PMTiles: ${PUBLIC_PMTILES_URL}`
+    : `<span class="${publicMbtilesExists ? 'warn' : 'bad'}">&#x2717;</span> Public PMTiles: missing`);
   if (mbtilesExists && !pmtilesExists) {
     statusLines.push(`<span class="warn">&#x26A0;</span> MBTiles exists — convert needed`);
   }

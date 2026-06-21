@@ -603,6 +603,8 @@ const VECTOR_MODE_LIBRARIES = {
 };
 const VECTOR_MANIFEST_URL = "vector_tiles/forest_roads_staging_manifest.json";
 const VECTOR_PMTILES_URL = "vector_tiles/forest_roads.pmtiles";
+const PUBLIC_VECTOR_MANIFEST_URL = "vector_tiles/public_roads_staging_manifest.json";
+const PUBLIC_VECTOR_PMTILES_URL = "vector_tiles/public_roads.pmtiles";
 const RENDER_MODE_KEY = "ca-forest-road-render-mode";
 const FOREST_RENDER_MIN_ZOOM = 0;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
@@ -697,6 +699,7 @@ let publicRoadsManifest = null;
 const publicRoadTileCache = new Map();
 const publicRoadTileLayers = new Map();
 const publicRoadTileInflight = new Map();
+const PUBLIC_ROAD_UNPAVED_SURFACES = ["dirt", "gravel", "ground", "unpaved"];
 
 function createClassicMap() {
   map = L.map("map", { center: [37.5, -119.5], zoom: 7, zoomControl: false, preferCanvas: true });
@@ -722,7 +725,7 @@ function currentRenderMode() {
     const saved = localStorage.getItem(RENDER_MODE_KEY);
     if (saved === "vector" || saved === "classic") return saved;
   } catch {}
-  return "classic";
+  return "vector";
 }
 
 function setModeNote(message) {
@@ -787,6 +790,18 @@ function vectorLineWidth() {
   return ["match", ["get", "symbol"], "1", 2.5, "2", 2, "3", 2.5, "4", 2, 1.5];
 }
 
+function vectorLineLayout() {
+  return {
+    "line-cap": "round",
+    "line-join": "round"
+  };
+}
+
+function vectorDashArray(kind = "unpaved") {
+  if (kind === "inferred") return [0.8, 1.6];
+  return [2.2, 1.1];
+}
+
 function vectorSurfaceFilter(includeUnpaved) {
   const expr = ["in", ["get", "surfacetype"], ["literal", Array.from(UNPAVED_SURFACES)]];
   return includeUnpaved ? expr : ["!", expr];
@@ -794,7 +809,7 @@ function vectorSurfaceFilter(includeUnpaved) {
 
 async function initVectorMode() {
   setForestPanelEnabled(false);
-  setModeNote("Vector preview mode is active. Forest toggles, road-detail popups, and supplemental public roads still use the classic renderer only.");
+  setModeNote("");
 
   try {
     loadExternalCss(VECTOR_MODE_LIBRARIES.maplibreCss);
@@ -807,17 +822,29 @@ async function initVectorMode() {
   }
 
   let manifest = null;
+  let publicManifest = null;
   try {
     const response = await fetch(VECTOR_MANIFEST_URL);
     if (response.ok) manifest = await response.json();
   } catch (error) {
     console.error("Failed to load vector manifest", error);
   }
+  try {
+    const response = await fetch(PUBLIC_VECTOR_MANIFEST_URL);
+    if (response.ok) publicManifest = await response.json();
+  } catch (error) {
+    console.error("Failed to load public-road vector manifest", error);
+  }
 
   let pmtilesExists = false;
+  let publicPmtilesExists = false;
   try {
     const response = await fetch(VECTOR_PMTILES_URL, { method: "HEAD" });
     pmtilesExists = response.ok;
+  } catch {}
+  try {
+    const response = await fetch(PUBLIC_VECTOR_PMTILES_URL, { method: "HEAD" });
+    publicPmtilesExists = response.ok;
   } catch {}
 
   if (!pmtilesExists || !manifest) {
@@ -858,9 +885,15 @@ async function initVectorMode() {
     minZoom: 2,
     maxZoom: Math.max(manifest.max_zoom || 14, 14)
   });
+  globalThis.__forestRoadMap = map;
+  globalThis.__forestRoadVectorManifests = {
+    forest: manifest,
+    public: publicManifest
+  };
   map.addControl(new maplibregl.NavigationControl(), "bottom-right");
   map.on("load", () => {
     const layerName = manifest.layer_name || "forest_roads";
+    const publicLayerName = publicManifest?.layer_name || "public_roads";
     ["1", "2", "3", "4"].forEach((sym) => {
       map.addLayer({
         id: `fr_paved_${sym}`,
@@ -868,6 +901,7 @@ async function initVectorMode() {
         source: "forest_roads",
         "source-layer": layerName,
         filter: ["all", ["==", ["get", "symbol"], sym], vectorSurfaceFilter(false)],
+        layout: vectorLineLayout(),
         paint: {
           "line-color": SYMBOL_COLORS[sym],
           "line-width": vectorLineWidth(),
@@ -880,27 +914,87 @@ async function initVectorMode() {
         source: "forest_roads",
         "source-layer": layerName,
         filter: ["all", ["==", ["get", "symbol"], sym], vectorSurfaceFilter(true)],
+        layout: vectorLineLayout(),
         paint: {
           "line-color": SYMBOL_COLORS[sym],
           "line-width": vectorLineWidth(),
           "line-opacity": 0.9,
-          "line-dasharray": [4, 3]
+          "line-dasharray": vectorDashArray()
         }
       });
     });
+
+    if (publicPmtilesExists && publicManifest) {
+      map.addSource("public_roads", {
+        type: "vector",
+        url: `pmtiles://${PUBLIC_VECTOR_PMTILES_URL}`,
+        minzoom: publicManifest.min_zoom || 0,
+        maxzoom: publicManifest.max_zoom || 14
+      });
+
+      const unpavedExpr = ["in", ["downcase", ["coalesce", ["get", "surface"], ""]], ["literal", PUBLIC_ROAD_UNPAVED_SURFACES]];
+      const inferredExpr = ["==", ["get", "surface_inferred"], true];
+      map.addLayer({
+        id: "public_roads_confirmed",
+        type: "line",
+        source: "public_roads",
+        "source-layer": publicLayerName,
+        filter: ["all", ["!", inferredExpr], ["!", unpavedExpr]],
+        layout: vectorLineLayout(),
+        paint: {
+          "line-color": "#c26d1f",
+          "line-width": 3,
+          "line-opacity": 0.95
+        }
+      });
+      map.addLayer({
+        id: "public_roads_unpaved",
+        type: "line",
+        source: "public_roads",
+        "source-layer": publicLayerName,
+        filter: unpavedExpr,
+        layout: vectorLineLayout(),
+        paint: {
+          "line-color": "#c26d1f",
+          "line-width": 3,
+          "line-opacity": 0.95,
+          "line-dasharray": vectorDashArray()
+        }
+      });
+      map.addLayer({
+        id: "public_roads_inferred",
+        type: "line",
+        source: "public_roads",
+        "source-layer": publicLayerName,
+        filter: ["all", inferredExpr, ["!", unpavedExpr]],
+        layout: vectorLineLayout(),
+        paint: {
+          "line-color": "#c26d1f",
+          "line-width": 3,
+          "line-opacity": 0.55,
+          "line-dasharray": vectorDashArray("inferred")
+        }
+      });
+    } else {
+      console.warn("Vector mode: public-road PMTiles not available; brown roads will be omitted in vector mode until built.");
+    }
 
     if (manifest.bounds) {
       map.fitBounds([[manifest.bounds[0], manifest.bounds[1]], [manifest.bounds[2], manifest.bounds[3]]], { padding: 40, maxZoom: 7 });
     }
     updateInteractivityHint();
-    setNotice("Vector preview mode is active. For the full classic workflow, switch the renderer back to <code>Classic GeoJSON</code>.");
+  });
+
+  map.on("zoomend", () => {
+    updateInteractivityHint();
+    updateDebugStamp();
   });
 
   map.on("error", (event) => {
-    if (event.sourceId && event.sourceId !== "forest_roads") return;
+    if (event.sourceId && event.sourceId !== "forest_roads" && event.sourceId !== "public_roads") return;
     const status = event.error?.status || event.status;
     const msg = event.error?.message || String(event.error || "unknown error");
-    console.error("Vector renderer error (forest_roads)", {
+    console.error("Vector renderer error", {
       sourceId: event.sourceId,
       tileId: event.tileId,
       status: status,
@@ -978,6 +1072,22 @@ function lonLatToTile(lon, lat, zoom) {
   return {
     x: Math.max(0, Math.min(scale - 1, x)),
     y: Math.max(0, Math.min(scale - 1, y))
+  };
+}
+
+function getPaddedBounds(padFactor) {
+  const bounds = map.getBounds();
+  const west = bounds.getWest();
+  const east = bounds.getEast();
+  const north = bounds.getNorth();
+  const south = bounds.getSouth();
+  const lonPad = (east - west) * padFactor;
+  const latPad = (north - south) * padFactor;
+  return {
+    getWest: () => west - lonPad,
+    getEast: () => east + lonPad,
+    getNorth: () => north + latPad,
+    getSouth: () => south - latPad
   };
 }
 
@@ -1096,7 +1206,7 @@ async function ensurePublicRoadTileLoaded(tileKeyRef) {
 function getWantedPublicRoadTileKeys() {
   if (!publicRoadsManifest || map.getZoom() < PUBLIC_ROADS_MIN_ZOOM) return [];
 
-  const bounds = map.getBounds().pad(PUBLIC_ROADS_TILE_VIEW_PAD);
+  const bounds = getPaddedBounds(PUBLIC_ROADS_TILE_VIEW_PAD);
   const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), PUBLIC_ROADS_TILE_ZOOM);
   const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), PUBLIC_ROADS_TILE_ZOOM);
   const wanted = [];
@@ -1314,7 +1424,7 @@ async function ensureRoadTileLoaded(tileKeyRef) {
 function getWantedRoadTileKeys() {
   if (!roadTileManifest || map.getZoom() < FOREST_RENDER_MIN_ZOOM) return [];
 
-  const bounds = map.getBounds().pad(ROAD_TILE_VIEW_PAD);
+  const bounds = getPaddedBounds(ROAD_TILE_VIEW_PAD);
   const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), ROAD_TILE_ZOOM);
   const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), ROAD_TILE_ZOOM);
   const wanted = [];
@@ -1403,7 +1513,11 @@ function buildForestItem(id) {
 
 function clearSearchMarker() {
   if (searchMarker) {
-    map.removeLayer(searchMarker);
+    if (activeRenderMode === "vector" && typeof searchMarker.remove === "function") {
+      searchMarker.remove();
+    } else {
+      map.removeLayer(searchMarker);
+    }
     searchMarker = null;
   }
 }
@@ -1450,19 +1564,38 @@ function focusSearchResult(result) {
   const lat = Number(result.lat);
   const lon = Number(result.lon);
 
-  searchMarker = L.marker([lat, lon]).addTo(map);
-  searchMarker.bindPopup(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`).openPopup();
-
   if (result.boundingbox && result.boundingbox.length === 4) {
     const [south, north, west, east] = result.boundingbox.map(Number);
-    const bounds = L.latLngBounds([south, west], [north, east]);
-    if (bounds.isValid() && Math.abs(north - south) + Math.abs(east - west) > 0.002) {
-      map.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
-      return;
+    if (Math.abs(north - south) + Math.abs(east - west) > 0.002) {
+      if (activeRenderMode === "vector") {
+        map.fitBounds([[west, south], [east, north]], { padding: 36, maxZoom: 13 });
+      } else {
+        const bounds = L.latLngBounds([south, west], [north, east]);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
+        }
+      }
+    } else if (activeRenderMode === "vector") {
+      map.easeTo({ center: [lon, lat], zoom: 12 });
+    } else {
+      map.setView([lat, lon], 12);
     }
+  } else if (activeRenderMode === "vector") {
+    map.easeTo({ center: [lon, lat], zoom: 12 });
+  } else {
+    map.setView([lat, lon], 12);
   }
 
-  map.setView([lat, lon], 12);
+  if (activeRenderMode === "vector") {
+    searchMarker = new maplibregl.Marker().setLngLat([lon, lat]).setPopup(
+      new maplibregl.Popup({ offset: 20 }).setHTML(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`)
+    ).addTo(map);
+    searchMarker.getPopup().addTo(map);
+    return;
+  }
+
+  searchMarker = L.marker([lat, lon]).addTo(map);
+  searchMarker.bindPopup(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`).openPopup();
 }
 
 async function runSearch() {
