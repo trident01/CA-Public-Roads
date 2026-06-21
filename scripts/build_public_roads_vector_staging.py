@@ -22,12 +22,23 @@ TIPPECANOE_MIN_ZOOM = 0
 TIPPECANOE_MAX_ZOOM = 13
 TIPPECANOE_BASE_ZOOM = 10
 FOREST_BBOX_PAD_DEGREES = 0.1
+# Extra regions to always include (not filtered by forest adjacency).
+# [west, south, east, north]  (lon/lat decimal degrees)
+EXTRA_REGION_BBOXES = [
+    # SF Bay Area — peninsula, SF, east bay, south bay, north bay
+    [-122.8, 37.0, -121.5, 38.6],
+]
+# Road classes allowed everywhere (forest-adjacent regions)
 ALLOWED_ROAD_CLASSES = frozenset({
+    "road",
     "service",
+    "services",
     "track",
     "unclassified",
-    "road",
-    "services",
+})
+# Road classes additionally allowed in extra regions (e.g. urban Bay Area)
+EXTRA_REGION_EXTRA_CLASSES = frozenset({
+    "residential",
 })
 TIPPECANOE_FLAGS = (
     "--no-tile-compression",
@@ -174,6 +185,9 @@ def main() -> None:
     ways_by_id: dict[int, dict] = {}
     source_counts: dict[str, int] = {}
     total_normalized = 0
+    forest_region_count = 0
+    extra_region_count = 0
+    class_filtered_out = 0
 
     for path in files:
         source_tile = path.relative_to(SOURCE_DIR).with_suffix("").as_posix()
@@ -185,11 +199,23 @@ def main() -> None:
             if feature is not None:
                 total_normalized += 1
                 bbox = feature_bbox(feature)
-                if bbox is None or not any(bbox_intersects(bbox, forest_bbox) for forest_bbox in forest_bboxes):
+                if bbox is None:
+                    continue
+                in_forest = any(bbox_intersects(bbox, fb) for fb in forest_bboxes)
+                in_extra = any(bbox_intersects(bbox, eb) for eb in EXTRA_REGION_BBOXES)
+                if not in_forest and not in_extra:
                     continue
                 road_class = (feature.get("properties") or {}).get("road_class", "")
-                if road_class not in ALLOWED_ROAD_CLASSES:
+                allowed = set(ALLOWED_ROAD_CLASSES)
+                if in_extra:
+                    allowed |= EXTRA_REGION_EXTRA_CLASSES
+                if road_class not in allowed:
+                    class_filtered_out += 1
                     continue
+                if in_forest:
+                    forest_region_count += 1
+                if in_extra and not in_forest:
+                    extra_region_count += 1
                 ways_by_id[element["id"]] = feature
 
     all_features = list(ways_by_id.values())
@@ -209,8 +235,12 @@ def main() -> None:
         "source_way_count": total_normalized,
         "forest_bbox_count": len(forest_bboxes),
         "forest_bbox_pad_degrees": FOREST_BBOX_PAD_DEGREES,
+        "extra_region_bboxes": EXTRA_REGION_BBOXES,
+        "extra_region_feature_count": extra_region_count,
+        "forest_region_feature_count": forest_region_count,
         "allowed_road_classes": sorted(ALLOWED_ROAD_CLASSES),
         "filtered_out_feature_count": total_normalized - len(all_features),
+        "class_filtered_out_count": class_filtered_out,
         "source_counts": source_counts,
         "allowlisted_properties": sorted(ALLOWED),
         "created_utc": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
