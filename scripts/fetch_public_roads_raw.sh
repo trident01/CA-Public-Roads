@@ -24,6 +24,28 @@ endpoints = [
 ]
 
 
+def expand_tile_keys(keys, buffer=1):
+    """Add a ring of buffer tiles around each forest tile to cover
+    roads just outside national forest boundaries."""
+    expanded = set()
+    for key in keys:
+        zoom_str, x_str, y_str = key.split("/")
+        zoom = int(zoom_str)
+        x = int(x_str)
+        y = int(y_str)
+        for dx in range(-buffer, buffer + 1):
+            for dy in range(-buffer, buffer + 1):
+                tx = x + dx
+                ty = y + dy
+                max_tile = (2 ** zoom) - 1
+                if 0 <= tx <= max_tile and 0 <= ty <= max_tile:
+                    expanded.add(f"{zoom}/{tx}/{ty}")
+    return sorted(expanded)
+
+
+tile_keys = expand_tile_keys(tile_keys, buffer=1)
+
+
 def tile_to_lon(x, z):
     return x / (2 ** z) * 360.0 - 180.0
 
@@ -44,13 +66,24 @@ for tile_key in tile_keys:
     north = tile_to_lat(y, zoom)
     south = tile_to_lat(y + 1, zoom)
 
-    query = f'''[out:json][timeout:35];
+    # Included road types:
+    #   track        – dirt/gravel forest & farm roads
+    #   service      – short access roads (keep alleys, exclude parking aisles)
+    #   unclassified – minor rural roads (often unpaved in the west)
+    #   residential  – neighbourhood roads (many unpaved in remote areas)
+    #   road         – catch-all for roads of unknown classification
+    #
+    # Surface filter: include if NO surface tag at all (uncertain / likely
+    # unpaved in rural areas), OR if the surface tag matches known unpaved
+    # materials.  Explicitly paved roads (asphalt, concrete, paving_stones,
+    # chipseal, bricks, etc.) are excluded because they won't match.
+    query = f'''[out:json][timeout:45];
 (
-  way["highway"~"track|service|unclassified"]
+  way["highway"~"track|service|unclassified|residential|road"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
-    ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone"]
+    (if: !exists(t["surface"]) || t["surface"] ~ "^(dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips)$")
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
 );
 out geom;'''
@@ -73,7 +106,7 @@ out geom;'''
                 "--fail",
                 "--retry", "2",
                 "--retry-delay", "3",
-                "--max-time", "90",
+                "--max-time", "120",
                 "-X", "POST",
                 endpoint,
                 "-H", "User-Agent: CA-Public-Roads tile builder",

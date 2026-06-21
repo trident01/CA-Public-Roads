@@ -64,12 +64,38 @@ python3 scripts/generate_road_tiles.py
 ## Public Road Tile Build
 
 The brown supplemental-road overlay uses pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
-The cache covers the full forest road tile footprint (no live Overpass fallback).
+The cache covers the forest road tile footprint plus a 1-tile buffer outside national forest boundaries (no live Overpass fallback).
 
-To refresh the local OSM public-road cache:
+### What's included
+
+The Overpass query fetches OSM ways tagged with any of:
+- `highway=track` — forest / farm roads
+- `highway=service` — short access roads (parking aisles and driveways are excluded)
+- `highway=unclassified` — minor rural roads (often unpaved in the West)
+- `highway=residential` — neighbourhood roads (many unpaved in remote areas)
+- `highway=road` — roads of unknown classification
+
+A way is included if its surface tag matches known unpaved materials (`dirt`, `gravel`, `ground`, `unpaved`, `sand`, `earth`, etc.) **or** if it has no surface tag at all (uncertain surface — likely unpaved in rural areas). Explicitly paved roads (asphalt, concrete, paving_stones, etc.) are excluded.
+
+### Styling
+
+| Legend | Style | Meaning |
+|--------|-------|---------|
+| Solid orange | `───` | Confirmed unpaved (explicit surface tag) |
+| Dotted orange | `·· ··` | Uncertain surface (no surface tag — could be paved or unpaved) |
+
+### To refresh the local OSM public-road cache
+
+The raw Overpass data is gitignored. To re-fetch with the latest data or after changing the query:
 
 ```bash
+# 1. Clear old raw data (or skip to resume a partial fetch)
+rm -rf _public_roads_raw_tiles/10
+
+# 2. Fetch fresh data from Overpass API (can take 15-60 minutes)
 bash scripts/fetch_public_roads_raw.sh
+
+# 3. Build output tiles and manifest
 python3 scripts/build_public_roads_tiles.py
 ```
 

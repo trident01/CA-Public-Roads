@@ -74,10 +74,11 @@ def normalize_feature(element, source_id):
         return None
     coords = [round_point((point["lon"], point["lat"])) for point in geometry]
     tags = element.get("tags") or {}
+    surface_raw = tags.get("surface")
     props = {
         "name": normalize_name(tags),
         "road_class": tags.get("highway") or "",
-        "surface": tags.get("surface") or "",
+        "surface": surface_raw or "",
         "tracktype": tags.get("tracktype") or "",
         "motor_vehicle": tags.get("motor_vehicle") or "",
         "access": tags.get("access") or "",
@@ -85,6 +86,8 @@ def normalize_feature(element, source_id):
         "source_detail": f"osm way {element['id']}",
         "source_tile": source_id,
     }
+    if not surface_raw:
+        props["surface_inferred"] = True
     return {
         "id": element["id"],
         "coords": coords,
