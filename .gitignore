@@ -1,2 +1,5 @@
 .DS_Store
 _public_roads_raw_tiles/
+build/
+scripts/__pycache__/
+range_test.bin

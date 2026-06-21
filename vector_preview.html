@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vector Tile Preview — CA Forest Service Roads</title>
+<script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #eef3ef; }
+body { color: #15231a; }
+#map { height: 100%; width: 100%; }
+
+.notice {
+  position: absolute;
+  top: 18px; left: 18px;
+  z-index: 1100;
+  max-width: min(520px, calc(100vw - 36px));
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(255, 248, 227, 0.97);
+  border: 1px solid rgba(186, 144, 51, 0.35);
+  box-shadow: 0 10px 30px rgba(38, 44, 35, 0.15);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.notice strong { display: block; margin-bottom: 6px; font-size: 14px; }
+.notice code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.notice ol { margin: 8px 0 4px 18px; padding: 0; }
+.notice li { margin-bottom: 4px; }
+.notice .ok { color: #1f5138; background: #dff2e6; }
+.notice .muted { color: #5d705f; }
+.legend {
+  position: absolute;
+  bottom: 28px; left: 18px;
+  z-index: 1100;
+  background: rgba(250, 252, 249, 0.94);
+  border: 1px solid rgba(39, 71, 50, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #506456;
+  box-shadow: 0 4px 16px rgba(16,24,20,0.1);
+}
+.legend-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; color: #67806d; }
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.legend-item + .legend-item { margin-top: 4px; }
+.legend-swatch { width: 18px; height: 4px; border-radius: 999px; flex-shrink: 0; }
+.legend-dashed { background-image: repeating-linear-gradient(to right, currentColor 0 8px, transparent 8px 12px); background-color: transparent !important; }
+.status-panel {
+  position: absolute;
+  bottom: 28px; right: 18px;
+  z-index: 1100;
+  background: rgba(250, 252, 249, 0.94);
+  border: 1px solid rgba(39, 71, 50, 0.12);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #506456;
+  box-shadow: 0 4px 16px rgba(16,24,20,0.1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.status-panel .ok { color: #1f5138; }
+.status-panel .warn { color: #8a5b0a; }
+.status-panel .bad { color: #8d1d2c; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="notice" class="notice" hidden></div>
+<div id="status" class="status-panel"></div>
+<div id="legend" class="legend" hidden>
+  <div class="legend-title">Forest Road Legend</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#1b4332"></div>All Vehicles</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#52b788"></div>All Vehicles (Seasonal)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#1d3557"></div>Highway Legal Only</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
+  <div class="legend-item"><div class="legend-swatch legend-dashed" style="color:#4d5c52"></div>Dashed = unpaved</div>
+</div>
+
+<script>
+// ── configuration ──────────────────────────────────────────────────────────
+const MANIFEST_URL = 'build/vector_tiles/forest_roads_staging_manifest.json';
+const MBTILES_URL  = 'build/vector_tiles/forest_roads.mbtiles';
+const PMTILES_URL  = 'build/vector_tiles/forest_roads.pmtiles';
+
+let MIN_ZOOM = 0;
+let MAX_ZOOM = 14;
+
+const SYMBOL_COLORS = { '1': '#1b4332', '2': '#52b788', '3': '#1d3557', '4': '#4895ef' };
+const UNPAVED_SURFACES = [
+  'NAT - NATIVE MATERIAL',
+  'AGG - CRUSHED AGGREGATE OR GRAVEL',
+  'IMP - IMPROVED NATIVE MATERIAL',
+  'AGG - SCORIA',
+  'CSOIL - COMPACTED SOIL'
+];
+
+// ── helpers ────────────────────────────────────────────────────────────────
+function setNotice(html) {
+  const el = document.getElementById('notice');
+  if (!html) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  el.innerHTML = html;
+}
+
+function setStatus(items) {
+  const el = document.getElementById('status');
+  el.innerHTML = items.map(s => `<div>${s}</div>`).join('');
+}
+
+function buildNoticeHtml(manifest, mbtilesExists, pmtilesExists) {
+  const parts = ['<strong>Vector tiles not yet built</strong>'];
+
+  if (mbtilesExists && !pmtilesExists) {
+    parts.push('MBTiles found but PMTiles conversion is needed:');
+    parts.push('<ol><li><code>pip install pmtiles</code> (once)</li>');
+    parts.push('<li><code>bash scripts/pmtiles_convert.sh</code></li>');
+    parts.push('<li>Reload this page</li></ol>');
+  } else {
+    parts.push('Follow these steps, then reload this page:');
+    parts.push('<ol>');
+    parts.push('<li>Install Tippecanoe: <code>brew install tippecanoe</code></li>');
+    parts.push('<li>Install PMTiles CLI once: <code>pip install pmtiles</code></li>');
+    parts.push('<li><code>bash scripts/build_vector_preview_tiles.sh</code></li>');
+    parts.push('</ol>');
+  }
+
+  if (manifest) {
+    parts.push(`<div class="muted" style="margin-top:6px">Staging file: ${manifest.staged_feature_count.toLocaleString()} features in ${manifest.sources.filter(s => (manifest.forest_stats?.[s]?.staged_feature_count ?? 0) > 0).length} forests. Layer: <code>${manifest.layer_name}</code>  Zoom: ${manifest.min_zoom}–${manifest.max_zoom}</div>`);
+  }
+
+  return parts.join('\n');
+}
+
+function makeSurfaceFilter(includeUnpaved) {
+  const expr = ['in', ['get', 'surfacetype'], ['literal', UNPAVED_SURFACES]];
+  return includeUnpaved ? expr : ['!', expr];
+}
+
+// ── init ───────────────────────────────────────────────────────────────────
+async function init() {
+  // ── Load manifest ──────────────────────────────────────────────────────
+  let manifest = null;
+  let manifestOk = false;
+  try {
+    const r = await fetch(MANIFEST_URL);
+    if (r.ok) { manifest = await r.json(); manifestOk = true; }
+  } catch { /* manifest not available */ }
+
+  if (manifest) {
+    MIN_ZOOM = manifest.min_zoom || 0;
+    MAX_ZOOM = manifest.max_zoom || 14;
+    document.title = `Vector Tile Preview — ${manifest.staged_feature_count.toLocaleString()} road features`;
+  }
+
+  // ── Detect tile sources ────────────────────────────────────────────────
+  let pmtilesExists = false;
+  let mbtilesExists = false;
+  let tileSource = null;
+
+  try {
+    const r = await fetch(PMTILES_URL, { method: 'HEAD' });
+    pmtilesExists = r.ok;
+    if (r.ok) tileSource = `pmtiles://${PMTILES_URL}`;
+  } catch { /* no PMTiles */ }
+
+  if (!tileSource) {
+    try {
+      const r = await fetch(MBTILES_URL, { method: 'HEAD' });
+      mbtilesExists = r.ok;
+    } catch { /* no MBTiles either */ }
+  }
+
+  // ── Register PMTiles protocol with MapLibre (before map creation) ─────
+  if (tileSource && globalThis.pmtiles?.Protocol) {
+    const protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol('pmtiles', protocol.tile);
+  }
+
+  // ── Create map ─────────────────────────────────────────────────────────
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        basemap: {
+          type: 'raster',
+          tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'],
+          tileSize: 256,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> <a href="https://carto.com/">CARTO</a>'
+        }
+      },
+      layers: [{ id: 'basemap', type: 'raster', source: 'basemap' }]
+    },
+    center: [-119.5, 37.5],
+    zoom: 7,
+    maxZoom: Math.max(MAX_ZOOM, 14),
+    minZoom: 2
+  });
+  globalThis.__forestRoadVectorMap = map;
+  globalThis.__forestRoadVectorManifest = manifest;
+
+  map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+  // ── Wire vector source if tiles available ──────────────────────────────
+  if (tileSource && pmtilesExists) {
+    const layerName = manifest?.layer_name || 'forest_roads';
+
+    map.on('load', () => {
+      map.addSource('forest_roads', {
+        type: 'vector',
+        url: tileSource,
+        minzoom: MIN_ZOOM,
+        maxzoom: MAX_ZOOM
+      });
+
+      // Paved roads (solid) — one layer per symbol
+      ['1', '2', '3', '4'].forEach(sym => {
+        map.addLayer({
+          id: `fr_paved_${sym}`,
+          type: 'line',
+          source: 'forest_roads',
+          'source-layer': layerName,
+          filter: ['all', ['==', ['get', 'symbol'], sym], makeSurfaceFilter(false)],
+          paint: {
+            'line-color': SYMBOL_COLORS[sym],
+            'line-width': ['match', ['get', 'symbol'], '1', 2.5, '2', 2, '3', 2.5, '4', 2, 1.5],
+            'line-opacity': 0.9
+          }
+        });
+      });
+
+      // Unpaved roads (dashed) — one layer per symbol
+      ['1', '2', '3', '4'].forEach(sym => {
+        map.addLayer({
+          id: `fr_unpaved_${sym}`,
+          type: 'line',
+          source: 'forest_roads',
+          'source-layer': layerName,
+          filter: ['all', ['==', ['get', 'symbol'], sym], makeSurfaceFilter(true)],
+          paint: {
+            'line-color': SYMBOL_COLORS[sym],
+            'line-width': ['match', ['get', 'symbol'], '1', 2.5, '2', 2, '3', 2.5, '4', 2, 1.5],
+            'line-opacity': 0.9,
+            'line-dasharray': [4, 3]
+          }
+        });
+      });
+
+      document.getElementById('legend').hidden = false;
+      setNotice(null);
+    });
+
+    map.on('error', (e) => {
+      console.error('Vector preview error', {
+        type: e.type,
+        sourceId: e.sourceId,
+        tileId: e.tileId,
+        status: e.error?.status || e.status || null,
+        message: e.error?.message || String(e.error || 'unknown error')
+      });
+      const status = e.error?.status || e.status;
+      if (status === 404 || status === 403) {
+        setNotice(`<strong>Vector tile source unreachable</strong><br>The PMTiles file exists but tiles returned <code>${status}</code>. Try regenerating with <code>bash scripts/pmtiles_convert.sh</code>.`);
+      } else if (!e.error?.status && tileSource) {
+        // Non-HTTP error (e.g. protocol handler failure)
+        setNotice(`<strong>Vector tile loading error</strong><br>The PMTiles file was found but could not be decoded. Check the browser console for details. Source: <code>${tileSource}</code>`);
+      }
+    });
+
+  } else {
+    // No tiles available — show build instructions
+    setNotice(buildNoticeHtml(manifest, mbtilesExists, pmtilesExists));
+  }
+
+  // ── Fit to manifest bounds ─────────────────────────────────────────────
+  if (manifest?.bounds) {
+    map.fitBounds(manifest.bounds, { padding: 40, maxZoom: 7 });
+  }
+
+  // ── Status panel ───────────────────────────────────────────────────────
+  const statusLines = [];
+  statusLines.push(manifestOk
+    ? `<span class="ok">&#x2713;</span> Manifest: ${manifest.staged_feature_count.toLocaleString()} features`
+    : `<span class="bad">&#x2717;</span> Manifest: not found`);
+  statusLines.push(pmtilesExists
+    ? `<span class="ok">&#x2713;</span> PMTiles: ${PMTILES_URL}`
+    : `<span class="${mbtilesExists ? 'warn' : 'bad'}">&#x2717;</span> PMTiles: missing`);
+  if (mbtilesExists && !pmtilesExists) {
+    statusLines.push(`<span class="warn">&#x26A0;</span> MBTiles exists — convert needed`);
+  }
+  if (manifest) {
+    statusLines.push(`Layer: ${manifest.layer_name}`);
+    statusLines.push(`Zoom: ${manifest.min_zoom}–${manifest.max_zoom}`);
+  }
+  setStatus(statusLines);
+}
+
+init();
+</script>
+</body>
+</html>
