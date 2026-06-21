@@ -8,6 +8,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_DIR="$REPO_DIR/build/vector_tiles"
+PUBLISH_DIR="$REPO_DIR/vector_tiles"
 PMTILES_CMD=""
 PMTILES_VERSION_CMD=()
 
@@ -81,5 +82,14 @@ for f in "$OUTPUT_DIR"/*; do
     printf "  %-50s %s\n" "$(basename "$f")" "$SIZE"
   fi
 done
+if [ -d "$PUBLISH_DIR" ]; then
+  echo "  Published files:"
+  for f in "$PUBLISH_DIR"/*; do
+    if [ -f "$f" ]; then
+      SIZE=$(du -sh "$f" 2>/dev/null | cut -f1)
+      printf "  %-50s %s\n" "$(basename "$f")" "$SIZE"
+    fi
+  done
+fi
 echo ""
 echo "  Preview at: http://127.0.0.1:8080/vector_preview.html"

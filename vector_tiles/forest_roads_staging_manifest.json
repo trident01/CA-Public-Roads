@@ -1,0 +1,132 @@
+{
+  "allowlisted_properties": [
+    "districtname",
+    "name",
+    "seasonal",
+    "surfacetype",
+    "symbol",
+    "system"
+  ],
+  "base_zoom": 10,
+  "bounds": [
+    -123.68389,
+    32.69288,
+    -116.39169,
+    42.08476
+  ],
+  "created_utc": "2026-06-21T17:56:57Z",
+  "description": "Staging file for vector-tile build pipeline (Chunk 1)",
+  "forest_stats": {
+    "angeles_national_forest": {
+      "source_feature_count": 0,
+      "staged_feature_count": 0
+    },
+    "cleveland_national_forest": {
+      "source_feature_count": 188,
+      "staged_feature_count": 188
+    },
+    "eldorado_national_forest": {
+      "source_feature_count": 1151,
+      "staged_feature_count": 1151
+    },
+    "inyo_national_forest": {
+      "source_feature_count": 3635,
+      "staged_feature_count": 3635
+    },
+    "klamath_national_forest": {
+      "source_feature_count": 2318,
+      "staged_feature_count": 2318
+    },
+    "lake_tahoe_basin_management_unit": {
+      "source_feature_count": 163,
+      "staged_feature_count": 163
+    },
+    "lassen_national_forest": {
+      "source_feature_count": 2444,
+      "staged_feature_count": 2444
+    },
+    "los_padres_national_forest": {
+      "source_feature_count": 209,
+      "staged_feature_count": 209
+    },
+    "mendocino_national_forest": {
+      "source_feature_count": 987,
+      "staged_feature_count": 987
+    },
+    "modoc_national_forest": {
+      "source_feature_count": 7,
+      "staged_feature_count": 7
+    },
+    "plumas_national_forest": {
+      "source_feature_count": 2081,
+      "staged_feature_count": 2081
+    },
+    "san_bernardino_national_forest": {
+      "source_feature_count": 471,
+      "staged_feature_count": 471
+    },
+    "sequoia_national_forest": {
+      "source_feature_count": 1254,
+      "staged_feature_count": 1254
+    },
+    "shasta_trinity_national_forest": {
+      "source_feature_count": 3244,
+      "staged_feature_count": 3244
+    },
+    "sierra_national_forest": {
+      "source_feature_count": 2553,
+      "staged_feature_count": 2553
+    },
+    "six_rivers_national_forest": {
+      "source_feature_count": 2,
+      "staged_feature_count": 2
+    },
+    "stanislaus_national_forest": {
+      "source_feature_count": 1561,
+      "staged_feature_count": 1561
+    },
+    "tahoe_national_forest": {
+      "source_feature_count": 2108,
+      "staged_feature_count": 2108
+    }
+  },
+  "layer_name": "forest_roads",
+  "manifest_path": "build/vector_tiles/forest_roads_staging_manifest.json",
+  "max_zoom": 14,
+  "mbtiles_path": "build/vector_tiles/forest_roads.mbtiles",
+  "min_zoom": 0,
+  "pmtiles_path": "build/vector_tiles/forest_roads.pmtiles",
+  "source_feature_count": 24376,
+  "sources": [
+    "angeles_national_forest",
+    "cleveland_national_forest",
+    "eldorado_national_forest",
+    "inyo_national_forest",
+    "klamath_national_forest",
+    "lake_tahoe_basin_management_unit",
+    "lassen_national_forest",
+    "los_padres_national_forest",
+    "mendocino_national_forest",
+    "modoc_national_forest",
+    "plumas_national_forest",
+    "san_bernardino_national_forest",
+    "sequoia_national_forest",
+    "shasta_trinity_national_forest",
+    "sierra_national_forest",
+    "six_rivers_national_forest",
+    "stanislaus_national_forest",
+    "tahoe_national_forest"
+  ],
+  "staged_feature_count": 24376,
+  "staging_path": "build/vector_tiles/forest_roads_staging.geojson",
+  "tippecanoe_command": "tippecanoe --no-tile-compression --layer=forest_roads --minimum-zoom=0 --maximum-zoom=14 --base-zoom=10 --drop-densest-as-needed --extend-zooms-if-still-dropping -o build/vector_tiles/forest_roads.mbtiles build/vector_tiles/forest_roads_staging.geojson",
+  "tippecanoe_flags": [
+    "--no-tile-compression",
+    "--layer=forest_roads",
+    "--minimum-zoom=0",
+    "--maximum-zoom=14",
+    "--base-zoom=10",
+    "--drop-densest-as-needed",
+    "--extend-zooms-if-still-dropping"
+  ]
+}

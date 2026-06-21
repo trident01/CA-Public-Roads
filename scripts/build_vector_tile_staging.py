@@ -23,6 +23,7 @@ from pathlib import Path
 # ── config ──────────────────────────────────────────────────────────────────
 SOURCE_DIR = Path("_roads_geojson")
 OUTPUT_DIR = Path("build") / "vector_tiles"
+PUBLISH_DIR = Path("vector_tiles")
 STAGING_FILENAME = "forest_roads_staging.geojson"
 MANIFEST_FILENAME = "forest_roads_staging_manifest.json"
 MBTILES_FILENAME = "forest_roads.mbtiles"
@@ -85,6 +86,7 @@ def main() -> None:
         sys.exit(1)
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    PUBLISH_DIR.mkdir(parents=True, exist_ok=True)
 
     all_features: list[dict] = []
     forest_stats: dict[str, dict[str, int]] = {}
@@ -156,6 +158,10 @@ def main() -> None:
 
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True))
     print(f"Wrote manifest -> {manifest_path}")
+
+    publish_manifest_path = PUBLISH_DIR / MANIFEST_FILENAME
+    publish_manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True))
+    print(f"Wrote published manifest -> {publish_manifest_path}")
 
 
 def _extract_coords(geom: dict) -> list[tuple[float, float]]:

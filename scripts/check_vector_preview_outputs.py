@@ -16,11 +16,14 @@ from pathlib import Path
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = REPO_DIR / "build" / "vector_tiles"
+PUBLISH_DIR = REPO_DIR / "vector_tiles"
 
 STAGING_GEOJSON = OUTPUT_DIR / "forest_roads_staging.geojson"
 MANIFEST = OUTPUT_DIR / "forest_roads_staging_manifest.json"
 MBTILES = OUTPUT_DIR / "forest_roads.mbtiles"
 PMTILES = OUTPUT_DIR / "forest_roads.pmtiles"
+PUBLISHED_MANIFEST = PUBLISH_DIR / "forest_roads_staging_manifest.json"
+PUBLISHED_PMTILES = PUBLISH_DIR / "forest_roads.pmtiles"
 
 REQUIRED_MANIFEST_KEYS = {
     "layer_name",
@@ -74,6 +77,8 @@ def print_summary(manifest_ok: bool) -> None:
     manifest_exists, manifest_size = check_file(MANIFEST, "manifest")
     mbtiles_ok, mbtiles_size = check_file(MBTILES, "MBTiles")
     pmtiles_ok, pmtiles_size = check_file(PMTILES, "PMTiles")
+    published_manifest_ok, published_manifest_size = check_file(PUBLISHED_MANIFEST, "published manifest")
+    published_pmtiles_ok, published_pmtiles_size = check_file(PUBLISHED_PMTILES, "published PMTiles")
 
     # Header
     print("=" * 56)
@@ -97,6 +102,8 @@ def print_summary(manifest_ok: bool) -> None:
         ("manifest",               MANIFEST.name,        manifest_exists, manifest_size),
         ("MBTiles (Tippecanoe)",   MBTILES.name,         mbtiles_ok, mbtiles_size),
         ("PMTiles (browser)",      PMTILES.name,         pmtiles_ok, pmtiles_size),
+        ("Published manifest",     PUBLISHED_MANIFEST.name, published_manifest_ok, published_manifest_size),
+        ("Published PMTiles",      PUBLISHED_PMTILES.name,  published_pmtiles_ok, published_pmtiles_size),
     ]
 
     for label, fname, ok, size in files:
@@ -126,9 +133,12 @@ def print_summary(manifest_ok: bool) -> None:
     # Overall status
     print()
     all_ok = staging_ok and manifest_exists and manifest_ok
-    if all_ok and mbtiles_ok and pmtiles_ok:
+    if all_ok and mbtiles_ok and pmtiles_ok and published_manifest_ok and published_pmtiles_ok:
         print("  Result: EVERYTHING AVAILABLE — preview ready.")
         print(f"  Open:   http://127.0.0.1:8080/vector_preview.html")
+        print("  Public: vector_tiles/ is ready for GitHub Pages.")
+    elif all_ok and mbtiles_ok and pmtiles_ok:
+        print("  Result: LOCAL TILE BUILD OK — publish copies are missing.")
     elif all_ok and mbtiles_ok:
         print("  Result: STAGING + MBTILES OK — run pmtiles_convert.sh for browser preview.")
     elif all_ok:

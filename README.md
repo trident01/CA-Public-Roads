@@ -31,6 +31,8 @@ The main map now has a renderer switch in the top-right panel:
 - `Vector Preview` attempts to use the experimental PMTiles path in the main UI
 
 If vector tiles are not built yet, the page falls back safely to classic mode.
+For the public site, the committed files in `vector_tiles/` are what make the
+experimental vector renderer available.
 
 ## GitHub Pages
 
@@ -135,6 +137,8 @@ python3 scripts/check_vector_preview_outputs.py
 | `build/vector_tiles/forest_roads_staging_manifest.json` | Metadata: counts, bounds, zoom, layer name |
 | `build/vector_tiles/forest_roads.mbtiles` | Tippecanoe-generated vector tiles (MBTiles) |
 | `build/vector_tiles/forest_roads.pmtiles` | Converted PMTiles for direct browser loading |
+| `vector_tiles/forest_roads_staging_manifest.json` | Published manifest copy used by the browser and GitHub Pages |
+| `vector_tiles/forest_roads.pmtiles` | Published PMTiles copy used by the browser and GitHub Pages |
 
 ### Stage 1: Combine source data
 
@@ -150,6 +154,7 @@ python3 scripts/build_vector_tile_staging.py
 Output:
 - `build/vector_tiles/forest_roads_staging.geojson` — combined FeatureCollection
 - `build/vector_tiles/forest_roads_staging_manifest.json` — source/staged counts, bounds, layer name, zoom settings, and canonical Tippecanoe command
+- `vector_tiles/forest_roads_staging_manifest.json` — published manifest copy for the site
 
 ### Stage 2: Generate vector tiles (requires Tippecanoe)
 
@@ -209,7 +214,9 @@ Then convert:
 bash scripts/pmtiles_convert.sh
 ```
 
-Output: `build/vector_tiles/forest_roads.pmtiles`
+Output:
+- `build/vector_tiles/forest_roads.pmtiles`
+- `vector_tiles/forest_roads.pmtiles` — published site copy
 
 ### One-command preview build
 
@@ -224,6 +231,9 @@ That wrapper runs:
 1. `python3 scripts/build_vector_tile_staging.py`
 2. `bash scripts/tippecanoe_build.sh`
 3. `bash scripts/pmtiles_convert.sh`
+
+After step 3, the browser-facing files are synced into `vector_tiles/` so they
+can be committed and served by GitHub Pages.
 
 ### Stage 4: Preview the vector tiles locally
 

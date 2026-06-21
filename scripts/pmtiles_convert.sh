@@ -6,8 +6,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 OUTPUT_DIR="$REPO_DIR/build/vector_tiles"
+PUBLISH_DIR="$REPO_DIR/vector_tiles"
 MBTILES="$OUTPUT_DIR/forest_roads.mbtiles"
 PMTILES="$OUTPUT_DIR/forest_roads.pmtiles"
+PUBLISHED_PMTILES="$PUBLISH_DIR/forest_roads.pmtiles"
+MANIFEST="$OUTPUT_DIR/forest_roads_staging_manifest.json"
+PUBLISHED_MANIFEST="$PUBLISH_DIR/forest_roads_staging_manifest.json"
 PMTILES_CMD=""
 PMTILES_RUNNER=()
 
@@ -53,11 +57,23 @@ else
   "${PMTILES_RUNNER[@]}" "$MBTILES" "$PMTILES" --overwrite
 fi
 
+mkdir -p "$PUBLISH_DIR"
+cp "$PMTILES" "$PUBLISHED_PMTILES"
+if [ -f "$MANIFEST" ]; then
+  cp "$MANIFEST" "$PUBLISHED_MANIFEST"
+fi
+
 # ── verify ──────────────────────────────────────────────────────────────
 if [ ! -f "$PMTILES" ]; then
   echo "ERROR: conversion completed but $PMTILES was not created."
   exit 1
 fi
+if [ ! -f "$PUBLISHED_PMTILES" ]; then
+  echo "ERROR: publish copy was not created: $PUBLISHED_PMTILES"
+  exit 1
+fi
 
 PM_SIZE=$(du -sh "$PMTILES" 2>/dev/null | cut -f1 || echo "?")
+PUBLISHED_PM_SIZE=$(du -sh "$PUBLISHED_PMTILES" 2>/dev/null | cut -f1 || echo "?")
 echo "    Done -> $PMTILES ($PM_SIZE)"
+echo "    Published -> $PUBLISHED_PMTILES ($PUBLISHED_PM_SIZE)"
