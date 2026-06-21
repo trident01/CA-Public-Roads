@@ -67,6 +67,33 @@ body { color: #15231a; }
 .status-panel .ok { color: #1f5138; }
 .status-panel .warn { color: #8a5b0a; }
 .status-panel .bad { color: #8d1d2c; }
+
+@media (max-width: 900px) {
+  .notice {
+    top: 10px; left: 10px;
+    max-width: calc(100vw - 20px);
+    font-size: 12px;
+    padding: 12px 14px;
+  }
+
+  .legend {
+    bottom: 14px; left: 10px;
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .status-panel {
+    bottom: 14px; right: 10px;
+    padding: 8px 10px;
+    font-size: 10px;
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .legend { display: none; }
+  .status-panel { display: none; }
+}
 </style>
 </head>
 <body>

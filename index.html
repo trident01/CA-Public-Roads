@@ -331,20 +331,187 @@ body { color: #15231a; }
 
 @media (max-width: 900px) {
   .controls {
-    left: 12px;
-    right: 12px;
+    left: 10px;
+    right: 10px;
     top: auto;
-    bottom: 12px;
+    bottom: 10px;
     width: auto;
-    max-height: min(60vh, 560px);
+    max-height: min(45vh, 380px);
+    border-radius: 14px;
+  }
+
+  .controls-header {
+    padding: 12px 14px 8px;
+  }
+
+  .controls-header h1 {
+    font-size: 17px;
+  }
+
+  .controls-header p {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .mode-row {
+    margin-top: 6px;
+    gap: 6px;
+  }
+
+  .mode-select {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .mode-label {
+    font-size: 10px;
+  }
+
+  .search-panel {
+    padding: 10px 14px 8px;
+  }
+
+  .search-input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .search-button {
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .search-hint {
+    display: none;
+  }
+
+  .search-status {
+    font-size: 11px;
+    min-height: 14px;
+    margin-top: 6px;
+  }
+
+  .mode-note {
+    margin: 0 10px 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .forest-list {
+    padding: 6px 10px 10px;
+  }
+
+  .forest-item {
+    padding: 6px 10px 8px;
+  }
+
+  .forest-item + .forest-item {
+    margin-top: 6px;
+  }
+
+  .forest-toggle {
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .forest-name {
+    font-size: 13px;
+  }
+
+  .forest-meta {
+    margin: 4px 0 0 22px;
+    gap: 4px;
+  }
+
+  .forest-pdfs {
+    margin: 6px 0 0 22px;
+    padding-top: 6px;
+  }
+
+  .pdf-link {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  .pill {
+    font-size: 10px;
+    min-height: 18px;
+    padding: 0 6px;
+  }
+
+  .legend {
+    padding: 10px 14px 12px;
+  }
+
+  .legend-item {
+    gap: 5px;
   }
 
   .notice {
-    top: 12px;
-    left: 12px;
-    right: 12px;
+    top: 8px;
+    left: 8px;
+    right: 8px;
     max-width: none;
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
   }
+
+  .search-results {
+    gap: 6px;
+  }
+
+  .search-result {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 14px 14px 0 0;
+    max-height: min(38vh, 300px);
+  }
+
+  .controls-header {
+    padding: 10px 12px 6px;
+  }
+
+  .controls-header h1 {
+    font-size: 15px;
+  }
+
+  .controls-header p {
+    display: none;
+  }
+
+  .mode-row {
+    margin-top: 4px;
+  }
+
+  .search-panel {
+    padding: 8px 12px 6px;
+  }
+
+  .forest-list {
+    padding: 4px 8px 8px;
+  }
+
+  .legend {
+    padding: 8px 12px 10px;
+  }
+
+  .notice {
+    top: 6px;
+    left: 6px;
+    right: 6px;
+    font-size: 11px;
+    padding: 6px 8px;
+    border-radius: 8px;
+  }
+
 }
 </style>
 </head>
