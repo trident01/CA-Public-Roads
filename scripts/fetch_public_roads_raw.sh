@@ -83,7 +83,13 @@ for tile_key in tile_keys:
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
-    (if: !exists(t["surface"]) || t["surface"] ~ "^(dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips)$")
+    ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips"]
+    ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
+  way["highway"~"track|service|unclassified|residential|road"]
+    ["access"!~"private|no|destination"]
+    ["motor_vehicle"!~"private|no|destination"]
+    ["service"!~"parking_aisle|driveway"]
+    [!"surface"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
 );
 out geom;'''
