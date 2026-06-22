@@ -81,7 +81,7 @@ The query targets minor/unpaved road types that are useful for off-highway trave
 
 | Highway tag | Typical surface in the West |
 |---|---|
-| `track` | Almost always dirt/gravel — forest & farm roads |
+| `track` | Usually dirt/gravel — forest & farm roads; only included without surface tag if not `tracktype=grade1` |
 | `unclassified` | Mixed — only included with an explicit unpaved surface tag |
 | `road` | Unknown classification — only included with an explicit unpaved surface tag |
 | `service` | Mixed — short access roads; only included with an explicit unpaved surface tag |
@@ -95,16 +95,18 @@ Two Overpass sub-queries:
    `surface` tag matches known unpaved materials
    (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
 
-2. **No surface tag** — only `track` is included. `unclassified`,
-   `residential`, `service`, and `road` are excluded because in the US they are
-   overwhelmingly paved even when the `surface` tag is missing. Roads without a
-   surface tag are marked `surface_inferred: true` and rendered with a dotted style.
+2. **No surface tag** — only `track` is included (excluding `tracktype=grade1`,
+   which indicates a paved surface). `unclassified`, `residential`, `service`,
+   and `road` are excluded because in the US they are overwhelmingly paved even
+   when the `surface` tag is missing. Roads without a surface tag are marked
+   `surface_inferred: true` and rendered with a dotted style.
 
 A post-processing step in the tile builders
 ([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
 [`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
 drops any remaining `residential`, `service`, `road`, or `unclassified` feature with
-`surface_inferred: true` as a safety net.
+`surface_inferred: true`, and any track with `tracktype=grade1` (paved tracks),
+as a safety net.
 
 Roads with access restrictions (`access=private/no/destination`,
 `motor_vehicle=private/no/destination`) and parking-aisle/driveway service roads
