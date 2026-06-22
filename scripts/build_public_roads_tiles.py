@@ -90,7 +90,7 @@ def normalize_feature(element, source_id):
         props["surface_inferred"] = True
 
     road_class = props.get("road_class", "")
-    if props.get("surface_inferred") and road_class in ("residential", "service"):
+    if props.get("surface_inferred") and road_class in ("residential", "service", "road"):
         return None
 
     return {

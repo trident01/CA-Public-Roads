@@ -66,15 +66,14 @@ python3 scripts/generate_road_tiles.py
 ## Public Road Tile Build
 
 The brown supplemental-road overlay uses pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
-The cache covers the forest road tile footprint plus a 1-tile buffer outside national forest boundaries (no live Overpass fallback).
+The cache covers all of California at zoom 10 (no live Overpass fallback).
 
 ### Data source
 
 Roads are fetched from [OpenStreetMap](https://www.openstreetmap.org) via the
 [Overpass API](https://overpass-api.de) using
 [`scripts/fetch_public_roads_raw.sh`](scripts/fetch_public_roads_raw.sh).
-The query covers zoom-10 tiles overlapping national forests (plus a 1-tile buffer)
-and a few extra urban regions (SF Bay Area).
+It fetches every zoom-10 tile covering California.
 
 ### Which roads are included
 
@@ -84,7 +83,7 @@ The query targets minor/unpaved road types that are useful for off-highway trave
 |---|---|
 | `track` | Almost always dirt/gravel — forest & farm roads |
 | `unclassified` | Often unpaved — minor rural roads |
-| `road` | Unknown classification — catch-all |
+| `road` | Unknown classification — only included with an explicit unpaved surface tag |
 | `service` | Mixed — short access roads; only included with an explicit unpaved surface tag |
 | `residential` | Usually paved — only included with an explicit unpaved surface tag |
 
@@ -96,17 +95,17 @@ Two Overpass sub-queries:
    `surface` tag matches known unpaved materials
    (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
 
-2. **No surface tag** — only `track`, `unclassified`, and `road` are included.
+2. **No surface tag** — only `track` and `unclassified` are included.
    Roads without a surface tag are marked `surface_inferred: true` and rendered
-   with a dotted style. `residential` and `service` roads are excluded from this
-   sub-query because in the US they are overwhelmingly paved even when the
+   with a dotted style. `residential`, `service`, and `road` are excluded from
+   this sub-query because in the US they are overwhelmingly paved even when the
    `surface` tag is missing.
 
 A post-processing step in the tile builders
 ([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
 [`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
-drops any remaining `residential` or `service` feature with `surface_inferred: true`
-as a safety net.
+drops any remaining `residential`, `service`, or `road` feature with
+`surface_inferred: true` as a safety net.
 
 Roads with access restrictions (`access=private/no/destination`,
 `motor_vehicle=private/no/destination`) and parking-aisle/driveway service roads
@@ -117,9 +116,10 @@ are excluded.
 | Choice | Rationale | Consequence |
 |--------|-----------|-------------|
 | Include no-surface roads | Many rural roads lack a `surface` tag but are clearly unpaved on the ground | Some paved roads without a surface tag slip through. The dotted style signals uncertainty |
-| Exclude residential/service from no-surface query | Eliminates the biggest source of false positives (paved subdivision roads) | Misses the rare unpaved residential road whose surface was never tagged |
+| Exclude residential/service/road from no-surface query | Eliminates the biggest source of false positives (TIGER import roads, subdivision streets) | Misses the rare unpaved road of those types whose surface was never tagged |
+| Full CA coverage | No gaps — roads show everywhere in the state | ~1054 tiles at zoom 10; size depends on how many roads survive filtering |
 | Pre-generated tiles (no live Overpass) | Fast pan/zoom on GitHub Pages; no runtime API calls | Data is static until tiles are rebuilt. Must re-fetch to pick up OSM edits |
-| Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile. Coverage is limited to the tile set |
+| Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile |
 
 ### Styling
 

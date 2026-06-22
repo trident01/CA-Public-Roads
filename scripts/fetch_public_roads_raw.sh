@@ -16,34 +16,31 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 raw_dir = Path(sys.argv[2])
-manifest = json.loads((root / "roads_tiles_manifest.json").read_text())
-tile_keys = sorted(manifest.get("tiles", {}).keys())
 endpoints = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
 
-
-def expand_tile_keys(keys, buffer=1):
-    """Add a ring of buffer tiles around each forest tile to cover
-    roads just outside national forest boundaries."""
-    expanded = set()
-    for key in keys:
-        zoom_str, x_str, y_str = key.split("/")
-        zoom = int(zoom_str)
-        x = int(x_str)
-        y = int(y_str)
-        for dx in range(-buffer, buffer + 1):
-            for dy in range(-buffer, buffer + 1):
-                tx = x + dx
-                ty = y + dy
-                max_tile = (2 ** zoom) - 1
-                if 0 <= tx <= max_tile and 0 <= ty <= max_tile:
-                    expanded.add(f"{zoom}/{tx}/{ty}")
-    return sorted(expanded)
+# Full California coverage at zoom 10
+ZOOM = 10
+CA_WEST, CA_SOUTH, CA_EAST, CA_NORTH = -124.5, 32.5, -114.0, 42.0
 
 
-tile_keys = expand_tile_keys(tile_keys, buffer=1)
+def lon_to_tile_x(lon, z):
+    return int((lon + 180.0) / 360.0 * (2 ** z))
+
+
+def lat_to_tile_y(lat, z):
+    lat_rad = math.radians(lat)
+    n = math.asinh(math.tan(lat_rad))
+    return int((1.0 - n / math.pi) / 2.0 * (2 ** z))
+
+
+tile_keys = []
+for x in range(lon_to_tile_x(CA_WEST, ZOOM), lon_to_tile_x(CA_EAST, ZOOM) + 1):
+    for y in range(lat_to_tile_y(CA_NORTH, ZOOM), lat_to_tile_y(CA_SOUTH, ZOOM) + 1):
+        tile_keys.append(f"{ZOOM}/{x}/{y}")
+tile_keys.sort()
 
 
 def tile_to_lon(x, z):
@@ -74,10 +71,10 @@ for tile_key in tile_keys:
     #   road         – catch-all for roads of unknown classification
     #
     # SUB-QUERY 1: explicit unpaved surface tag — all highway types are fair game
-    # SUB-QUERY 2: no surface tag — only include track, unclassified, and road.
-    #   residential and service without a surface tag are overwhelmingly paved
-    #   in the US, so they're excluded here. They'll still appear in sub-query 1
-    #   if they have an explicit unpaved surface tag.
+    # SUB-QUERY 2: no surface tag — only include track and unclassified.
+    #   residential, service, and road without a surface tag are overwhelmingly
+    #   paved in the US, so they're excluded here. They'll still appear in
+    #   sub-query 1 if they have an explicit unpaved surface tag.
     query = f'''[out:json][timeout:45];
 (
   way["highway"~"track|service|unclassified|residential|road"]
@@ -86,7 +83,7 @@ for tile_key in tile_keys:
     ["service"!~"parking_aisle|driveway"]
     ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
-  way["highway"~"track|unclassified|road"]
+  way["highway"~"track|unclassified"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
