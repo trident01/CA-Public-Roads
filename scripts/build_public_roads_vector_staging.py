@@ -91,6 +91,10 @@ def normalize_feature(element: dict, source_tile: str) -> dict | None:
     if not tags.get("surface"):
         props["surface_inferred"] = True
 
+    road_class = props.get("road_class", "")
+    if props.get("surface_inferred") and road_class in ("residential", "service"):
+        return None
+
     return {
         "type": "Feature",
         "id": element["id"],

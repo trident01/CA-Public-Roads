@@ -88,6 +88,11 @@ def normalize_feature(element, source_id):
     }
     if not surface_raw:
         props["surface_inferred"] = True
+
+    road_class = props.get("road_class", "")
+    if props.get("surface_inferred") and road_class in ("residential", "service"):
+        return None
+
     return {
         "id": element["id"],
         "coords": coords,

@@ -73,10 +73,11 @@ for tile_key in tile_keys:
     #   residential  – neighbourhood roads (many unpaved in remote areas)
     #   road         – catch-all for roads of unknown classification
     #
-    # Surface filter: include if NO surface tag at all (uncertain / likely
-    # unpaved in rural areas), OR if the surface tag matches known unpaved
-    # materials.  Explicitly paved roads (asphalt, concrete, paving_stones,
-    # chipseal, bricks, etc.) are excluded because they won't match.
+    # SUB-QUERY 1: explicit unpaved surface tag — all highway types are fair game
+    # SUB-QUERY 2: no surface tag — only include track, unclassified, and road.
+    #   residential and service without a surface tag are overwhelmingly paved
+    #   in the US, so they're excluded here. They'll still appear in sub-query 1
+    #   if they have an explicit unpaved surface tag.
     query = f'''[out:json][timeout:45];
 (
   way["highway"~"track|service|unclassified|residential|road"]
@@ -85,7 +86,7 @@ for tile_key in tile_keys:
     ["service"!~"parking_aisle|driveway"]
     ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
-  way["highway"~"track|service|unclassified|residential|road"]
+  way["highway"~"track|unclassified|road"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]

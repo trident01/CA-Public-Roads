@@ -68,27 +68,75 @@ python3 scripts/generate_road_tiles.py
 The brown supplemental-road overlay uses pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
 The cache covers the forest road tile footprint plus a 1-tile buffer outside national forest boundaries (no live Overpass fallback).
 
-### What's included
+### Data source
 
-The Overpass query fetches OSM ways tagged with any of:
-- `highway=track` — forest / farm roads
-- `highway=service` — short access roads (parking aisles and driveways are excluded)
-- `highway=unclassified` — minor rural roads (often unpaved in the West)
-- `highway=residential` — neighbourhood roads (many unpaved in remote areas)
-- `highway=road` — roads of unknown classification
+Roads are fetched from [OpenStreetMap](https://www.openstreetmap.org) via the
+[Overpass API](https://overpass-api.de) using
+[`scripts/fetch_public_roads_raw.sh`](scripts/fetch_public_roads_raw.sh).
+The query covers zoom-10 tiles overlapping national forests (plus a 1-tile buffer)
+and a few extra urban regions (SF Bay Area).
 
-A way is included if its surface tag matches known unpaved materials (`dirt`, `gravel`, `ground`, `unpaved`, `sand`, `earth`, etc.) **or** if it has no surface tag at all (uncertain surface — likely unpaved in rural areas). Explicitly paved roads (asphalt, concrete, paving_stones, etc.) are excluded.
+### Which roads are included
+
+The query targets minor/unpaved road types that are useful for off-highway travel:
+
+| Highway tag | Typical surface in the West |
+|---|---|
+| `track` | Almost always dirt/gravel — forest & farm roads |
+| `unclassified` | Often unpaved — minor rural roads |
+| `road` | Unknown classification — catch-all |
+| `service` | Mixed — short access roads; only included with an explicit unpaved surface tag |
+| `residential` | Usually paved — only included with an explicit unpaved surface tag |
+
+### How filtering works
+
+Two Overpass sub-queries:
+
+1. **Explicit unpaved surface** — any of the five highway types is included if its
+   `surface` tag matches known unpaved materials
+   (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
+
+2. **No surface tag** — only `track`, `unclassified`, and `road` are included.
+   Roads without a surface tag are marked `surface_inferred: true` and rendered
+   with a dotted style. `residential` and `service` roads are excluded from this
+   sub-query because in the US they are overwhelmingly paved even when the
+   `surface` tag is missing.
+
+A post-processing step in the tile builders
+([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
+[`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
+drops any remaining `residential` or `service` feature with `surface_inferred: true`
+as a safety net.
+
+Roads with access restrictions (`access=private/no/destination`,
+`motor_vehicle=private/no/destination`) and parking-aisle/driveway service roads
+are excluded.
+
+### Trade-offs
+
+| Choice | Rationale | Consequence |
+|--------|-----------|-------------|
+| Include no-surface roads | Many rural roads lack a `surface` tag but are clearly unpaved on the ground | Some paved roads without a surface tag slip through. The dotted style signals uncertainty |
+| Exclude residential/service from no-surface query | Eliminates the biggest source of false positives (paved subdivision roads) | Misses the rare unpaved residential road whose surface was never tagged |
+| Pre-generated tiles (no live Overpass) | Fast pan/zoom on GitHub Pages; no runtime API calls | Data is static until tiles are rebuilt. Must re-fetch to pick up OSM edits |
+| Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile. Coverage is limited to the tile set |
 
 ### Styling
 
 | Legend | Style | Meaning |
 |--------|-------|---------|
 | Solid orange | `───` | Confirmed unpaved (explicit surface tag) |
-| Dotted orange | `·· ··` | Uncertain surface (no surface tag — could be paved or unpaved) |
+| Dotted orange | `·· ··` | Uncertain surface (no surface tag — likely unpaved) |
 
-### To refresh the local OSM public-road cache
+### To refresh the tiles
 
-The raw Overpass data is gitignored. To re-fetch with the latest data or after changing the query:
+If the raw data is already fetched, rebuilding applies the latest filtering rules:
+
+```bash
+python3 scripts/build_public_roads_tiles.py
+```
+
+To also pull fresh data from Overpass (e.g. after editing the query or to pick up OSM changes):
 
 ```bash
 # 1. Clear old raw data (or skip to resume a partial fetch)
