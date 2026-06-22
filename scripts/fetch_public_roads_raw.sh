@@ -71,10 +71,10 @@ for tile_key in tile_keys:
     #   road         – catch-all for roads of unknown classification
     #
     # SUB-QUERY 1: explicit unpaved surface tag — all highway types are fair game
-    # SUB-QUERY 2: no surface tag — only include track and unclassified.
-    #   residential, service, and road without a surface tag are overwhelmingly
-    #   paved in the US, so they're excluded here. They'll still appear in
-    #   sub-query 1 if they have an explicit unpaved surface tag.
+    # SUB-QUERY 2: no surface tag — only include track.
+    #   unclassified, residential, service, and road without a surface tag are
+    #   overwhelmingly paved in the US, so they're excluded here. They'll still
+    #   appear in sub-query 1 if they have an explicit unpaved surface tag.
     query = f'''[out:json][timeout:45];
 (
   way["highway"~"track|service|unclassified|residential|road"]
@@ -83,11 +83,12 @@ for tile_key in tile_keys:
     ["service"!~"parking_aisle|driveway"]
     ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
-  way["highway"~"track|unclassified"]
+  way["highway"~"track"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
     [!"surface"]
+    ["tracktype"!~"grade1"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
 );
 out geom;'''

@@ -82,7 +82,7 @@ The query targets minor/unpaved road types that are useful for off-highway trave
 | Highway tag | Typical surface in the West |
 |---|---|
 | `track` | Almost always dirt/gravel — forest & farm roads |
-| `unclassified` | Often unpaved — minor rural roads |
+| `unclassified` | Mixed — only included with an explicit unpaved surface tag |
 | `road` | Unknown classification — only included with an explicit unpaved surface tag |
 | `service` | Mixed — short access roads; only included with an explicit unpaved surface tag |
 | `residential` | Usually paved — only included with an explicit unpaved surface tag |
@@ -95,16 +95,15 @@ Two Overpass sub-queries:
    `surface` tag matches known unpaved materials
    (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
 
-2. **No surface tag** — only `track` and `unclassified` are included.
-   Roads without a surface tag are marked `surface_inferred: true` and rendered
-   with a dotted style. `residential`, `service`, and `road` are excluded from
-   this sub-query because in the US they are overwhelmingly paved even when the
-   `surface` tag is missing.
+2. **No surface tag** — only `track` is included. `unclassified`,
+   `residential`, `service`, and `road` are excluded because in the US they are
+   overwhelmingly paved even when the `surface` tag is missing. Roads without a
+   surface tag are marked `surface_inferred: true` and rendered with a dotted style.
 
 A post-processing step in the tile builders
 ([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
 [`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
-drops any remaining `residential`, `service`, or `road` feature with
+drops any remaining `residential`, `service`, `road`, or `unclassified` feature with
 `surface_inferred: true` as a safety net.
 
 Roads with access restrictions (`access=private/no/destination`,

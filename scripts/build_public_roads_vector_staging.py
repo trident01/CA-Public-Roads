@@ -92,7 +92,11 @@ def normalize_feature(element: dict, source_tile: str) -> dict | None:
         props["surface_inferred"] = True
 
     road_class = props.get("road_class", "")
-    if props.get("surface_inferred") and road_class in ("residential", "service", "road"):
+    tracktype = props.get("tracktype", "")
+    if props.get("surface_inferred") and (
+        road_class in ("residential", "service", "road", "unclassified")
+        or tracktype == "grade1"
+    ):
         return None
 
     return {
