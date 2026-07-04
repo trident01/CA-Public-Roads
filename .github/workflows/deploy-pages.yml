@@ -31,10 +31,27 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare site artifact
+        run: |
+          mkdir -p _site
+          rsync -a ./ _site/ \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.venv-pmtiles/' \
+            --exclude '_public_roads_raw/' \
+            --exclude '_public_roads_raw_tiles/' \
+            --exclude '_public_lands/' \
+            --exclude '_roads_geojson/' \
+            --exclude 'build/' \
+            --exclude 'scripts/' \
+            --exclude '__pycache__/' \
+            --exclude '*.pyc' \
+            --exclude '*.md'
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
