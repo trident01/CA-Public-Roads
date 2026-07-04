@@ -23,11 +23,8 @@ TIPPECANOE_MAX_ZOOM = 13
 TIPPECANOE_BASE_ZOOM = 10
 FOREST_BBOX_PAD_DEGREES = 0.1
 # Extra regions to always include (not filtered by forest adjacency).
-# [west, south, east, north]  (lon/lat decimal degrees)
-EXTRA_REGION_BBOXES = [
-    # SF Bay Area — peninsula, SF, east bay, south bay, north bay
-    [-122.8, 37.0, -121.5, 38.6],
-]
+# Intentionally empty: urban special-cases caused too many false positives.
+EXTRA_REGION_BBOXES = []
 # Road classes allowed everywhere (forest-adjacent regions)
 ALLOWED_ROAD_CLASSES = frozenset({
     "track",

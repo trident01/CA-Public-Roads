@@ -77,7 +77,7 @@ It fetches every zoom-10 tile covering California.
 
 ### Which roads are included
 
-The query now targets only the most reliable minor/unpaved road types that are useful for off-highway travel:
+The query now targets only the most reliable minor/unpaved road types that are useful for off-highway travel near California national forest areas:
 
 | Highway tag | Typical surface in the West |
 |---|---|
@@ -116,7 +116,7 @@ are excluded.
 |--------|-----------|-------------|
 | Include no-surface roads | Many rural roads lack a `surface` tag but are clearly unpaved on the ground | Some paved roads without a surface tag slip through. The dotted style signals uncertainty |
 | Restrict to track/unclassified | Eliminates the biggest source of false positives (subdivision streets, access spurs, misc. service roads) | Misses some legitimately unpaved `service` or `residential` roads |
-| Full CA coverage | No gaps — roads show everywhere in the state | ~1054 tiles at zoom 10; size depends on how many roads survive filtering |
+| Forest-adjacent coverage | Focuses the overlay on the map's intended use and drops urban false positives | Misses unpaved roads far from national forest areas |
 | Pre-generated tiles (no live Overpass) | Fast pan/zoom on GitHub Pages; no runtime API calls | Data is static until tiles are rebuilt. Must re-fetch to pick up OSM edits |
 | Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile |
 

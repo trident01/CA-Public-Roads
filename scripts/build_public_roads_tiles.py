@@ -9,6 +9,8 @@ TILE_ZOOM = 10
 SOURCE_DIR = Path("_public_roads_raw_tiles") / str(TILE_ZOOM)
 OUTPUT_DIR = Path("_public_roads_tiles") / str(TILE_ZOOM)
 MANIFEST_PATH = Path("public_roads_tiles_manifest.json")
+BOUNDARIES_PATH = Path("_public_lands") / "ca_forest_boundaries.geojson"
+FOREST_BBOX_PAD_DEGREES = 0.1
 PROPERTY_KEYS = (
     "name",
     "road_class",
@@ -59,6 +61,56 @@ def lonlat_to_tile(lon, lat, zoom):
 
 def round_point(point):
     return [round(float(point[0]), 5), round(float(point[1]), 5)]
+
+
+def extract_all_coords(geom):
+    coords = []
+
+    def walk(value):
+        if not isinstance(value, list) or not value:
+            return
+        first = value[0]
+        if isinstance(first, (int, float)) and len(value) >= 2:
+            coords.append((float(value[0]), float(value[1])))
+            return
+        for item in value:
+            walk(item)
+
+    walk(geom.get("coordinates") or [])
+    return coords
+
+
+def load_forest_bboxes():
+    if not BOUNDARIES_PATH.exists():
+        raise SystemExit(f"Forest boundaries file not found: {BOUNDARIES_PATH}")
+
+    data = json.loads(BOUNDARIES_PATH.read_text())
+    bboxes = []
+    for feature in data.get("features") or []:
+        coords = extract_all_coords(feature.get("geometry") or {})
+        if not coords:
+            continue
+        lons = [coord[0] for coord in coords]
+        lats = [coord[1] for coord in coords]
+        bboxes.append([
+            min(lons) - FOREST_BBOX_PAD_DEGREES,
+            min(lats) - FOREST_BBOX_PAD_DEGREES,
+            max(lons) + FOREST_BBOX_PAD_DEGREES,
+            max(lats) + FOREST_BBOX_PAD_DEGREES,
+        ])
+    return bboxes
+
+
+def feature_bbox(coords):
+    if not coords:
+        return None
+    lons = [point[0] for point in coords]
+    lats = [point[1] for point in coords]
+    return (min(lons), min(lats), max(lons), max(lats))
+
+
+def bbox_intersects(a, b):
+    return not (a[2] < b[0] or a[0] > b[2] or a[3] < b[1] or a[1] > b[3])
 
 
 def feature_tile_refs(coords, zoom):
@@ -155,6 +207,7 @@ def main():
     if not files:
         raise SystemExit(f"No raw public-road JSON files found in {SOURCE_DIR}")
 
+    forest_bboxes = load_forest_bboxes()
     ways_by_id = {}
     source_counts = {}
 
@@ -166,6 +219,9 @@ def main():
         for element in elements:
             normalized = normalize_feature(element, source_id)
             if not normalized:
+                continue
+            bbox = feature_bbox(normalized["coords"])
+            if bbox is None or not any(bbox_intersects(bbox, fb) for fb in forest_bboxes):
                 continue
             ways_by_id[normalized["id"]] = normalized
 
@@ -195,6 +251,8 @@ def main():
         "tile_zoom": TILE_ZOOM,
         "tile_count": len(manifest_tiles),
         "unique_way_count": len(ways_by_id),
+        "forest_bbox_count": len(forest_bboxes),
+        "forest_bbox_pad_degrees": FOREST_BBOX_PAD_DEGREES,
         "queried_tiles": sorted(source_counts.keys()),
         "tiles": manifest_tiles,
         "source_counts": source_counts,

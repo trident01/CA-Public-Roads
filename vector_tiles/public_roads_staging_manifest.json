@@ -22,18 +22,11 @@
     42.2439
   ],
   "class_filtered_out_count": 0,
-  "created_utc": "2026-07-04T22:35:56Z",
+  "created_utc": "2026-07-04T23:20:30Z",
   "description": "Staging file for public-road vector tile build pipeline",
-  "extra_region_bboxes": [
-    [
-      -122.8,
-      37.0,
-      -121.5,
-      38.6
-    ]
-  ],
-  "extra_region_feature_count": 13565,
-  "filtered_out_feature_count": 82596,
+  "extra_region_bboxes": [],
+  "extra_region_feature_count": 0,
+  "filtered_out_feature_count": 95944,
   "forest_bbox_count": 18,
   "forest_bbox_pad_degrees": 0.1,
   "forest_region_feature_count": 142184,
@@ -831,7 +824,7 @@
   "source_query_file_count": 783,
   "source_tile_zoom": 10,
   "source_way_count": 233126,
-  "staged_feature_count": 150530,
+  "staged_feature_count": 137182,
   "staging_path": "build/vector_tiles/public_roads_staging.geojson",
   "tippecanoe_command": "tippecanoe --no-tile-compression --layer=public_roads --minimum-zoom=0 --maximum-zoom=13 --base-zoom=10 --drop-densest-as-needed --extend-zooms-if-still-dropping -o build/vector_tiles/public_roads.mbtiles build/vector_tiles/public_roads_staging.geojson",
   "tippecanoe_flags": [
