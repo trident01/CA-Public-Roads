@@ -19,6 +19,27 @@ PROPERTY_KEYS = (
     "source",
     "source_detail",
 )
+ALLOWED_ROAD_CLASSES = frozenset({"track", "unclassified"})
+UNPAVED_SURFACES = frozenset({
+    "dirt",
+    "gravel",
+    "ground",
+    "unpaved",
+    "sand",
+    "earth",
+    "mud",
+    "clay",
+    "grass",
+    "fine_gravel",
+    "pebblestone",
+    "compacted",
+    "cinder",
+    "rock",
+    "stone",
+    "woodchips",
+})
+BLOCKED_ACCESS_VALUES = frozenset({"private", "no", "destination"})
+BLOCKED_SERVICE_VALUES = frozenset({"parking_aisle", "driveway"})
 
 
 def clamp_lat(lat):
@@ -75,27 +96,36 @@ def normalize_feature(element, source_id):
     coords = [round_point((point["lon"], point["lat"])) for point in geometry]
     tags = element.get("tags") or {}
     surface_raw = tags.get("surface")
+    road_class = tags.get("highway") or ""
+    tracktype = tags.get("tracktype") or ""
+    access = tags.get("access") or ""
+    motor_vehicle = tags.get("motor_vehicle") or ""
+    service = tags.get("service") or ""
+
+    if road_class not in ALLOWED_ROAD_CLASSES:
+        return None
+    if access in BLOCKED_ACCESS_VALUES or motor_vehicle in BLOCKED_ACCESS_VALUES:
+        return None
+    if service in BLOCKED_SERVICE_VALUES:
+        return None
+    if surface_raw and surface_raw not in UNPAVED_SURFACES:
+        return None
+    if not surface_raw and (road_class != "track" or tracktype == "grade1"):
+        return None
+
     props = {
         "name": normalize_name(tags),
-        "road_class": tags.get("highway") or "",
+        "road_class": road_class,
         "surface": surface_raw or "",
-        "tracktype": tags.get("tracktype") or "",
-        "motor_vehicle": tags.get("motor_vehicle") or "",
-        "access": tags.get("access") or "",
+        "tracktype": tracktype,
+        "motor_vehicle": motor_vehicle,
+        "access": access,
         "source": "OpenStreetMap",
         "source_detail": f"osm way {element['id']}",
         "source_tile": source_id,
     }
     if not surface_raw:
         props["surface_inferred"] = True
-
-    road_class = props.get("road_class", "")
-    tracktype = props.get("tracktype", "")
-    if props.get("surface_inferred") and (
-        road_class in ("residential", "service", "road", "unclassified")
-        or tracktype == "grade1"
-    ):
-        return None
 
     return {
         "id": element["id"],

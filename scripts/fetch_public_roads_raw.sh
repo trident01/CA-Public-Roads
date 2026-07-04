@@ -16,10 +16,16 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 raw_dir = Path(sys.argv[2])
+failed_tiles_path = root / "build" / "public_roads_failed_tiles.json"
+failed_tiles_path.parent.mkdir(parents=True, exist_ok=True)
 endpoints = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
 ]
+UNPAVED_SURFACE_PATTERN = (
+    "^(dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|"
+    "pebblestone|compacted|cinder|rock|stone|woodchips)$"
+)
 
 # Full California coverage at zoom 10
 ZOOM = 10
@@ -52,6 +58,8 @@ def tile_to_lat(y, z):
     return math.degrees(math.atan(math.sinh(n)))
 
 
+failed_tiles = []
+
 for tile_key in tile_keys:
     zoom_str, x_str, y_str = tile_key.split("/")
     zoom = int(zoom_str)
@@ -65,23 +73,21 @@ for tile_key in tile_keys:
 
     # Included road types:
     #   track        – dirt/gravel forest & farm roads
-    #   service      – short access roads (keep alleys, exclude parking aisles)
-    #   unclassified – minor rural roads (often unpaved in the west)
-    #   residential  – neighbourhood roads (many unpaved in remote areas)
-    #   road         – catch-all for roads of unknown classification
+    #   unclassified – minor rural roads that are sometimes legitimate connectors
     #
-    # SUB-QUERY 1: explicit unpaved surface tag — all highway types are fair game
+    # SUB-QUERY 1: explicit unpaved surface tag — only the most useful road types
+    # are allowed, and the surface regex is anchored to avoid accidental matches
+    # like "paving_stones" via the substring "stone".
     # SUB-QUERY 2: no surface tag — only include track.
-    #   unclassified, residential, service, and road without a surface tag are
-    #   overwhelmingly paved in the US, so they're excluded here. They'll still
-    #   appear in sub-query 1 if they have an explicit unpaved surface tag.
+    #   unclassified without a surface tag is still too noisy in practice, so it
+    #   remains excluded here.
     query = f'''[out:json][timeout:45];
 (
-  way["highway"~"track|service|unclassified|residential|road"]
+  way["highway"~"^(track|unclassified)$"]
     ["access"!~"private|no|destination"]
     ["motor_vehicle"!~"private|no|destination"]
     ["service"!~"parking_aisle|driveway"]
-    ["surface"~"dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips"]
+    ["surface"~"{UNPAVED_SURFACE_PATTERN}"]
     ({south:.6f},{west:.6f},{north:.6f},{east:.6f});
   way["highway"~"track"]
     ["access"!~"private|no|destination"]
@@ -128,7 +134,26 @@ out geom;'''
             print(f"Retrying {tile_key} in {wait_seconds}s after {endpoint} failed", flush=True)
             time.sleep(wait_seconds)
     if last_error:
-        raise last_error
+        failed_tiles.append(tile_key)
+        print(f"Failed {tile_key}; continuing with remaining tiles", flush=True)
+        if out_path.exists() and out_path.stat().st_size == 0:
+            out_path.unlink()
+        continue
 
-    time.sleep(1.0)
+    time.sleep(0.1)
+
+if failed_tiles:
+    failed_tiles_path.write_text(json.dumps({
+        "failed_tiles": failed_tiles,
+        "failed_count": len(failed_tiles),
+        "total_tiles": len(tile_keys),
+    }, indent=2))
+    print(
+        f"Completed with {len(failed_tiles)} failed tiles; see {failed_tiles_path}",
+        flush=True,
+    )
+else:
+    if failed_tiles_path.exists():
+        failed_tiles_path.unlink()
+    print(f"Completed all {len(tile_keys)} tiles with no failures", flush=True)
 PY

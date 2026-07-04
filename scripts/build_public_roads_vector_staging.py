@@ -30,16 +30,29 @@ EXTRA_REGION_BBOXES = [
 ]
 # Road classes allowed everywhere (forest-adjacent regions)
 ALLOWED_ROAD_CLASSES = frozenset({
-    "road",
-    "service",
-    "services",
     "track",
     "unclassified",
 })
-# Road classes additionally allowed in extra regions (e.g. urban Bay Area)
-EXTRA_REGION_EXTRA_CLASSES = frozenset({
-    "residential",
+UNPAVED_SURFACES = frozenset({
+    "dirt",
+    "gravel",
+    "ground",
+    "unpaved",
+    "sand",
+    "earth",
+    "mud",
+    "clay",
+    "grass",
+    "fine_gravel",
+    "pebblestone",
+    "compacted",
+    "cinder",
+    "rock",
+    "stone",
+    "woodchips",
 })
+BLOCKED_ACCESS_VALUES = frozenset({"private", "no", "destination"})
+BLOCKED_SERVICE_VALUES = frozenset({"parking_aisle", "driveway"})
 TIPPECANOE_FLAGS = (
     "--no-tile-compression",
     f"--layer={TIPPECANOE_LAYER}",
@@ -71,6 +84,24 @@ def normalize_feature(element: dict, source_tile: str) -> dict | None:
         return None
 
     tags = element.get("tags") or {}
+    road_class = tags.get("highway") or ""
+    surface = tags.get("surface") or ""
+    tracktype = tags.get("tracktype") or ""
+    motor_vehicle = tags.get("motor_vehicle") or ""
+    access = tags.get("access") or ""
+    service = tags.get("service") or ""
+
+    if road_class not in ALLOWED_ROAD_CLASSES:
+        return None
+    if access in BLOCKED_ACCESS_VALUES or motor_vehicle in BLOCKED_ACCESS_VALUES:
+        return None
+    if service in BLOCKED_SERVICE_VALUES:
+        return None
+    if surface and surface not in UNPAVED_SURFACES:
+        return None
+    if not surface and (road_class != "track" or tracktype == "grade1"):
+        return None
+
     props = {
         "name": (
             tags.get("name")
@@ -79,25 +110,17 @@ def normalize_feature(element: dict, source_tile: str) -> dict | None:
             or tags.get("unsigned_ref")
             or "(unnamed public road)"
         ),
-        "road_class": tags.get("highway") or "",
-        "surface": tags.get("surface") or "",
-        "tracktype": tags.get("tracktype") or "",
-        "motor_vehicle": tags.get("motor_vehicle") or "",
-        "access": tags.get("access") or "",
+        "road_class": road_class,
+        "surface": surface,
+        "tracktype": tracktype,
+        "motor_vehicle": motor_vehicle,
+        "access": access,
         "source": "OpenStreetMap",
         "source_detail": f"osm way {element['id']}",
         "source_tile": source_tile,
     }
-    if not tags.get("surface"):
+    if not surface:
         props["surface_inferred"] = True
-
-    road_class = props.get("road_class", "")
-    tracktype = props.get("tracktype", "")
-    if props.get("surface_inferred") and (
-        road_class in ("residential", "service", "road", "unclassified")
-        or tracktype == "grade1"
-    ):
-        return None
 
     return {
         "type": "Feature",
@@ -214,10 +237,7 @@ def main() -> None:
                 if not in_forest and not in_extra:
                     continue
                 road_class = (feature.get("properties") or {}).get("road_class", "")
-                allowed = set(ALLOWED_ROAD_CLASSES)
-                if in_extra:
-                    allowed |= EXTRA_REGION_EXTRA_CLASSES
-                if road_class not in allowed:
+                if road_class not in ALLOWED_ROAD_CLASSES:
                     class_filtered_out += 1
                     continue
                 if in_forest:

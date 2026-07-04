@@ -77,36 +77,34 @@ It fetches every zoom-10 tile covering California.
 
 ### Which roads are included
 
-The query targets minor/unpaved road types that are useful for off-highway travel:
+The query now targets only the most reliable minor/unpaved road types that are useful for off-highway travel:
 
 | Highway tag | Typical surface in the West |
 |---|---|
-| `track` | Usually dirt/gravel — forest & farm roads; only included without surface tag if not `tracktype=grade1` |
+| `track` | Usually dirt/gravel — forest & farm roads; included without a surface tag if not `tracktype=grade1` |
 | `unclassified` | Mixed — only included with an explicit unpaved surface tag |
-| `road` | Unknown classification — only included with an explicit unpaved surface tag |
-| `service` | Mixed — short access roads; only included with an explicit unpaved surface tag |
-| `residential` | Usually paved — only included with an explicit unpaved surface tag |
 
 ### How filtering works
 
 Two Overpass sub-queries:
 
-1. **Explicit unpaved surface** — any of the five highway types is included if its
-   `surface` tag matches known unpaved materials
+1. **Explicit unpaved surface** — only `track` and `unclassified` are included, and
+   only when the `surface` tag exactly matches known unpaved materials
    (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
+   The regex is anchored, so paved values like `paving_stones` no longer slip through
+   via substring matches on `stone`.
 
 2. **No surface tag** — only `track` is included (excluding `tracktype=grade1`,
-   which indicates a paved surface). `unclassified`, `residential`, `service`,
-   and `road` are excluded because in the US they are overwhelmingly paved even
-   when the `surface` tag is missing. Roads without a surface tag are marked
+   which indicates a paved surface). `unclassified` is excluded here because it
+   is still too noisy without an explicit surface tag. Roads without a surface tag are marked
    `surface_inferred: true` and rendered with a dotted style.
 
 A post-processing step in the tile builders
 ([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
 [`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
-drops any remaining `residential`, `service`, `road`, or `unclassified` feature with
-`surface_inferred: true`, and any track with `tracktype=grade1` (paved tracks),
-as a safety net.
+drops any feature outside the `track`/`unclassified` allowlist, rejects blocked
+access/service tags, rejects non-allowlisted surface values, and drops any track
+with `tracktype=grade1` (paved tracks) as a safety net.
 
 Roads with access restrictions (`access=private/no/destination`,
 `motor_vehicle=private/no/destination`) and parking-aisle/driveway service roads
@@ -117,7 +115,7 @@ are excluded.
 | Choice | Rationale | Consequence |
 |--------|-----------|-------------|
 | Include no-surface roads | Many rural roads lack a `surface` tag but are clearly unpaved on the ground | Some paved roads without a surface tag slip through. The dotted style signals uncertainty |
-| Exclude residential/service/road from no-surface query | Eliminates the biggest source of false positives (TIGER import roads, subdivision streets) | Misses the rare unpaved road of those types whose surface was never tagged |
+| Restrict to track/unclassified | Eliminates the biggest source of false positives (subdivision streets, access spurs, misc. service roads) | Misses some legitimately unpaved `service` or `residential` roads |
 | Full CA coverage | No gaps — roads show everywhere in the state | ~1054 tiles at zoom 10; size depends on how many roads survive filtering |
 | Pre-generated tiles (no live Overpass) | Fast pan/zoom on GitHub Pages; no runtime API calls | Data is static until tiles are rebuilt. Must re-fetch to pick up OSM edits |
 | Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile |
