@@ -34,19 +34,14 @@ jobs:
       - name: Prepare site artifact
         run: |
           mkdir -p _site
-          rsync -a ./ _site/ \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            --exclude '.venv-pmtiles/' \
-            --exclude '_public_roads_raw/' \
-            --exclude '_public_roads_raw_tiles/' \
-            --exclude '_public_lands/' \
-            --exclude '_roads_geojson/' \
-            --exclude 'build/' \
-            --exclude 'scripts/' \
-            --exclude '__pycache__/' \
-            --exclude '*.pyc' \
-            --exclude '*.md'
+          cp index.html _site/
+          cp roads_tiles_manifest.json _site/
+          cp public_roads_tiles_manifest.json _site/
+          cp .nojekyll _site/
+          rsync -a vendor/ _site/vendor/
+          rsync -a _roads_tiles/ _site/_roads_tiles/
+          rsync -a _public_roads_tiles/ _site/_public_roads_tiles/
+          rsync -a vector_tiles/ _site/vector_tiles/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
