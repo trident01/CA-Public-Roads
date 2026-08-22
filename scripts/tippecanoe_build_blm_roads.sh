@@ -35,8 +35,6 @@ tippecanoe \
   --minimum-zoom="$MIN_ZOOM" \
   --maximum-zoom="$MAX_ZOOM" \
   --base-zoom="$BASE_ZOOM" \
-  --drop-densest-as-needed \
-  --extend-zooms-if-still-dropping \
   -o "$MBTILES" \
   "$STAGING_FILE"
 

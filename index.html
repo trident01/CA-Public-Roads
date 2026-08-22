@@ -569,11 +569,6 @@ body { color: #15231a; }
     <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
     <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
     <div class="legend-item"><div class="legend-color" style="background:rgba(46,125,50,0.5);height:10px;border-radius:2px"></div>National Forest (boondocking OK)</div>
-    <label class="supplemental-layer-toggle" for="blmRoadsToggle">
-      <input id="blmRoadsToggle" type="checkbox">
-      <span><span class="legend-color legend-color-dashed" style="display:inline-block;color:#a24f17;margin-right:6px"></span>BLM public motorized unpaved roads</span>
-    </label>
-    <div class="supplemental-layer-note">Official BLM GTLF data. Opt-in; zoom 8+. Temporary closures may not be reflected.</div>
   </div>
 </aside>
 
@@ -634,11 +629,15 @@ const RENDER_MODE_KEY = "ca-forest-road-render-mode";
 // Keep the experimental pipeline available for research, but never load it in
 // the public map until it has a trustworthy, independently validated dataset.
 const ENABLE_EXPERIMENTAL_OSM_ROADS = false;
+// BLM GTLF is authoritative, but its broad, short route fragments do not make
+// a useful public-facing road overlay. Retain the offline builder for future
+// filtering work; do not load or expose this layer in the map.
+const ENABLE_BLM_ROADS = false;
 const FOREST_RENDER_MIN_ZOOM = 0;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const ROAD_TILE_ZOOM = 10;
 const ROAD_TILE_VIEW_PAD = 0.2;
-const BLM_ROADS_MIN_ZOOM = 8;
+const BLM_ROADS_MIN_ZOOM = 10;
 const BLM_ROADS_TILE_ZOOM = 10;
 const BLM_ROADS_TILE_VIEW_PAD = 0.15;
 const PUBLIC_ROADS_MIN_ZOOM = 0;
@@ -881,11 +880,13 @@ async function initVectorMode() {
       console.error("Failed to load public-road vector manifest", error);
     }
   }
-  try {
-    const response = await fetch(BLM_VECTOR_MANIFEST_URL);
-    if (response.ok) blmManifest = await response.json();
-  } catch (error) {
-    console.error("Failed to load BLM road vector manifest", error);
+  if (ENABLE_BLM_ROADS) {
+    try {
+      const response = await fetch(BLM_VECTOR_MANIFEST_URL);
+      if (response.ok) blmManifest = await response.json();
+    } catch (error) {
+      console.error("Failed to load BLM road vector manifest", error);
+    }
   }
 
   let pmtilesExists = false;
@@ -901,10 +902,12 @@ async function initVectorMode() {
       publicPmtilesExists = response.ok;
     } catch {}
   }
-  try {
-    const response = await fetch(BLM_VECTOR_PMTILES_URL, { method: "HEAD" });
-    blmPmtilesExists = response.ok;
-  } catch {}
+  if (ENABLE_BLM_ROADS) {
+    try {
+      const response = await fetch(BLM_VECTOR_PMTILES_URL, { method: "HEAD" });
+      blmPmtilesExists = response.ok;
+    } catch {}
+  }
 
   if (!pmtilesExists || !manifest) {
     setNotice("<strong>Vector preview mode is available, but vector tiles are not ready yet.</strong>Build them with <code>bash scripts/build_vector_preview_tiles.sh</code>, or switch the renderer back to <code>Classic GeoJSON</code>.");
@@ -1040,7 +1043,7 @@ async function initVectorMode() {
       console.warn("Vector mode: public-road PMTiles not available; brown roads will be omitted in vector mode until built.");
     }
 
-    if (blmPmtilesExists && blmManifest) {
+    if (ENABLE_BLM_ROADS && blmPmtilesExists && blmManifest) {
       map.addSource("blm_public_roads", {
         type: "vector",
         url: `pmtiles://${BLM_VECTOR_PMTILES_URL}`,
@@ -1074,7 +1077,7 @@ async function initVectorMode() {
       });
       map.on("mouseenter", BLM_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", BLM_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
-    } else {
+    } else if (ENABLE_BLM_ROADS) {
       console.warn("Vector mode: official BLM GTLF road tiles are unavailable.");
     }
 
@@ -1934,7 +1937,7 @@ async function loadPublicRoadTileManifest() {
 }
 
 async function loadBlmRoadTileManifest() {
-  if (isFileProtocol) return;
+  if (isFileProtocol || !ENABLE_BLM_ROADS) return;
   const response = await fetch("blm_public_roads_tiles_manifest.json");
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   blmRoadsManifest = await response.json();
@@ -2012,11 +2015,13 @@ async function initClassicMode(fromVectorFallback = false) {
       setNotice("Road tiles could not be initialized. PDF links are still available, but some road overlays may be missing.");
     }
 
-    try {
-      await loadBlmRoadTileManifest();
-      if (blmRoadsEnabled) await syncBlmRoadTiles();
-    } catch (error) {
-      console.error("Failed to initialize official BLM road tiles", error);
+    if (ENABLE_BLM_ROADS) {
+      try {
+        await loadBlmRoadTileManifest();
+        if (blmRoadsEnabled) await syncBlmRoadTiles();
+      } catch (error) {
+        console.error("Failed to initialize official BLM road tiles", error);
+      }
     }
 
     if (ENABLE_EXPERIMENTAL_OSM_ROADS) {
@@ -2067,9 +2072,11 @@ async function init() {
   });
 
   const blmToggle = document.getElementById("blmRoadsToggle");
-  blmToggle.addEventListener("change", (event) => {
-    setBlmRoadsEnabled(event.target.checked);
-  });
+  if (blmToggle) {
+    blmToggle.addEventListener("change", (event) => {
+      setBlmRoadsEnabled(event.target.checked);
+    });
+  }
 
   if (activeRenderMode === "vector") {
     await initVectorMode();

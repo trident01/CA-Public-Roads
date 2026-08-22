@@ -3,7 +3,6 @@
 Interactive California forest-road map with:
 
 - Forest Service MVUM/NFSR road overlays
-- opt-in official BLM public-motorized unpaved roads
 - linked PDF MVUM sheets
 - place search
 - static road tiles for faster pan/zoom on GitHub Pages
@@ -30,8 +29,8 @@ The main map now has a renderer switch in the top-right panel:
 - `Vector Preview` attempts to use the experimental PMTiles path in the main UI
 
 If vector tiles are not built yet, the page falls back safely to classic mode.
-For the public site, the committed Forest Service and BLM files in
-`vector_tiles/` make the vector renderer available.
+For the public site, the committed Forest Service files in `vector_tiles/` make
+the vector renderer available.
 
 ## GitHub Pages
 
@@ -49,8 +48,7 @@ The site publishes only the runtime assets selected by the Pages workflow:
 - `index.html`
 - `_roads_tiles/`
 - `roads_tiles_manifest.json`
-- `_blm_roads_tiles/` and `blm_public_roads_tiles_manifest.json`
-- the Forest Service and BLM PMTiles sources and manifests
+- the Forest Service PMTiles source and manifest
 - `vendor/`
 
 ## Road Tile Build
@@ -63,12 +61,15 @@ To rebuild them from the source GeoJSON:
 python3 scripts/generate_road_tiles.py
 ```
 
-## Official BLM Public Roads
+## BLM GTLF Audit (Disabled)
 
-The optional brown dashed layer comes from layer 0 of BLM's public-display
-Ground Transportation Linear Features (GTLF) service. It is off by default and
-only renders at zoom 8 or closer. The build applies the same conservative rules
-both in the server query and in a local validator:
+BLM's public-display Ground Transportation Linear Features (GTLF) layer was
+tested with conservative filters, but is disabled in the public map and omitted
+from the Pages artifact. Despite its authoritative provenance, it has too many
+very short route fragments and inconsistent regional coverage to serve as a
+useful statewide road overlay.
+
+The offline builder remains for future filtering research. It applies:
 
 - California records only
 - BLM route-designation authority
@@ -78,9 +79,8 @@ both in the server query and in a local validator:
   or `4WD High Clearance / Specialized`)
 - excludes administrative, permit-only, and all-access-restricted records
 
-The current build contains 4,216 segments covering 2,613.2 GIS miles. These
-are much stronger access signals than OSM tags, but they are not a live closure
-feed; the UI tells users to verify temporary and local closures.
+The current audit set contains 4,216 segments covering 2,613.2 GIS miles. It
+must not be interpreted as a continuous public-road network.
 
 Rebuild the classic tiles and vector staging data from the official service:
 
@@ -131,9 +131,8 @@ Today there are two ways to use it locally:
 - `index.html?mode=vector` enables the main map's vector renderer
 
 The classic Leaflet/GeoJSON renderer is still the more complete path for forest
-toggles. Both renderers support the opt-in official BLM layer. The OSM
-`public_roads.pmtiles` source is retained solely for local experiments in
-`vector_preview.html`; it is disabled in `index.html` and is not deployed.
+toggles. The BLM and OSM supplemental-road experiments are disabled in
+`index.html` and are not deployed.
 
 ### Fast start
 
@@ -165,8 +164,8 @@ python3 scripts/check_vector_preview_outputs.py
 | `build/vector_tiles/blm_public_roads.pmtiles` | BLM-road PMTiles |
 | `vector_tiles/forest_roads_staging_manifest.json` | Published MVUM manifest copy |
 | `vector_tiles/forest_roads.pmtiles` | Published MVUM PMTiles copy |
-| `vector_tiles/blm_public_roads_staging_manifest.json` | Published BLM manifest copy |
-| `vector_tiles/blm_public_roads.pmtiles` | Published BLM PMTiles copy |
+| `vector_tiles/blm_public_roads_staging_manifest.json` | Local BLM audit manifest copy (not deployed) |
+| `vector_tiles/blm_public_roads.pmtiles` | Local BLM audit PMTiles copy (not deployed) |
 
 ### Stage 1: Combine source data
 
@@ -192,7 +191,7 @@ and vector staging:
 - `blm_public_roads_tiles_manifest.json`
 - `build/vector_tiles/blm_public_roads_staging.geojson`
 - `build/vector_tiles/blm_public_roads_staging_manifest.json`
-- `vector_tiles/blm_public_roads_staging_manifest.json`
+- `vector_tiles/blm_public_roads_staging_manifest.json` (offline only)
 
 ### Stage 2: Generate vector tiles (requires Tippecanoe)
 
@@ -260,7 +259,7 @@ Output:
 - `build/vector_tiles/forest_roads.pmtiles`
 - `vector_tiles/forest_roads.pmtiles` — published site copy
 - `build/vector_tiles/blm_public_roads.pmtiles`
-- `vector_tiles/blm_public_roads.pmtiles` — published site copy
+- `vector_tiles/blm_public_roads.pmtiles` — offline audit copy, not deployed
 
 ### One-command preview build
 
@@ -278,7 +277,7 @@ That wrapper runs:
 4. both PMTiles conversion scripts
 
 After step 4, browser-facing files are synced into `vector_tiles/`. The Pages
-workflow publishes the Forest Service and official BLM sources and manifests.
+workflow publishes only the Forest Service source and manifest.
 
 ### Stage 4: Preview the vector tiles locally
 

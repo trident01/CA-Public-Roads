@@ -37,7 +37,10 @@ VECTOR_STAGING_PATH = VECTOR_OUTPUT_DIR / "blm_public_roads_staging.geojson"
 VECTOR_MANIFEST_PATH = VECTOR_OUTPUT_DIR / "blm_public_roads_staging_manifest.json"
 VECTOR_PUBLISHED_MANIFEST_PATH = VECTOR_PUBLISH_DIR / "blm_public_roads_staging_manifest.json"
 VECTOR_LAYER_NAME = "blm_public_roads"
-VECTOR_MIN_ZOOM = 5
+# The GTLF network is too dense to represent truthfully at a statewide scale.
+# Start at the first useful/detail-preserving zoom rather than dropping dense
+# routes into a misleading patchwork.
+VECTOR_MIN_ZOOM = 10
 VECTOR_MAX_ZOOM = 14
 VECTOR_BASE_ZOOM = 10
 
@@ -351,8 +354,7 @@ def build_outputs(source_features: list[dict], expected_count: int) -> None:
         "pmtiles_path": str(VECTOR_OUTPUT_DIR / "blm_public_roads.pmtiles"),
         "tippecanoe_command": (
             "tippecanoe --force --no-tile-compression --layer=blm_public_roads "
-            "--minimum-zoom=5 --maximum-zoom=14 --base-zoom=10 "
-            "--drop-densest-as-needed --extend-zooms-if-still-dropping "
+            "--minimum-zoom=10 --maximum-zoom=14 --base-zoom=10 "
             "-o build/vector_tiles/blm_public_roads.mbtiles "
             "build/vector_tiles/blm_public_roads_staging.geojson"
         ),
