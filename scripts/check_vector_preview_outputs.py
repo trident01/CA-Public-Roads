@@ -26,13 +26,13 @@ FOREST_FILES = {
     "published_manifest": PUBLISH_DIR / "forest_roads_staging_manifest.json",
     "published_pmtiles": PUBLISH_DIR / "forest_roads.pmtiles",
 }
-PUBLIC_FILES = {
-    "staging": OUTPUT_DIR / "public_roads_staging.geojson",
-    "manifest": OUTPUT_DIR / "public_roads_staging_manifest.json",
-    "mbtiles": OUTPUT_DIR / "public_roads.mbtiles",
-    "pmtiles": OUTPUT_DIR / "public_roads.pmtiles",
-    "published_manifest": PUBLISH_DIR / "public_roads_staging_manifest.json",
-    "published_pmtiles": PUBLISH_DIR / "public_roads.pmtiles",
+BLM_FILES = {
+    "staging": OUTPUT_DIR / "blm_public_roads_staging.geojson",
+    "manifest": OUTPUT_DIR / "blm_public_roads_staging_manifest.json",
+    "mbtiles": OUTPUT_DIR / "blm_public_roads.mbtiles",
+    "pmtiles": OUTPUT_DIR / "blm_public_roads.pmtiles",
+    "published_manifest": PUBLISH_DIR / "blm_public_roads_staging_manifest.json",
+    "published_pmtiles": PUBLISH_DIR / "blm_public_roads.pmtiles",
 }
 
 REQUIRED_MANIFEST_KEYS = {
@@ -131,7 +131,7 @@ def print_dataset_summary(label: str, files: dict[str, Path], manifest_ok: bool)
     return all_ok, mbtiles_ok, pmtiles_ok, (published_manifest_ok and published_pmtiles_ok)
 
 
-def print_summary(forest_manifest_ok: bool, public_manifest_ok: bool) -> None:
+def print_summary(forest_manifest_ok: bool, blm_manifest_ok: bool) -> None:
     print("=" * 56)
     print("  Vector-tile pipeline — output check")
     print("=" * 56)
@@ -140,19 +140,19 @@ def print_summary(forest_manifest_ok: bool, public_manifest_ok: bool) -> None:
     forest_all_ok, forest_mb_ok, forest_pm_ok, forest_pub_ok = print_dataset_summary(
         "Forest roads", FOREST_FILES, forest_manifest_ok
     )
-    public_all_ok, public_mb_ok, public_pm_ok, public_pub_ok = print_dataset_summary(
-        "Public roads", PUBLIC_FILES, public_manifest_ok
+    blm_all_ok, blm_mb_ok, blm_pm_ok, blm_pub_ok = print_dataset_summary(
+        "Official BLM public roads", BLM_FILES, blm_manifest_ok
     )
 
-    if forest_all_ok and public_all_ok and forest_mb_ok and public_mb_ok and forest_pm_ok and public_pm_ok and forest_pub_ok and public_pub_ok:
+    if forest_all_ok and blm_all_ok and forest_mb_ok and blm_mb_ok and forest_pm_ok and blm_pm_ok and forest_pub_ok and blm_pub_ok:
         print("  Result: EVERYTHING AVAILABLE — vector mode ready.")
         print("  Open:   http://127.0.0.1:8080/index.html?mode=vector")
         print("  Public: vector_tiles/ is ready for GitHub Pages.")
-    elif forest_all_ok and public_all_ok and forest_mb_ok and public_mb_ok and forest_pm_ok and public_pm_ok:
+    elif forest_all_ok and blm_all_ok and forest_mb_ok and blm_mb_ok and forest_pm_ok and blm_pm_ok:
         print("  Result: LOCAL TILE BUILD OK — publish copies are missing.")
-    elif forest_all_ok and public_all_ok and forest_mb_ok and public_mb_ok:
+    elif forest_all_ok and blm_all_ok and forest_mb_ok and blm_mb_ok:
         print("  Result: STAGING + MBTILES OK — run PMTiles conversion scripts.")
-    elif forest_all_ok and public_all_ok:
+    elif forest_all_ok and blm_all_ok:
         print("  Result: STAGING OK — run build_vector_preview_tiles.sh to generate tiles.")
     else:
         print("  Result: STAGING INCOMPLETE — build both staging datasets first.")
@@ -168,13 +168,13 @@ def main() -> int:
         return 1
 
     forest_manifest_errors = check_manifest(FOREST_FILES["manifest"], "FOREST MANIFEST")
-    public_manifest_errors = check_manifest(PUBLIC_FILES["manifest"], "PUBLIC MANIFEST")
-    print_summary(len(forest_manifest_errors) == 0, len(public_manifest_errors) == 0)
+    blm_manifest_errors = check_manifest(BLM_FILES["manifest"], "BLM MANIFEST")
+    print_summary(len(forest_manifest_errors) == 0, len(blm_manifest_errors) == 0)
 
-    for err in forest_manifest_errors + public_manifest_errors:
+    for err in forest_manifest_errors + blm_manifest_errors:
         print(err)
 
-    return 0 if not (forest_manifest_errors or public_manifest_errors) else 1
+    return 0 if not (forest_manifest_errors or blm_manifest_errors) else 1
 
 
 if __name__ == "__main__":

@@ -1,0 +1,212 @@
+{
+  "bounds": [
+    -124.09056,
+    32.61626,
+    -114.50384,
+    41.02051
+  ],
+  "fetched_utc": "2026-08-22T20:39:35Z",
+  "source_layer": "Roads Managed for Public Motorized Use",
+  "source_name": "BLM National Ground Transportation Linear Features Public Display",
+  "source_url": "https://gis.blm.gov/arcgis/rest/services/transportation/BLM_Natl_GTLF_Public_Display/MapServer/0",
+  "source_where": "ADMIN_ST='CA' AND OBSRVE_SRFCE_TYPE IN ('NATURAL','NATURAL IMPROVED','AGGREGATE') AND OBSRVE_ROUTE_USE_CLASS IN ('2WD LOW','4WD LOW','4WD HIGH CLEARANCE / SPECIALIZED') AND (PLAN_ACCESS_RSTRCT IS NULL OR PLAN_ACCESS_RSTRCT NOT IN ('AUTHORIZED/PERMITTED USER ONLY','ADMIN ONLY','ALL'))",
+  "surface_counts": {
+    "aggregate": 12,
+    "natural": 2563,
+    "natural_improved": 1641
+  },
+  "tile_count": 61,
+  "tile_zoom": 10,
+  "tiles": {
+    "10/159/383": {
+      "feature_count": 8
+    },
+    "10/159/387": {
+      "feature_count": 2
+    },
+    "10/163/391": {
+      "feature_count": 5
+    },
+    "10/169/404": {
+      "feature_count": 6
+    },
+    "10/170/383": {
+      "feature_count": 1
+    },
+    "10/170/384": {
+      "feature_count": 1
+    },
+    "10/170/401": {
+      "feature_count": 1
+    },
+    "10/170/402": {
+      "feature_count": 1
+    },
+    "10/171/383": {
+      "feature_count": 1
+    },
+    "10/171/384": {
+      "feature_count": 1
+    },
+    "10/171/397": {
+      "feature_count": 1
+    },
+    "10/171/398": {
+      "feature_count": 2
+    },
+    "10/171/402": {
+      "feature_count": 3
+    },
+    "10/171/404": {
+      "feature_count": 430
+    },
+    "10/171/405": {
+      "feature_count": 55
+    },
+    "10/172/402": {
+      "feature_count": 3
+    },
+    "10/172/404": {
+      "feature_count": 574
+    },
+    "10/172/405": {
+      "feature_count": 634
+    },
+    "10/173/403": {
+      "feature_count": 2
+    },
+    "10/173/405": {
+      "feature_count": 2
+    },
+    "10/174/402": {
+      "feature_count": 1
+    },
+    "10/174/403": {
+      "feature_count": 20
+    },
+    "10/174/404": {
+      "feature_count": 10
+    },
+    "10/175/397": {
+      "feature_count": 398
+    },
+    "10/175/402": {
+      "feature_count": 2
+    },
+    "10/175/403": {
+      "feature_count": 88
+    },
+    "10/175/404": {
+      "feature_count": 26
+    },
+    "10/176/402": {
+      "feature_count": 14
+    },
+    "10/176/404": {
+      "feature_count": 978
+    },
+    "10/177/406": {
+      "feature_count": 24
+    },
+    "10/179/407": {
+      "feature_count": 3
+    },
+    "10/180/406": {
+      "feature_count": 6
+    },
+    "10/180/407": {
+      "feature_count": 65
+    },
+    "10/180/408": {
+      "feature_count": 2
+    },
+    "10/180/411": {
+      "feature_count": 8
+    },
+    "10/180/412": {
+      "feature_count": 20
+    },
+    "10/181/403": {
+      "feature_count": 3
+    },
+    "10/181/407": {
+      "feature_count": 3
+    },
+    "10/181/408": {
+      "feature_count": 3
+    },
+    "10/181/411": {
+      "feature_count": 3
+    },
+    "10/181/412": {
+      "feature_count": 11
+    },
+    "10/181/413": {
+      "feature_count": 114
+    },
+    "10/182/410": {
+      "feature_count": 5
+    },
+    "10/182/411": {
+      "feature_count": 18
+    },
+    "10/182/412": {
+      "feature_count": 88
+    },
+    "10/182/413": {
+      "feature_count": 96
+    },
+    "10/183/410": {
+      "feature_count": 8
+    },
+    "10/183/411": {
+      "feature_count": 16
+    },
+    "10/183/412": {
+      "feature_count": 6
+    },
+    "10/184/410": {
+      "feature_count": 5
+    },
+    "10/184/411": {
+      "feature_count": 48
+    },
+    "10/184/412": {
+      "feature_count": 96
+    },
+    "10/184/413": {
+      "feature_count": 41
+    },
+    "10/185/406": {
+      "feature_count": 1
+    },
+    "10/185/410": {
+      "feature_count": 8
+    },
+    "10/185/411": {
+      "feature_count": 77
+    },
+    "10/185/412": {
+      "feature_count": 260
+    },
+    "10/185/413": {
+      "feature_count": 47
+    },
+    "10/186/406": {
+      "feature_count": 1
+    },
+    "10/186/412": {
+      "feature_count": 13
+    },
+    "10/186/413": {
+      "feature_count": 8
+    }
+  },
+  "total_gis_miles": 2613.177,
+  "unique_feature_count": 4216,
+  "vehicle_class_counts": {
+    "2wd_low": 770,
+    "4wd_high_clearance_specialized": 2162,
+    "4wd_low": 1284
+  }
+}

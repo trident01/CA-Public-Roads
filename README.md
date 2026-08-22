@@ -3,11 +3,10 @@
 Interactive California forest-road map with:
 
 - Forest Service MVUM/NFSR road overlays
+- opt-in official BLM public-motorized unpaved roads
 - linked PDF MVUM sheets
 - place search
-- supplemental public-road overlay from OpenStreetMap when zoomed in
 - static road tiles for faster pan/zoom on GitHub Pages
-- static public-road tiles covering the full forest road footprint
 
 ## Local Development
 
@@ -31,8 +30,8 @@ The main map now has a renderer switch in the top-right panel:
 - `Vector Preview` attempts to use the experimental PMTiles path in the main UI
 
 If vector tiles are not built yet, the page falls back safely to classic mode.
-For the public site, the committed files in `vector_tiles/` are what make the
-experimental vector renderer available.
+For the public site, the committed Forest Service and BLM files in
+`vector_tiles/` make the vector renderer available.
 
 ## GitHub Pages
 
@@ -45,12 +44,13 @@ To publish:
 3. Set `Source` to `GitHub Actions`.
 4. Push to `main` or run the `Deploy GitHub Pages` workflow manually.
 
-The site will publish all files in this repository as a static site, including:
+The site publishes only the runtime assets selected by the Pages workflow:
 
 - `index.html`
 - `_roads_tiles/`
-- `_roads_geojson/`
-- forest PDF folders
+- `roads_tiles_manifest.json`
+- `_blm_roads_tiles/` and `blm_public_roads_tiles_manifest.json`
+- the Forest Service and BLM PMTiles sources and manifests
 - `vendor/`
 
 ## Road Tile Build
@@ -63,90 +63,63 @@ To rebuild them from the source GeoJSON:
 python3 scripts/generate_road_tiles.py
 ```
 
-## Public Road Tile Build
+## Official BLM Public Roads
 
-The brown supplemental-road overlay uses pre-generated tiles from `_public_roads_tiles/` plus `public_roads_tiles_manifest.json`.
-The cache covers all of California at zoom 10 (no live Overpass fallback).
+The optional brown dashed layer comes from layer 0 of BLM's public-display
+Ground Transportation Linear Features (GTLF) service. It is off by default and
+only renders at zoom 8 or closer. The build applies the same conservative rules
+both in the server query and in a local validator:
 
-### Data source
+- California records only
+- BLM route-designation authority
+- route designation `Open` and planned mode `Motorized`
+- observed surface is `Natural`, `Natural Improved`, or `Aggregate`
+- observed route-use class supports a full-size vehicle (`2WD Low`, `4WD Low`,
+  or `4WD High Clearance / Specialized`)
+- excludes administrative, permit-only, and all-access-restricted records
 
-Roads are fetched from [OpenStreetMap](https://www.openstreetmap.org) via the
-[Overpass API](https://overpass-api.de) using
-[`scripts/fetch_public_roads_raw.sh`](scripts/fetch_public_roads_raw.sh).
-It fetches every zoom-10 tile covering California.
+The current build contains 4,216 segments covering 2,613.2 GIS miles. These
+are much stronger access signals than OSM tags, but they are not a live closure
+feed; the UI tells users to verify temporary and local closures.
 
-### Which roads are included
-
-The query now targets only the most reliable minor/unpaved road types that are useful for off-highway travel near California national forest areas:
-
-| Highway tag | Typical surface in the West |
-|---|---|
-| `track` | Usually dirt/gravel — forest & farm roads; included without a surface tag if not `tracktype=grade1` |
-| `unclassified` | Mixed — only included with an explicit unpaved surface tag |
-
-### How filtering works
-
-Two Overpass sub-queries:
-
-1. **Explicit unpaved surface** — only `track` and `unclassified` are included, and
-   only when the `surface` tag exactly matches known unpaved materials
-   (`dirt|gravel|ground|unpaved|sand|earth|mud|clay|grass|fine_gravel|pebblestone|compacted|cinder|rock|stone|woodchips`).
-   The regex is anchored, so paved values like `paving_stones` no longer slip through
-   via substring matches on `stone`.
-
-2. **No surface tag** — only `track` is included (excluding `tracktype=grade1`,
-   which indicates a paved surface). `unclassified` is excluded here because it
-   is still too noisy without an explicit surface tag. Roads without a surface tag are marked
-   `surface_inferred: true` and rendered with a dotted style.
-
-A post-processing step in the tile builders
-([`build_public_roads_tiles.py`](scripts/build_public_roads_tiles.py) and
-[`build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py))
-drops any feature outside the `track`/`unclassified` allowlist, rejects blocked
-access/service tags, rejects non-allowlisted surface values, and drops any track
-with `tracktype=grade1` (paved tracks) as a safety net.
-
-Roads with access restrictions (`access=private/no/destination`,
-`motor_vehicle=private/no/destination`) and parking-aisle/driveway service roads
-are excluded.
-
-### Trade-offs
-
-| Choice | Rationale | Consequence |
-|--------|-----------|-------------|
-| Include no-surface roads | Many rural roads lack a `surface` tag but are clearly unpaved on the ground | Some paved roads without a surface tag slip through. The dotted style signals uncertainty |
-| Restrict to track/unclassified | Eliminates the biggest source of false positives (subdivision streets, access spurs, misc. service roads) | Misses some legitimately unpaved `service` or `residential` roads |
-| Forest-adjacent coverage | Focuses the overlay on the map's intended use and drops urban false positives | Misses unpaved roads far from national forest areas |
-| Pre-generated tiles (no live Overpass) | Fast pan/zoom on GitHub Pages; no runtime API calls | Data is static until tiles are rebuilt. Must re-fetch to pick up OSM edits |
-| Tile-based (zoom 10) | Keeps individual files under GitHub Pages 100MB limit | Very dense areas may have many features per tile |
-
-### Styling
-
-| Legend | Style | Meaning |
-|--------|-------|---------|
-| Solid orange | `───` | Confirmed unpaved (explicit surface tag) |
-| Dotted orange | `·· ··` | Uncertain surface (no surface tag — likely unpaved) |
-
-### To refresh the tiles
-
-If the raw data is already fetched, rebuilding applies the latest filtering rules:
+Rebuild the classic tiles and vector staging data from the official service:
 
 ```bash
-python3 scripts/build_public_roads_tiles.py
+python3 scripts/build_blm_public_roads.py
+bash scripts/tippecanoe_build_blm_roads.sh
+bash scripts/pmtiles_convert_blm_roads.sh
 ```
 
-To also pull fresh data from Overpass (e.g. after editing the query or to pick up OSM changes):
+Source: [BLM National GTLF Public Display, public motorized roads](https://gis.blm.gov/arcgis/rest/services/transportation/BLM_Natl_GTLF_Public_Display/MapServer/0)
 
-```bash
-# 1. Clear old raw data (or skip to resume a partial fetch)
-rm -rf _public_roads_raw_tiles/10
+## Experimental OSM Supplemental Roads (Disabled)
 
-# 2. Fetch fresh data from Overpass API (can take 15-60 minutes)
-bash scripts/fetch_public_roads_raw.sh
+The OpenStreetMap-derived brown road overlay is disabled in `index.html` and
+excluded from the GitHub Pages artifact. The existing source data and build
+scripts remain in the repository only for offline analysis.
 
-# 3. Build output tiles and manifest
-python3 scripts/build_public_roads_tiles.py
-```
+The July 2026 dataset is not trustworthy enough to imply useful or legal public
+motor-vehicle access:
+
+| Audit result | Ways | Share |
+|---|---:|---:|
+| Total included ways | 137,182 | 100% |
+| No explicit surface tag | 103,430 | 75.4% |
+| Unnamed | 106,730 | 77.8% |
+| No `access` tag | 135,373 | 98.7% |
+| No `motor_vehicle` tag | 135,061 | 98.5% |
+
+The old filter treated a missing restriction as evidence that a road was public
+and motorable. It also used padded forest bounding boxes rather than actual land
+ownership or road jurisdiction, and it rendered the layer at every zoom. Surface,
+road class, and proximity to a forest cannot establish legal access.
+
+A future OSM experiment should be opt-in and separately labeled. At minimum it
+should require an explicit unpaved surface plus an explicit positive access tag
+(`access` or `motor_vehicle` equal to `yes`, `permissive`, or `designated`), use
+actual forest polygons, and be validated against authoritative agency data. Only
+2,350 current ways pass even that preliminary filter, and those still require
+validation before publication.
 
 ## Vector Tile Build (Experimental)
 
@@ -157,10 +130,10 @@ Today there are two ways to use it locally:
 - `vector_preview.html` is a dedicated MapLibre preview page
 - `index.html?mode=vector` enables the main map's vector renderer
 
-The classic Leaflet/GeoJSON renderer is still the more complete path for
-popups and forest toggles, but vector mode now expects two PMTiles sources:
-- `forest_roads.pmtiles` for MVUM forest roads
-- `public_roads.pmtiles` for the brown supplemental OSM/public roads
+The classic Leaflet/GeoJSON renderer is still the more complete path for forest
+toggles. Both renderers support the opt-in official BLM layer. The OSM
+`public_roads.pmtiles` source is retained solely for local experiments in
+`vector_preview.html`; it is disabled in `index.html` and is not deployed.
 
 ### Fast start
 
@@ -186,14 +159,14 @@ python3 scripts/check_vector_preview_outputs.py
 | `build/vector_tiles/forest_roads_staging_manifest.json` | MVUM metadata: counts, bounds, zoom, layer name |
 | `build/vector_tiles/forest_roads.mbtiles` | MVUM MBTiles |
 | `build/vector_tiles/forest_roads.pmtiles` | MVUM PMTiles |
-| `build/vector_tiles/public_roads_staging.geojson` | Combined statewide public-road GeoJSON |
-| `build/vector_tiles/public_roads_staging_manifest.json` | Public-road metadata: counts, bounds, zoom, layer name |
-| `build/vector_tiles/public_roads.mbtiles` | Public-road MBTiles |
-| `build/vector_tiles/public_roads.pmtiles` | Public-road PMTiles |
+| `build/vector_tiles/blm_public_roads_staging.geojson` | Validated official BLM public-road GeoJSON |
+| `build/vector_tiles/blm_public_roads_staging_manifest.json` | BLM metadata: query, counts, bounds, zoom, layer name |
+| `build/vector_tiles/blm_public_roads.mbtiles` | BLM-road MBTiles |
+| `build/vector_tiles/blm_public_roads.pmtiles` | BLM-road PMTiles |
 | `vector_tiles/forest_roads_staging_manifest.json` | Published MVUM manifest copy |
 | `vector_tiles/forest_roads.pmtiles` | Published MVUM PMTiles copy |
-| `vector_tiles/public_roads_staging_manifest.json` | Published public-road manifest copy |
-| `vector_tiles/public_roads.pmtiles` | Published public-road PMTiles copy |
+| `vector_tiles/blm_public_roads_staging_manifest.json` | Published BLM manifest copy |
+| `vector_tiles/blm_public_roads.pmtiles` | Published BLM PMTiles copy |
 
 ### Stage 1: Combine source data
 
@@ -211,13 +184,15 @@ Output:
 - `build/vector_tiles/forest_roads_staging_manifest.json` — source/staged counts, bounds, layer name, zoom settings, and canonical Tippecanoe command
 - `vector_tiles/forest_roads_staging_manifest.json` — published manifest copy for the site
 
-[`scripts/build_public_roads_vector_staging.py`](scripts/build_public_roads_vector_staging.py)
-does the same for `_public_roads_raw_tiles/10/*.json`, deduping by OSM way id and
-writing:
+[`scripts/build_blm_public_roads.py`](scripts/build_blm_public_roads.py) fetches
+and independently validates the official BLM records, then writes classic tiles
+and vector staging:
 
-- `build/vector_tiles/public_roads_staging.geojson`
-- `build/vector_tiles/public_roads_staging_manifest.json`
-- `vector_tiles/public_roads_staging_manifest.json`
+- `_blm_roads_tiles/10/*.geojson`
+- `blm_public_roads_tiles_manifest.json`
+- `build/vector_tiles/blm_public_roads_staging.geojson`
+- `build/vector_tiles/blm_public_roads_staging_manifest.json`
+- `vector_tiles/blm_public_roads_staging_manifest.json`
 
 ### Stage 2: Generate vector tiles (requires Tippecanoe)
 
@@ -235,7 +210,7 @@ Then run the build wrapper (or the `tippecanoe` command directly):
 
 ```bash
 bash scripts/tippecanoe_build.sh
-bash scripts/tippecanoe_build_public_roads.sh
+bash scripts/tippecanoe_build_blm_roads.sh
 ```
 
 The command inside (also written to the manifest as `tippecanoe_command`) is:
@@ -255,7 +230,7 @@ tippecanoe \
 
 Outputs:
 - `build/vector_tiles/forest_roads.mbtiles`
-- `build/vector_tiles/public_roads.mbtiles`
+- `build/vector_tiles/blm_public_roads.mbtiles`
 
 The manifest also records:
 - layer name: `forest_roads`
@@ -278,14 +253,14 @@ Then convert:
 
 ```bash
 bash scripts/pmtiles_convert.sh
-bash scripts/pmtiles_convert_public_roads.sh
+bash scripts/pmtiles_convert_blm_roads.sh
 ```
 
 Output:
 - `build/vector_tiles/forest_roads.pmtiles`
 - `vector_tiles/forest_roads.pmtiles` — published site copy
-- `build/vector_tiles/public_roads.pmtiles`
-- `vector_tiles/public_roads.pmtiles` — published site copy
+- `build/vector_tiles/blm_public_roads.pmtiles`
+- `vector_tiles/blm_public_roads.pmtiles` — published site copy
 
 ### One-command preview build
 
@@ -298,11 +273,12 @@ bash scripts/build_vector_preview_tiles.sh
 
 That wrapper runs:
 1. `python3 scripts/build_vector_tile_staging.py`
-2. `bash scripts/tippecanoe_build.sh`
-3. `bash scripts/pmtiles_convert.sh`
+2. `python3 scripts/build_blm_public_roads.py`
+3. both Tippecanoe build scripts
+4. both PMTiles conversion scripts
 
-After step 3, the browser-facing files are synced into `vector_tiles/` so they
-can be committed and served by GitHub Pages.
+After step 4, browser-facing files are synced into `vector_tiles/`. The Pages
+workflow publishes the Forest Service and official BLM sources and manifests.
 
 ### Stage 4: Preview the vector tiles locally
 
@@ -356,5 +332,6 @@ detected state of the manifest, PMTiles, and MBTiles files at load time.
 ### Next steps
 
 - Improve vector-mode interactivity and popup behavior in the main app
-- Decide whether the supplemental public-road overlay should stay classic-only or also move to vector tiles
+- Replace the disabled supplemental-road experiment only if an authoritative,
+  legally meaningful access dataset becomes available
 - Tune low-zoom styling/generalization now that PMTiles loading is working locally
