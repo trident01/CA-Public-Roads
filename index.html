@@ -562,10 +562,10 @@ body { color: #15231a; }
   <div id="modeNote" class="mode-note" hidden></div>
   <div id="forestList" class="forest-list"></div>
   <label class="supplemental-layer-toggle" for="verifiedPublicRoadsToggle">
-    <input type="checkbox" id="verifiedPublicRoadsToggle">
+    <input type="checkbox" id="verifiedPublicRoadsToggle" checked>
     <span>Show verified unpaved public-road candidates</span>
   </label>
-  <p class="supplemental-layer-note">Off by default. Shown only from zoom 11: explicit OSM unpaved surface, at least 500 m long, and aligned to Caltrans’ public-road network. Always verify access and conditions.</p>
+  <p class="supplemental-layer-note">Enabled by default: explicit OSM unpaved surface, at least 500 m long, and aligned to Caltrans’ public-road network. Always verify access and conditions.</p>
   <div class="legend">
     <div class="legend-title">Road Legend</div>
     <div class="legend-item"><div class="legend-color" style="background:#1b4332"></div>All Vehicles</div>
@@ -648,7 +648,7 @@ const ROAD_TILE_VIEW_PAD = 0.2;
 const BLM_ROADS_MIN_ZOOM = 10;
 const BLM_ROADS_TILE_ZOOM = 10;
 const BLM_ROADS_TILE_VIEW_PAD = 0.15;
-const VERIFIED_PUBLIC_ROADS_MIN_ZOOM = 11;
+const VERIFIED_PUBLIC_ROADS_MIN_ZOOM = 0;
 const VERIFIED_PUBLIC_ROADS_TILE_ZOOM = 10;
 const VERIFIED_PUBLIC_ROADS_TILE_VIEW_PAD = 0.15;
 const PUBLIC_ROADS_MIN_ZOOM = 0;
@@ -745,7 +745,7 @@ const publicRoadTileInflight = new Map();
 let blmRoadTileSyncTimer = null;
 let blmRoadsManifest = null;
 let blmRoadsEnabled = false;
-let verifiedPublicRoadsEnabled = false;
+let verifiedPublicRoadsEnabled = true;
 let verifiedPublicRoadsManifest = null;
 let verifiedPublicRoadTileSyncTimer = null;
 const verifiedPublicRoadTileCache = new Map();

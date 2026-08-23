@@ -135,7 +135,8 @@ legally accessible. A candidate is retained only when it has all three of:
 Caltrans All Roads is used solely as a statewide public-network geometry check;
 OpenStreetMap supplies only the explicit surface observation. The August 2026
 build has 7,400 candidates from 18,842 eligible explicit-surface ways. The
-toggle is off by default and its popup repeats the verification evidence.
+toggle is enabled by default at every zoom level, and its popup repeats the
+verification evidence.
 
 To rebuild the layer and its browser assets:
 

@@ -299,8 +299,8 @@ def main() -> None:
     STAGING_PATH.parent.mkdir(parents=True, exist_ok=True)
     STAGING_PATH.write_text(json.dumps({"type": "FeatureCollection", "features": all_features}, separators=(",", ":")))
     vector_manifest = {
-        **common, "layer_name": "verified_public_roads", "min_zoom": 11, "max_zoom": 14,
-        "base_zoom": 12, "staged_feature_count": len(all_features),
+        **common, "layer_name": "verified_public_roads", "min_zoom": 0, "max_zoom": 14,
+        "base_zoom": 10, "staged_feature_count": len(all_features),
         "staging_path": str(STAGING_PATH),
     }
     STAGING_MANIFEST_PATH.write_text(json.dumps(vector_manifest, indent=2, sort_keys=True))

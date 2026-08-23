@@ -1,5 +1,5 @@
 {
-  "base_zoom": 12,
+  "base_zoom": 10,
   "built_utc": "2026-08-22T22:05:24Z",
   "caltrans_source_url": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/All_Roads/MapServer/0",
   "candidate_count": 18842,
@@ -11,7 +11,7 @@
   },
   "layer_name": "verified_public_roads",
   "max_zoom": 14,
-  "min_zoom": 11,
+  "min_zoom": 0,
   "scope_bbox": null,
   "source_name": "Caltrans All Roads matched to OpenStreetMap explicit surface tags",
   "staged_feature_count": 7400,
