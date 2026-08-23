@@ -1,0 +1,31 @@
+{
+  "base_zoom": 12,
+  "built_utc": "2026-08-22T22:05:24Z",
+  "caltrans_source_url": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/All_Roads/MapServer/0",
+  "candidate_count": 18842,
+  "criteria": {
+    "caltrans_match_distance_m": 30.0,
+    "explicit_unpaved_surface_only": true,
+    "minimum_caltrans_match_coverage": 0.85,
+    "minimum_length_m": 500.0
+  },
+  "layer_name": "verified_public_roads",
+  "max_zoom": 14,
+  "min_zoom": 11,
+  "scope_bbox": null,
+  "source_name": "Caltrans All Roads matched to OpenStreetMap explicit surface tags",
+  "staged_feature_count": 7400,
+  "staging_path": "build/vector_tiles/verified_public_roads_staging.geojson",
+  "surface_counts": {
+    "compacted": 331,
+    "dirt": 1861,
+    "earth": 24,
+    "fine_gravel": 121,
+    "grass": 1,
+    "gravel": 1019,
+    "ground": 1056,
+    "sand": 31,
+    "unpaved": 2956
+  },
+  "verified_feature_count": 7400
+}

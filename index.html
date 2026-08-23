@@ -561,6 +561,11 @@ body { color: #15231a; }
   </div>
   <div id="modeNote" class="mode-note" hidden></div>
   <div id="forestList" class="forest-list"></div>
+  <label class="supplemental-layer-toggle" for="verifiedPublicRoadsToggle">
+    <input type="checkbox" id="verifiedPublicRoadsToggle">
+    <span>Show verified unpaved public-road candidates</span>
+  </label>
+  <p class="supplemental-layer-note">Off by default. Shown only from zoom 11: explicit OSM unpaved surface, at least 500 m long, and aligned to Caltrans’ public-road network. Always verify access and conditions.</p>
   <div class="legend">
     <div class="legend-title">Road Legend</div>
     <div class="legend-item"><div class="legend-color" style="background:#1b4332"></div>All Vehicles</div>
@@ -622,6 +627,8 @@ const VECTOR_MANIFEST_URL = "vector_tiles/forest_roads_staging_manifest.json";
 const VECTOR_PMTILES_URL = "vector_tiles/forest_roads.pmtiles";
 const BLM_VECTOR_MANIFEST_URL = "vector_tiles/blm_public_roads_staging_manifest.json";
 const BLM_VECTOR_PMTILES_URL = "vector_tiles/blm_public_roads.pmtiles";
+const VERIFIED_PUBLIC_VECTOR_MANIFEST_URL = "vector_tiles/verified_public_roads_staging_manifest.json";
+const VERIFIED_PUBLIC_VECTOR_PMTILES_URL = "vector_tiles/verified_public_roads.pmtiles";
 const PUBLIC_VECTOR_MANIFEST_URL = "vector_tiles/public_roads_staging_manifest.json";
 const PUBLIC_VECTOR_PMTILES_URL = "vector_tiles/public_roads.pmtiles";
 const RENDER_MODE_KEY = "ca-forest-road-render-mode";
@@ -633,6 +640,7 @@ const ENABLE_EXPERIMENTAL_OSM_ROADS = false;
 // a useful public-facing road overlay. Retain the offline builder for future
 // filtering work; do not load or expose this layer in the map.
 const ENABLE_BLM_ROADS = false;
+const ENABLE_VERIFIED_PUBLIC_ROADS = true;
 const FOREST_RENDER_MIN_ZOOM = 0;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const ROAD_TILE_ZOOM = 10;
@@ -640,6 +648,9 @@ const ROAD_TILE_VIEW_PAD = 0.2;
 const BLM_ROADS_MIN_ZOOM = 10;
 const BLM_ROADS_TILE_ZOOM = 10;
 const BLM_ROADS_TILE_VIEW_PAD = 0.15;
+const VERIFIED_PUBLIC_ROADS_MIN_ZOOM = 11;
+const VERIFIED_PUBLIC_ROADS_TILE_ZOOM = 10;
+const VERIFIED_PUBLIC_ROADS_TILE_VIEW_PAD = 0.15;
 const PUBLIC_ROADS_MIN_ZOOM = 0;
 const PUBLIC_ROADS_TILE_ZOOM = 10;
 const PUBLIC_ROADS_TILE_VIEW_PAD = 0.15;
@@ -734,10 +745,17 @@ const publicRoadTileInflight = new Map();
 let blmRoadTileSyncTimer = null;
 let blmRoadsManifest = null;
 let blmRoadsEnabled = false;
+let verifiedPublicRoadsEnabled = false;
+let verifiedPublicRoadsManifest = null;
+let verifiedPublicRoadTileSyncTimer = null;
+const verifiedPublicRoadTileCache = new Map();
+const verifiedPublicRoadTileLayers = new Map();
+const verifiedPublicRoadTileInflight = new Map();
 const blmRoadTileCache = new Map();
 const blmRoadTileLayers = new Map();
 const blmRoadTileInflight = new Map();
 const BLM_VECTOR_LAYER_ID = "blm_public_roads";
+const VERIFIED_PUBLIC_VECTOR_LAYER_ID = "verified_public_roads";
 const PUBLIC_ROAD_UNPAVED_SURFACES = ["dirt", "gravel", "ground", "unpaved"];
 
 function createClassicMap() {
@@ -866,6 +884,7 @@ async function initVectorMode() {
   let manifest = null;
   let publicManifest = null;
   let blmManifest = null;
+  let verifiedPublicManifest = null;
   try {
     const response = await fetch(VECTOR_MANIFEST_URL);
     if (response.ok) manifest = await response.json();
@@ -888,10 +907,19 @@ async function initVectorMode() {
       console.error("Failed to load BLM road vector manifest", error);
     }
   }
+  if (ENABLE_VERIFIED_PUBLIC_ROADS) {
+    try {
+      const response = await fetch(VERIFIED_PUBLIC_VECTOR_MANIFEST_URL);
+      if (response.ok) verifiedPublicManifest = await response.json();
+    } catch (error) {
+      console.error("Failed to load verified public-road vector manifest", error);
+    }
+  }
 
   let pmtilesExists = false;
   let publicPmtilesExists = false;
   let blmPmtilesExists = false;
+  let verifiedPublicPmtilesExists = false;
   try {
     const response = await fetch(VECTOR_PMTILES_URL, { method: "HEAD" });
     pmtilesExists = response.ok;
@@ -906,6 +934,12 @@ async function initVectorMode() {
     try {
       const response = await fetch(BLM_VECTOR_PMTILES_URL, { method: "HEAD" });
       blmPmtilesExists = response.ok;
+    } catch {}
+  }
+  if (ENABLE_VERIFIED_PUBLIC_ROADS) {
+    try {
+      const response = await fetch(VERIFIED_PUBLIC_VECTOR_PMTILES_URL, { method: "HEAD" });
+      verifiedPublicPmtilesExists = response.ok;
     } catch {}
   }
 
@@ -951,13 +985,15 @@ async function initVectorMode() {
   globalThis.__forestRoadVectorManifests = {
     forest: manifest,
     public: publicManifest,
-    blm: blmManifest
+    blm: blmManifest,
+    verifiedPublic: verifiedPublicManifest
   };
   map.addControl(new maplibregl.NavigationControl(), "bottom-right");
   map.on("load", () => {
     const layerName = manifest.layer_name || "forest_roads";
     const publicLayerName = publicManifest?.layer_name || "public_roads";
     const blmLayerName = blmManifest?.layer_name || "blm_public_roads";
+    const verifiedPublicLayerName = verifiedPublicManifest?.layer_name || "verified_public_roads";
     ["1", "2", "3", "4"].forEach((sym) => {
       map.addLayer({
         id: `fr_paved_${sym}`,
@@ -1079,6 +1115,38 @@ async function initVectorMode() {
       map.on("mouseleave", BLM_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
     } else if (ENABLE_BLM_ROADS) {
       console.warn("Vector mode: official BLM GTLF road tiles are unavailable.");
+    }
+
+    if (ENABLE_VERIFIED_PUBLIC_ROADS && verifiedPublicPmtilesExists && verifiedPublicManifest) {
+      map.addSource("verified_public_roads", {
+        type: "vector",
+        url: `pmtiles://${VERIFIED_PUBLIC_VECTOR_PMTILES_URL}`,
+        minzoom: verifiedPublicManifest.min_zoom || VERIFIED_PUBLIC_ROADS_MIN_ZOOM,
+        maxzoom: verifiedPublicManifest.max_zoom || 14
+      });
+      map.addLayer({
+        id: VERIFIED_PUBLIC_VECTOR_LAYER_ID,
+        type: "line",
+        source: "verified_public_roads",
+        "source-layer": verifiedPublicLayerName,
+        minzoom: VERIFIED_PUBLIC_ROADS_MIN_ZOOM,
+        layout: { ...vectorLineLayout(), visibility: verifiedPublicRoadsEnabled ? "visible" : "none" },
+        paint: {
+          "line-color": "#9b5a18",
+          "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.4, 14, 2.5],
+          "line-opacity": 0.8,
+          "line-dasharray": [1.8, 1.2]
+        }
+      });
+      map.on("click", VERIFIED_PUBLIC_VECTOR_LAYER_ID, (event) => {
+        const feature = event.features?.[0];
+        if (!feature) return;
+        new maplibregl.Popup({ offset: 8 }).setLngLat(event.lngLat).setHTML(mkVerifiedPublicRoadPopup(feature)).addTo(map);
+      });
+      map.on("mouseenter", VERIFIED_PUBLIC_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", VERIFIED_PUBLIC_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
+    } else if (ENABLE_VERIFIED_PUBLIC_ROADS) {
+      console.warn("Vector mode: verified public-road tiles are unavailable.");
     }
 
     if (manifest.bounds) {
@@ -1220,6 +1288,8 @@ function updateDebugStamp() {
   document.body.dataset.blmRoadTileManifest = blmRoadsManifest ? "1" : "0";
   document.body.dataset.blmRoadTileCache = String(blmRoadTileCache.size);
   document.body.dataset.blmRoadTileLayers = String(blmRoadTileLayers.size);
+  document.body.dataset.verifiedPublicRoadsEnabled = verifiedPublicRoadsEnabled ? "1" : "0";
+  document.body.dataset.verifiedPublicRoadTileManifest = verifiedPublicRoadsManifest ? "1" : "0";
   document.body.dataset.roadZoom = String(map.getZoom());
 }
 
@@ -1292,6 +1362,19 @@ function mkBlmRoadPopup(feature) {
     '<em>Temporary or local closures may not be reflected. Verify conditions before travel.</em>',
     '<a href="https://gis.blm.gov/arcgis/rest/services/transportation/BLM_Natl_GTLF_Public_Display/MapServer/0" target="_blank" rel="noreferrer">Official BLM GTLF source</a>'
   ].filter(Boolean);
+  return parts.join("<br>");
+}
+
+function mkVerifiedPublicRoadPopup(feature) {
+  const p = feature.properties || {};
+  const parts = [
+    `<strong>${escapeHtml(p.name || "Verified unpaved public-road candidate")}</strong>`,
+    `Explicit OSM surface: ${escapeHtml(humanizeKey(p.surface || "unpaved"))}`,
+    `Caltrans public-network alignment: ${Math.round(Number(p.caltrans_match_coverage || 0) * 100)}%`,
+    `${Number(p.verified_length_m || 0).toLocaleString()} m mapped segment`,
+    "<em>Candidate only; check local access restrictions, closures, and conditions before travel.</em>",
+    '<a href="https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data" target="_blank" rel="noreferrer">Caltrans All Roads network</a>'
+  ];
   return parts.join("<br>");
 }
 
@@ -1502,6 +1585,114 @@ function setBlmRoadsEnabled(enabled) {
     syncBlmRoadTiles();
   } else {
     clearAllBlmRoadTiles();
+  }
+  updateDebugStamp();
+}
+
+function verifiedPublicRoadStyle() {
+  return {
+    color: "#9b5a18",
+    weight: map.getZoom() >= 14 ? 2.5 : 1.5,
+    opacity: 0.8,
+    dashArray: "5 4",
+    lineCap: "round",
+    lineJoin: "round"
+  };
+}
+
+function clearVerifiedPublicRoadTile(tileKeyRef) {
+  const layer = verifiedPublicRoadTileLayers.get(tileKeyRef);
+  if (!layer) return;
+  map.removeLayer(layer);
+  verifiedPublicRoadTileLayers.delete(tileKeyRef);
+}
+
+function clearAllVerifiedPublicRoadTiles() {
+  Array.from(verifiedPublicRoadTileLayers.keys()).forEach(clearVerifiedPublicRoadTile);
+  updateDebugStamp();
+}
+
+function renderVerifiedPublicRoadTile(tileKeyRef) {
+  const geojson = verifiedPublicRoadTileCache.get(tileKeyRef);
+  clearVerifiedPublicRoadTile(tileKeyRef);
+  if (!geojson?.features?.length) return;
+  const layer = L.geoJSON(geojson, {
+    style: verifiedPublicRoadStyle,
+    pane: "publicRoadsPane",
+    renderer: publicRoadsRenderer,
+    smoothFactor: 1.5,
+    interactive: map.getZoom() >= FOREST_INTERACTIVE_MIN_ZOOM,
+    bubblingMouseEvents: false,
+    onEachFeature: (feature, layerRef) => bindLazyPopup(layerRef, () => mkVerifiedPublicRoadPopup(feature))
+  });
+  verifiedPublicRoadTileLayers.set(tileKeyRef, layer);
+  map.addLayer(layer);
+}
+
+async function ensureVerifiedPublicRoadTileLoaded(tileKeyRef) {
+  if (verifiedPublicRoadTileCache.has(tileKeyRef)) return verifiedPublicRoadTileCache.get(tileKeyRef);
+  if (verifiedPublicRoadTileInflight.has(tileKeyRef)) return verifiedPublicRoadTileInflight.get(tileKeyRef);
+  const [, x, y] = tileKeyRef.split("/");
+  const request = fetch(`_verified_public_roads_tiles/${VERIFIED_PUBLIC_ROADS_TILE_ZOOM}/${x}/${y}.geojson`)
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      verifiedPublicRoadTileCache.set(tileKeyRef, data);
+      verifiedPublicRoadTileInflight.delete(tileKeyRef);
+      return data;
+    })
+    .catch((error) => {
+      verifiedPublicRoadTileInflight.delete(tileKeyRef);
+      throw error;
+    });
+  verifiedPublicRoadTileInflight.set(tileKeyRef, request);
+  return request;
+}
+
+function getWantedVerifiedPublicRoadTileKeys() {
+  if (!verifiedPublicRoadsEnabled || !verifiedPublicRoadsManifest || map.getZoom() < VERIFIED_PUBLIC_ROADS_MIN_ZOOM) return [];
+  const bounds = getPaddedBounds(VERIFIED_PUBLIC_ROADS_TILE_VIEW_PAD);
+  const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), VERIFIED_PUBLIC_ROADS_TILE_ZOOM);
+  const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), VERIFIED_PUBLIC_ROADS_TILE_ZOOM);
+  const wanted = [];
+  for (let x = Math.min(nw.x, se.x); x <= Math.max(nw.x, se.x); x += 1) {
+    for (let y = Math.min(nw.y, se.y); y <= Math.max(nw.y, se.y); y += 1) {
+      const key = tileKey(x, y, VERIFIED_PUBLIC_ROADS_TILE_ZOOM);
+      if (verifiedPublicRoadsManifest.tiles[key]) wanted.push(key);
+    }
+  }
+  return wanted;
+}
+
+async function syncVerifiedPublicRoadTiles() {
+  const wanted = new Set(getWantedVerifiedPublicRoadTileKeys());
+  for (const key of Array.from(verifiedPublicRoadTileLayers.keys())) if (!wanted.has(key)) clearVerifiedPublicRoadTile(key);
+  try {
+    await Promise.all(Array.from(wanted).map(ensureVerifiedPublicRoadTileLoaded));
+    wanted.forEach(renderVerifiedPublicRoadTile);
+    updateDebugStamp();
+  } catch (error) {
+    console.error("Failed to load verified public-road tiles", error);
+  }
+}
+
+function scheduleVerifiedPublicRoadRefresh() {
+  if (verifiedPublicRoadTileSyncTimer) clearTimeout(verifiedPublicRoadTileSyncTimer);
+  verifiedPublicRoadTileSyncTimer = setTimeout(syncVerifiedPublicRoadTiles, 120);
+}
+
+function setVerifiedPublicRoadsEnabled(enabled) {
+  verifiedPublicRoadsEnabled = Boolean(enabled);
+  if (activeRenderMode === "vector") {
+    if (map?.getLayer?.(VERIFIED_PUBLIC_VECTOR_LAYER_ID)) {
+      map.setLayoutProperty(VERIFIED_PUBLIC_VECTOR_LAYER_ID, "visibility", verifiedPublicRoadsEnabled ? "visible" : "none");
+    }
+  } else if (verifiedPublicRoadsEnabled) {
+    syncVerifiedPublicRoadTiles();
+  } else {
+    clearAllVerifiedPublicRoadTiles();
   }
   updateDebugStamp();
 }
@@ -1944,6 +2135,14 @@ async function loadBlmRoadTileManifest() {
   updateDebugStamp();
 }
 
+async function loadVerifiedPublicRoadTileManifest() {
+  if (isFileProtocol || !ENABLE_VERIFIED_PUBLIC_ROADS) return;
+  const response = await fetch("verified_public_roads_tiles_manifest.json");
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  verifiedPublicRoadsManifest = await response.json();
+  updateDebugStamp();
+}
+
 async function loadCatalog() {
   Object.assign(catalog, EMBEDDED_CATALOG);
 
@@ -1989,11 +2188,13 @@ async function initClassicMode(fromVectorFallback = false) {
       scheduleRoadTileSync();
       schedulePublicRoadRefresh();
       scheduleBlmRoadRefresh();
+      scheduleVerifiedPublicRoadRefresh();
     });
     map.on("zoomend", () => {
       scheduleRoadTileSync();
       schedulePublicRoadRefresh();
       scheduleBlmRoadRefresh();
+      scheduleVerifiedPublicRoadRefresh();
       updateInteractivityHint();
       updateDebugStamp();
     });
@@ -2021,6 +2222,15 @@ async function initClassicMode(fromVectorFallback = false) {
         if (blmRoadsEnabled) await syncBlmRoadTiles();
       } catch (error) {
         console.error("Failed to initialize official BLM road tiles", error);
+      }
+    }
+
+    if (ENABLE_VERIFIED_PUBLIC_ROADS) {
+      try {
+        await loadVerifiedPublicRoadTileManifest();
+        if (verifiedPublicRoadsEnabled) await syncVerifiedPublicRoadTiles();
+      } catch (error) {
+        console.error("Failed to initialize verified public-road tiles", error);
       }
     }
 
@@ -2075,6 +2285,13 @@ async function init() {
   if (blmToggle) {
     blmToggle.addEventListener("change", (event) => {
       setBlmRoadsEnabled(event.target.checked);
+    });
+  }
+
+  const verifiedPublicToggle = document.getElementById("verifiedPublicRoadsToggle");
+  if (verifiedPublicToggle) {
+    verifiedPublicToggle.addEventListener("change", (event) => {
+      setVerifiedPublicRoadsEnabled(event.target.checked);
     });
   }
 

@@ -49,6 +49,7 @@ The site publishes only the runtime assets selected by the Pages workflow:
 - `_roads_tiles/`
 - `roads_tiles_manifest.json`
 - the Forest Service PMTiles source and manifest
+- the opt-in verified-public-road tiles, manifest, and PMTiles source
 - `vendor/`
 
 ## Road Tile Build
@@ -120,6 +121,32 @@ should require an explicit unpaved surface plus an explicit positive access tag
 actual forest polygons, and be validated against authoritative agency data. Only
 2,350 current ways pass even that preliminary filter, and those still require
 validation before publication.
+
+## Verified Unpaved Public-road Candidates
+
+The map includes an opt-in, zoom-11-only candidate layer that avoids the old
+blanket brown overlay. It does not claim that a route is currently open or
+legally accessible. A candidate is retained only when it has all three of:
+
+- an explicit OpenStreetMap unpaved surface tag;
+- at least 500 m of mapped length; and
+- at least 85% of its geometry within 30 m of the Caltrans All Roads network.
+
+Caltrans All Roads is used solely as a statewide public-network geometry check;
+OpenStreetMap supplies only the explicit surface observation. The August 2026
+build has 7,400 candidates from 18,842 eligible explicit-surface ways. The
+toggle is off by default and its popup repeats the verification evidence.
+
+To rebuild the layer and its browser assets:
+
+```bash
+python3 scripts/build_verified_public_unpaved_roads.py
+bash scripts/tippecanoe_build_verified_public_roads.sh
+bash scripts/pmtiles_convert_verified_public_roads.sh
+```
+
+The Caltrans tile cache in `build/caltrans_all_roads_cache/` is resumable and
+is not published. Source: [Caltrans Roadway Data](https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data).
 
 ## Vector Tile Build (Experimental)
 

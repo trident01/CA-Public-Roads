@@ -39,9 +39,13 @@ jobs:
           cp .nojekyll _site/
           rsync -a vendor/ _site/vendor/
           rsync -a _roads_tiles/ _site/_roads_tiles/
+          rsync -a _verified_public_roads_tiles/ _site/_verified_public_roads_tiles/
+          cp verified_public_roads_tiles_manifest.json _site/
           mkdir -p _site/vector_tiles
           cp vector_tiles/forest_roads.pmtiles _site/vector_tiles/
           cp vector_tiles/forest_roads_staging_manifest.json _site/vector_tiles/
+          cp vector_tiles/verified_public_roads.pmtiles _site/vector_tiles/
+          cp vector_tiles/verified_public_roads_staging_manifest.json _site/vector_tiles/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
