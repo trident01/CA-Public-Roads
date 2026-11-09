@@ -111,6 +111,7 @@ body { color: #15231a; }
 
 <script>
 // ── configuration ──────────────────────────────────────────────────────────
+const CARTO_BASEMAP_API_KEY = 'cb1_3jm6_1_0298652f5910f1b090f548bf';
 const MANIFEST_URL = 'vector_tiles/forest_roads_staging_manifest.json';
 const MBTILES_URL  = 'build/vector_tiles/forest_roads.mbtiles';
 const PMTILES_URL  = 'vector_tiles/forest_roads.pmtiles';
@@ -252,7 +253,7 @@ async function init() {
       sources: {
         basemap: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'],
+          tiles: [`https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=${CARTO_BASEMAP_API_KEY}`],
           tileSize: 256,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> <a href="https://carto.com/">CARTO</a>'
         }

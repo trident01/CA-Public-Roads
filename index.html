@@ -618,6 +618,7 @@ const DEFAULTS = [
   "tahoe_national_forest"
 ];
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
+const CARTO_BASEMAP_API_KEY = "cb1_3jm6_1_0298652f5910f1b090f548bf";
 const VECTOR_MODE_LIBRARIES = {
   maplibreJs: "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js",
   maplibreCss: "https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css",
@@ -770,7 +771,7 @@ function createClassicMap() {
   publicRoadsPane.style.zIndex = 300;
   blmRoadsPane = map.createPane("blmRoadsPane");
   blmRoadsPane.style.zIndex = 310;
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  L.tileLayer(`https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_BASEMAP_API_KEY}`, {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> <a href="https://carto.com/">CARTO</a>',
     subdomains: "abcd",
     maxZoom: 20
@@ -963,7 +964,7 @@ async function initVectorMode() {
       sources: {
         basemap: {
           type: "raster",
-          tiles: ["https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"],
+          tiles: [`https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png?key=${CARTO_BASEMAP_API_KEY}`],
           tileSize: 256,
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> <a href="https://carto.com/">CARTO</a>'
         },
