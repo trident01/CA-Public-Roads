@@ -31,21 +31,14 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Validate runtime assets and PDF catalog
+        run: python3 scripts/check_site_assets.py --write-file-list /tmp/site-assets.txt
+
       - name: Prepare site artifact
         run: |
           mkdir -p _site
-          cp index.html _site/
-          cp roads_tiles_manifest.json _site/
-          cp .nojekyll _site/
-          rsync -a vendor/ _site/vendor/
-          rsync -a _roads_tiles/ _site/_roads_tiles/
-          rsync -a _verified_public_roads_tiles/ _site/_verified_public_roads_tiles/
-          cp verified_public_roads_tiles_manifest.json _site/
-          mkdir -p _site/vector_tiles
-          cp vector_tiles/forest_roads.pmtiles _site/vector_tiles/
-          cp vector_tiles/forest_roads_staging_manifest.json _site/vector_tiles/
-          cp vector_tiles/verified_public_roads.pmtiles _site/vector_tiles/
-          cp vector_tiles/verified_public_roads_staging_manifest.json _site/vector_tiles/
+          rsync -a --files-from=/tmp/site-assets.txt ./ _site/
+          python3 scripts/check_site_assets.py --root _site
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

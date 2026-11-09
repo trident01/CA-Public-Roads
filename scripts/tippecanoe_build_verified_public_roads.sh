@@ -26,6 +26,7 @@ read_manifest_value() {
 tippecanoe \
   --force \
   --no-tile-compression \
+  --drop-densest-as-needed \
   --layer="$(read_manifest_value layer_name)" \
   --minimum-zoom="$(read_manifest_value min_zoom)" \
   --maximum-zoom="$(read_manifest_value max_zoom)" \

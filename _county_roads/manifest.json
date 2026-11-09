@@ -1,0 +1,48 @@
+{
+  "built_utc": "2026-11-09T17:29:23+00:00",
+  "agency": "Riverside County Transportation Department",
+  "county": "Riverside",
+  "layer_name": "Unpaved Roads (County Maintained)",
+  "source_url": "https://gis.countyofriverside.us/arcgis_mapping/rest/services/Transportation/04_Online_Road_Book_Mapping_v2/MapServer/1",
+  "source_service_item_id": "f1d342771413467c844f16077d47ded4",
+  "source_copyright": "If you need additional information about CENTERLINES, please contact the Transportation Department at 951-955-6880 or on the web at http://www.tlma.co.riverside.ca.us/trans/office.shtm",
+  "query_where": "1=1",
+  "local_selection": "TYPE IN ('C07','C09') AND (TRAVEL_DIRECTIONS IS NULL OR TRAVEL_DIRECTIONS <> 'N')",
+  "source_feature_count": 477,
+  "excluded_feature_count": 52,
+  "out_fields": [
+    "OBJECTID",
+    "STNAME",
+    "TYPE",
+    "RDNUMBER",
+    "TRAVEL_DIRECTIONS"
+  ],
+  "source_spatial_reference": 2230,
+  "output_spatial_reference": "EPSG:4326",
+  "coordinate_precision_decimals": 6,
+  "surface_code_definitions": {
+    "C07": "Graveled Surface Maintained",
+    "C09": "Dirt Surface Maintained"
+  },
+  "feature_count": 425,
+  "surface_counts": {
+    "dirt": 335,
+    "gravel": 90
+  },
+  "bounds": [
+    -117.636467,
+    33.426068,
+    -114.554798,
+    34.079651
+  ],
+  "geojson": "_county_roads/riverside.geojson",
+  "geojson_bytes": 715467,
+  "geojson_sha256": "4103ebc4646f3be52232bc707d375f1b5c9c012ceb50df363e6ff073fd551b3c",
+  "coverage": "Riverside County segments explicitly classified C07 or C09; not statewide county coverage.",
+  "limitations": [
+    "Road maintenance and surface inventory; not a live closure or access advisory.",
+    "Bicycle and foot permission are not established by this dataset.",
+    "Mixed-status, non-county, accepted-only, vacated, abandoned, and merely traveled codes are excluded.",
+    "TRAVEL_DIRECTIONS=N (No Ways) is excluded; other direction codes are preserved."
+  ]
+}

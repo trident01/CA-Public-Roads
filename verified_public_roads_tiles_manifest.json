@@ -1,733 +1,1582 @@
 {
-  "built_utc": "2026-08-22T22:05:24Z",
+  "built_utc": "2026-11-09T17:56:25Z",
+  "caltrans_cache_timestamp_fallback_tile_count": 149,
+  "caltrans_cache_timestamp_method": "Recorded fetched_utc; filesystem cache-write time for caches created before timestamp recording",
+  "caltrans_geometry_cache_fetched_utc_range": [
+    "2026-11-09T17:31:34.122461+00:00",
+    "2026-11-09T17:51:41+00:00"
+  ],
+  "caltrans_geometry_cache_tile_count": 496,
+  "caltrans_matched_utc": "2026-11-09T17:51:47Z",
   "caltrans_source_url": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/All_Roads/MapServer/0",
-  "candidate_count": 18842,
+  "candidate_count": 36497,
   "criteria": {
     "caltrans_match_distance_m": 30.0,
+    "caltrans_reference_extent": "All tiles intersected by each candidate geometry",
+    "excluded_general_access_values": [
+      "agricultural",
+      "customers",
+      "delivery",
+      "destination",
+      "emergency",
+      "employees",
+      "forestry",
+      "military",
+      "no",
+      "official",
+      "permit",
+      "permit_required",
+      "private",
+      "restricted"
+    ],
     "explicit_unpaved_surface_only": true,
     "minimum_caltrans_match_coverage": 0.85,
-    "minimum_length_m": 500.0
+    "minimum_length_m": 500.0,
+    "reject_both_bicycle_and_foot_access_restricted": true,
+    "reject_explicit_paved_contradictions": true,
+    "restricted_vehicle_access_requires_explicit_bicycle_or_foot_access": true
   },
+  "input_manifest_path": "build/statewide_unpaved/candidates_manifest.json",
+  "input_path": "build/statewide_unpaved/candidates.geojson",
+  "input_scope": {
+    "area_filter": "ISO3166-2=US-CA; admin_level=4",
+    "bbox": [
+      -124.6,
+      32.4,
+      -114.0,
+      42.1
+    ],
+    "complete": true,
+    "complete_way_geometries": true,
+    "description": "California OSM administrative area, without a forest crop",
+    "kind": "statewide_california"
+  },
+  "input_source_metadata": {
+    "candidate_count": 72796,
+    "criteria": {
+      "blocked_general_access": [
+        "agricultural",
+        "customers",
+        "delivery",
+        "destination",
+        "emergency",
+        "employees",
+        "forestry",
+        "military",
+        "no",
+        "official",
+        "permit",
+        "permit_required",
+        "private",
+        "restricted"
+      ],
+      "explicit_unpaved_surface_only": true,
+      "minimum_length_m": null,
+      "public_network_verification": "Requires separate Caltrans matcher",
+      "road_classes": [
+        "living_street",
+        "residential",
+        "service",
+        "tertiary",
+        "track",
+        "unclassified"
+      ],
+      "surfaces": [
+        "cinder",
+        "clay",
+        "compacted",
+        "dirt",
+        "earth",
+        "fine_gravel",
+        "grass",
+        "gravel",
+        "ground",
+        "mud",
+        "pebblestone",
+        "rock",
+        "sand",
+        "stone",
+        "unpaved",
+        "woodchips"
+      ]
+    },
+    "downloads": [
+      {
+        "band": 0,
+        "bytes": 15385878,
+        "element_count": 7854,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:29:29Z",
+        "north": 33.4,
+        "path": "build/statewide_unpaved/raw/band_00.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(32.4,-124.6,33.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "b2839236f6387f0ecba4725ddd21c746b6ee9fdda6d2690f6a58475a25439d87",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 32.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 1,
+        "bytes": 25424141,
+        "element_count": 17123,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:31:31Z",
+        "north": 34.4,
+        "path": "build/statewide_unpaved/raw/band_01.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(33.4,-124.6,34.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "abdc04d908456da1c7dbf8f9b6634ebb7034fae0ba7995cb9f81e1e5895f7ecd",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 33.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 2,
+        "bytes": 24350059,
+        "element_count": 16098,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:31:59Z",
+        "north": 35.4,
+        "path": "build/statewide_unpaved/raw/band_02.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(34.4,-124.6,35.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "da4037b22be4e8eae2706e693ae0408c0b09ce19787784ae5dad8400ea1d2331",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 34.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 3,
+        "bytes": 19951086,
+        "element_count": 9951,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:36:20Z",
+        "north": 36.4,
+        "path": "build/statewide_unpaved/raw/band_03.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(35.4,-124.6,36.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:36:20Z",
+            "north": 36.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:34:36Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(35.4,-124.6,36.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "29cd45b40ebe9a2c8e7b354f25c721b4654d7bbcbdfb8bb42779dc3f05499a8a",
+            "south": 35.4
+          }
+        ],
+        "query_sha256": "29cd45b40ebe9a2c8e7b354f25c721b4654d7bbcbdfb8bb42779dc3f05499a8a",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 35.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 4,
+        "bytes": 17789343,
+        "element_count": 9246,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:40:08Z",
+        "north": 37.4,
+        "path": "build/statewide_unpaved/raw/band_04.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.4,-124.6,37.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:39:45Z",
+            "north": 36.9,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.4,-124.6,36.9,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "810428141a40a9334da1447cdba02c8591ff2bc427d7ac1c0827d086088abbaf",
+            "south": 36.4
+          },
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:40:08Z",
+            "north": 37.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.9,-124.6,37.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "c1fc998a61d6e86b935f6b8c6195dfe41ac8aca588a6cc6e6288e154938c478f",
+            "south": 36.9
+          }
+        ],
+        "query_sha256": "d642ffa160c8b788542ce31de99fea985545253a33b102188d0f01add5bf8056",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 36.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 5,
+        "bytes": 22442089,
+        "element_count": 12663,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:37:02Z",
+        "north": 38.4,
+        "path": "build/statewide_unpaved/raw/band_05.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(37.4,-124.6,38.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:37:02Z",
+            "north": 38.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(37.4,-124.6,38.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "cf8c88eb860c8eb9a9c523c5bf0ec6f75f52e8260af33214f368f99652831b50",
+            "south": 37.4
+          }
+        ],
+        "query_sha256": "cf8c88eb860c8eb9a9c523c5bf0ec6f75f52e8260af33214f368f99652831b50",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 37.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 6,
+        "bytes": 25258937,
+        "element_count": 13758,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:40:36Z",
+        "north": 39.4,
+        "path": "build/statewide_unpaved/raw/band_06.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(38.4,-124.6,39.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:40:36Z",
+            "north": 39.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:38:44Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(38.4,-124.6,39.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "750a0477edcc5abc85e53b7a045c726ebef1815d085394b8e12c2179d06fa20d",
+            "south": 38.4
+          }
+        ],
+        "query_sha256": "750a0477edcc5abc85e53b7a045c726ebef1815d085394b8e12c2179d06fa20d",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 38.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 7,
+        "bytes": 23510505,
+        "element_count": 7690,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:37:39Z",
+        "north": 40.4,
+        "path": "build/statewide_unpaved/raw/band_07.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(39.4,-124.6,40.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:37:38Z",
+            "north": 40.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(39.4,-124.6,40.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "7c48c260d899d79fa028655bdd85c821dcbdcccccab0cc8f05636e3617e9c8b0",
+            "south": 39.4
+          }
+        ],
+        "query_sha256": "7c48c260d899d79fa028655bdd85c821dcbdcccccab0cc8f05636e3617e9c8b0",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 39.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 8,
+        "bytes": 26927799,
+        "element_count": 7371,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:38:06Z",
+        "north": 41.4,
+        "path": "build/statewide_unpaved/raw/band_08.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(40.4,-124.6,41.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:38:05Z",
+            "north": 41.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(40.4,-124.6,41.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "77f93fb651ab9edb73247fefaf43fff8c804f2dcffbcc2c68ae9f69b17bcceca",
+            "south": 40.4
+          }
+        ],
+        "query_sha256": "77f93fb651ab9edb73247fefaf43fff8c804f2dcffbcc2c68ae9f69b17bcceca",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 40.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 9,
+        "bytes": 18773865,
+        "element_count": 4627,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:38:42Z",
+        "north": 42.1,
+        "path": "build/statewide_unpaved/raw/band_09.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(41.4,-124.6,42.1,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:38:42Z",
+            "north": 42.1,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(41.4,-124.6,42.1,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "9a5176482b18f42d2aa4209f02a100b45cfda7080f2975793e3f0aaef2bf00f2",
+            "south": 41.4
+          }
+        ],
+        "query_sha256": "9a5176482b18f42d2aa4209f02a100b45cfda7080f2975793e3f0aaef2bf00f2",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 41.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      }
+    ],
+    "failed_bands": [],
+    "fetched_utc": "2026-11-09T17:40:45Z",
+    "normalization_notes": [
+      "Preserve legacy OSM paved tags so downstream checks can reject conflicting paved=yes alongside an unpaved surface."
+    ],
+    "normalization_updated_utc": "2026-11-09T17:53:16Z",
+    "osm_base_timestamps": [
+      "2026-11-09T17:28:33Z",
+      "2026-11-09T17:30:36Z",
+      "2026-11-09T17:34:36Z",
+      "2026-11-09T17:35:34Z",
+      "2026-11-09T17:37:38Z",
+      "2026-11-09T17:38:44Z"
+    ],
+    "rejected_counts": {
+      "both_recreation_modes_restricted": 59,
+      "general_access_restricted": 13512,
+      "service_driveway_or_parking": 14492,
+      "vehicle_restricted_without_explicit_recreation_access": 4999
+    },
+    "requested_snapshot": null,
+    "road_class_counts": {
+      "living_street": 21,
+      "residential": 12491,
+      "service": 11528,
+      "tertiary": 419,
+      "track": 42692,
+      "unclassified": 5645
+    },
+    "scope": {
+      "area_filter": "ISO3166-2=US-CA; admin_level=4",
+      "bbox": [
+        -124.6,
+        32.4,
+        -114.0,
+        42.1
+      ],
+      "complete": true,
+      "complete_way_geometries": true,
+      "description": "California OSM administrative area, without a forest crop",
+      "kind": "statewide_california"
+    },
+    "source_name": "OpenStreetMap explicit unpaved minor roads",
+    "source_urls": [
+      "https://www.openstreetmap.org/copyright",
+      "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    ],
+    "surface_counts": {
+      "clay": 6,
+      "compacted": 2772,
+      "dirt": 24404,
+      "earth": 150,
+      "fine_gravel": 617,
+      "grass": 88,
+      "gravel": 4614,
+      "ground": 8036,
+      "mud": 12,
+      "pebblestone": 29,
+      "rock": 28,
+      "sand": 1549,
+      "unpaved": 30485,
+      "woodchips": 6
+    },
+    "unique_source_way_count": 105858
+  },
+  "limitations": [
+    "OSM surface tags are observations, not a current-surface guarantee",
+    "Caltrans proximity can match a distinct parallel road and does not establish legal bicycle or foot access",
+    "Candidate coverage is limited by input scope, OSM completeness, length and geometry thresholds"
+  ],
   "scope_bbox": null,
   "source_name": "Caltrans All Roads matched to OpenStreetMap explicit surface tags",
   "surface_counts": {
-    "compacted": 331,
-    "dirt": 1861,
-    "earth": 24,
-    "fine_gravel": 121,
-    "grass": 1,
-    "gravel": 1019,
-    "ground": 1056,
-    "sand": 31,
-    "unpaved": 2956
+    "compacted": 907,
+    "dirt": 4336,
+    "earth": 29,
+    "fine_gravel": 161,
+    "grass": 4,
+    "gravel": 1738,
+    "ground": 1180,
+    "mud": 1,
+    "pebblestone": 5,
+    "rock": 1,
+    "sand": 235,
+    "unpaved": 8157
   },
-  "tile_count": 311,
+  "tile_count": 475,
   "tile_zoom": 10,
   "tiles": {
     "10/158/380": {
-      "feature_count": 6
+      "feature_count": 7
     },
     "10/158/381": {
-      "feature_count": 2
+      "feature_count": 3
     },
     "10/158/383": {
-      "feature_count": 1
+      "feature_count": 2
     },
     "10/158/384": {
       "feature_count": 1
     },
     "10/158/385": {
-      "feature_count": 1
+      "feature_count": 13
     },
     "10/158/386": {
-      "feature_count": 5
+      "feature_count": 22
     },
     "10/158/387": {
       "feature_count": 1
     },
     "10/159/380": {
-      "feature_count": 23
+      "feature_count": 27
     },
     "10/159/381": {
-      "feature_count": 26
+      "feature_count": 28
     },
     "10/159/382": {
-      "feature_count": 9
-    },
-    "10/159/383": {
-      "feature_count": 24
-    },
-    "10/159/384": {
-      "feature_count": 8
-    },
-    "10/159/385": {
-      "feature_count": 3
-    },
-    "10/159/386": {
-      "feature_count": 2
-    },
-    "10/159/387": {
       "feature_count": 12
     },
-    "10/159/388": {
-      "feature_count": 1
-    },
-    "10/160/380": {
-      "feature_count": 100
-    },
-    "10/160/381": {
-      "feature_count": 48
-    },
-    "10/160/382": {
-      "feature_count": 58
-    },
-    "10/160/383": {
-      "feature_count": 42
-    },
-    "10/160/384": {
-      "feature_count": 82
-    },
-    "10/160/385": {
-      "feature_count": 33
-    },
-    "10/160/386": {
+    "10/159/383": {
       "feature_count": 35
     },
+    "10/159/384": {
+      "feature_count": 24
+    },
+    "10/159/385": {
+      "feature_count": 13
+    },
+    "10/159/386": {
+      "feature_count": 15
+    },
+    "10/159/387": {
+      "feature_count": 24
+    },
+    "10/159/388": {
+      "feature_count": 16
+    },
+    "10/159/389": {
+      "feature_count": 14
+    },
+    "10/159/390": {
+      "feature_count": 15
+    },
+    "10/160/380": {
+      "feature_count": 103
+    },
+    "10/160/381": {
+      "feature_count": 49
+    },
+    "10/160/382": {
+      "feature_count": 65
+    },
+    "10/160/383": {
+      "feature_count": 41
+    },
+    "10/160/384": {
+      "feature_count": 88
+    },
+    "10/160/385": {
+      "feature_count": 38
+    },
+    "10/160/386": {
+      "feature_count": 36
+    },
     "10/160/387": {
-      "feature_count": 8
+      "feature_count": 29
+    },
+    "10/160/388": {
+      "feature_count": 36
+    },
+    "10/160/389": {
+      "feature_count": 91
+    },
+    "10/160/390": {
+      "feature_count": 60
+    },
+    "10/160/391": {
+      "feature_count": 63
+    },
+    "10/160/392": {
+      "feature_count": 1
     },
     "10/161/380": {
-      "feature_count": 90
+      "feature_count": 97
     },
     "10/161/381": {
-      "feature_count": 69
+      "feature_count": 71
     },
     "10/161/382": {
-      "feature_count": 57
+      "feature_count": 59
     },
     "10/161/383": {
-      "feature_count": 40
+      "feature_count": 42
     },
     "10/161/384": {
-      "feature_count": 21
+      "feature_count": 25
     },
     "10/161/385": {
-      "feature_count": 40
+      "feature_count": 56
     },
     "10/161/386": {
-      "feature_count": 98
+      "feature_count": 151
     },
     "10/161/387": {
-      "feature_count": 43
+      "feature_count": 47
     },
     "10/161/388": {
-      "feature_count": 18
+      "feature_count": 29
     },
     "10/161/389": {
-      "feature_count": 17
+      "feature_count": 31
     },
     "10/161/390": {
-      "feature_count": 11
+      "feature_count": 40
     },
     "10/161/391": {
-      "feature_count": 10
+      "feature_count": 39
+    },
+    "10/161/392": {
+      "feature_count": 52
+    },
+    "10/161/393": {
+      "feature_count": 15
     },
     "10/162/380": {
-      "feature_count": 224
+      "feature_count": 231
     },
     "10/162/381": {
-      "feature_count": 79
+      "feature_count": 102
     },
     "10/162/382": {
       "feature_count": 49
     },
     "10/162/383": {
-      "feature_count": 37
+      "feature_count": 42
     },
     "10/162/384": {
-      "feature_count": 47
+      "feature_count": 70
     },
     "10/162/385": {
-      "feature_count": 22
+      "feature_count": 31
     },
     "10/162/386": {
       "feature_count": 34
     },
     "10/162/387": {
-      "feature_count": 49
+      "feature_count": 59
     },
     "10/162/388": {
-      "feature_count": 70
+      "feature_count": 92
     },
     "10/162/389": {
-      "feature_count": 30
+      "feature_count": 54
     },
     "10/162/390": {
-      "feature_count": 39
+      "feature_count": 46
     },
     "10/162/391": {
-      "feature_count": 13
+      "feature_count": 43
     },
-    "10/163/380": {
-      "feature_count": 63
+    "10/162/392": {
+      "feature_count": 20
     },
-    "10/163/381": {
-      "feature_count": 25
-    },
-    "10/163/382": {
-      "feature_count": 30
-    },
-    "10/163/383": {
-      "feature_count": 76
-    },
-    "10/163/384": {
-      "feature_count": 50
-    },
-    "10/163/385": {
-      "feature_count": 31
-    },
-    "10/163/386": {
-      "feature_count": 14
-    },
-    "10/163/387": {
-      "feature_count": 21
-    },
-    "10/163/388": {
-      "feature_count": 19
-    },
-    "10/163/389": {
-      "feature_count": 18
-    },
-    "10/163/390": {
-      "feature_count": 28
-    },
-    "10/163/391": {
+    "10/162/393": {
       "feature_count": 6
     },
-    "10/164/380": {
-      "feature_count": 38
+    "10/162/394": {
+      "feature_count": 8
     },
-    "10/164/381": {
-      "feature_count": 26
+    "10/162/395": {
+      "feature_count": 3
     },
-    "10/164/382": {
+    "10/163/380": {
+      "feature_count": 69
+    },
+    "10/163/381": {
+      "feature_count": 30
+    },
+    "10/163/382": {
+      "feature_count": 33
+    },
+    "10/163/383": {
+      "feature_count": 81
+    },
+    "10/163/384": {
+      "feature_count": 60
+    },
+    "10/163/385": {
+      "feature_count": 41
+    },
+    "10/163/386": {
       "feature_count": 18
     },
+    "10/163/387": {
+      "feature_count": 36
+    },
+    "10/163/388": {
+      "feature_count": 27
+    },
+    "10/163/389": {
+      "feature_count": 27
+    },
+    "10/163/390": {
+      "feature_count": 33
+    },
+    "10/163/391": {
+      "feature_count": 32
+    },
+    "10/163/392": {
+      "feature_count": 33
+    },
+    "10/163/393": {
+      "feature_count": 17
+    },
+    "10/163/394": {
+      "feature_count": 12
+    },
+    "10/163/395": {
+      "feature_count": 40
+    },
+    "10/163/396": {
+      "feature_count": 4
+    },
+    "10/163/398": {
+      "feature_count": 1
+    },
+    "10/164/380": {
+      "feature_count": 49
+    },
+    "10/164/381": {
+      "feature_count": 36
+    },
+    "10/164/382": {
+      "feature_count": 51
+    },
     "10/164/383": {
-      "feature_count": 35
+      "feature_count": 39
     },
     "10/164/384": {
-      "feature_count": 16
+      "feature_count": 19
     },
     "10/164/385": {
-      "feature_count": 29
+      "feature_count": 45
     },
     "10/164/386": {
-      "feature_count": 9
+      "feature_count": 12
     },
     "10/164/387": {
-      "feature_count": 8
+      "feature_count": 16
     },
     "10/164/388": {
       "feature_count": 13
     },
     "10/164/389": {
-      "feature_count": 19
-    },
-    "10/164/390": {
-      "feature_count": 41
-    },
-    "10/164/391": {
-      "feature_count": 29
-    },
-    "10/165/380": {
-      "feature_count": 23
-    },
-    "10/165/381": {
-      "feature_count": 36
-    },
-    "10/165/382": {
-      "feature_count": 20
-    },
-    "10/165/383": {
-      "feature_count": 38
-    },
-    "10/165/384": {
       "feature_count": 21
     },
-    "10/165/385": {
+    "10/164/390": {
+      "feature_count": 49
+    },
+    "10/164/391": {
       "feature_count": 38
     },
-    "10/165/386": {
-      "feature_count": 24
+    "10/164/392": {
+      "feature_count": 8
     },
-    "10/165/387": {
-      "feature_count": 10
+    "10/164/393": {
+      "feature_count": 4
     },
-    "10/165/388": {
-      "feature_count": 11
+    "10/164/394": {
+      "feature_count": 28
     },
-    "10/165/390": {
-      "feature_count": 2
+    "10/164/395": {
+      "feature_count": 54
     },
-    "10/165/391": {
-      "feature_count": 2
-    },
-    "10/165/400": {
+    "10/164/396": {
       "feature_count": 6
     },
-    "10/165/401": {
+    "10/164/397": {
+      "feature_count": 26
+    },
+    "10/164/398": {
+      "feature_count": 15
+    },
+    "10/165/380": {
+      "feature_count": 50
+    },
+    "10/165/381": {
+      "feature_count": 41
+    },
+    "10/165/382": {
+      "feature_count": 23
+    },
+    "10/165/383": {
+      "feature_count": 40
+    },
+    "10/165/384": {
+      "feature_count": 29
+    },
+    "10/165/385": {
+      "feature_count": 70
+    },
+    "10/165/386": {
+      "feature_count": 27
+    },
+    "10/165/387": {
+      "feature_count": 13
+    },
+    "10/165/388": {
+      "feature_count": 18
+    },
+    "10/165/389": {
+      "feature_count": 3
+    },
+    "10/165/390": {
       "feature_count": 1
     },
+    "10/165/391": {
+      "feature_count": 5
+    },
+    "10/165/392": {
+      "feature_count": 11
+    },
+    "10/165/393": {
+      "feature_count": 28
+    },
+    "10/165/394": {
+      "feature_count": 22
+    },
+    "10/165/395": {
+      "feature_count": 46
+    },
+    "10/165/396": {
+      "feature_count": 42
+    },
+    "10/165/397": {
+      "feature_count": 19
+    },
+    "10/165/398": {
+      "feature_count": 35
+    },
+    "10/165/399": {
+      "feature_count": 7
+    },
+    "10/165/400": {
+      "feature_count": 15
+    },
+    "10/165/401": {
+      "feature_count": 7
+    },
     "10/166/380": {
-      "feature_count": 25
+      "feature_count": 42
     },
     "10/166/381": {
-      "feature_count": 42
+      "feature_count": 44
     },
     "10/166/382": {
       "feature_count": 25
     },
     "10/166/383": {
-      "feature_count": 21
+      "feature_count": 31
     },
     "10/166/384": {
-      "feature_count": 30
+      "feature_count": 54
     },
     "10/166/385": {
-      "feature_count": 23
+      "feature_count": 39
     },
     "10/166/386": {
-      "feature_count": 42
+      "feature_count": 52
     },
     "10/166/387": {
-      "feature_count": 30
+      "feature_count": 41
     },
     "10/166/388": {
-      "feature_count": 23
+      "feature_count": 35
     },
     "10/166/389": {
+      "feature_count": 16
+    },
+    "10/166/390": {
       "feature_count": 9
     },
-    "10/166/400": {
-      "feature_count": 6
+    "10/166/391": {
+      "feature_count": 23
     },
-    "10/166/401": {
+    "10/166/392": {
       "feature_count": 13
     },
+    "10/166/393": {
+      "feature_count": 3
+    },
+    "10/166/394": {
+      "feature_count": 11
+    },
+    "10/166/395": {
+      "feature_count": 13
+    },
+    "10/166/396": {
+      "feature_count": 25
+    },
+    "10/166/397": {
+      "feature_count": 24
+    },
+    "10/166/398": {
+      "feature_count": 11
+    },
+    "10/166/399": {
+      "feature_count": 4
+    },
+    "10/166/400": {
+      "feature_count": 13
+    },
+    "10/166/401": {
+      "feature_count": 24
+    },
     "10/166/402": {
-      "feature_count": 10
+      "feature_count": 12
     },
     "10/167/380": {
-      "feature_count": 6
+      "feature_count": 7
     },
     "10/167/381": {
-      "feature_count": 20
+      "feature_count": 22
     },
     "10/167/382": {
       "feature_count": 17
     },
     "10/167/383": {
-      "feature_count": 10
-    },
-    "10/167/384": {
       "feature_count": 31
     },
+    "10/167/384": {
+      "feature_count": 39
+    },
     "10/167/385": {
-      "feature_count": 48
+      "feature_count": 71
     },
     "10/167/386": {
-      "feature_count": 22
+      "feature_count": 38
     },
     "10/167/387": {
-      "feature_count": 15
+      "feature_count": 28
     },
     "10/167/388": {
       "feature_count": 19
     },
     "10/167/389": {
-      "feature_count": 53
+      "feature_count": 62
     },
     "10/167/390": {
-      "feature_count": 23
+      "feature_count": 50
     },
     "10/167/391": {
-      "feature_count": 6
+      "feature_count": 21
     },
     "10/167/392": {
+      "feature_count": 4
+    },
+    "10/167/393": {
+      "feature_count": 8
+    },
+    "10/167/394": {
       "feature_count": 2
     },
-    "10/167/400": {
-      "feature_count": 2
+    "10/167/395": {
+      "feature_count": 14
     },
-    "10/167/401": {
-      "feature_count": 27
-    },
-    "10/167/402": {
+    "10/167/396": {
       "feature_count": 20
     },
-    "10/167/403": {
-      "feature_count": 1
+    "10/167/397": {
+      "feature_count": 14
     },
-    "10/168/380": {
-      "feature_count": 5
-    },
-    "10/168/381": {
-      "feature_count": 7
-    },
-    "10/168/382": {
-      "feature_count": 13
-    },
-    "10/168/383": {
-      "feature_count": 17
-    },
-    "10/168/384": {
+    "10/167/398": {
       "feature_count": 16
     },
+    "10/167/399": {
+      "feature_count": 10
+    },
+    "10/167/400": {
+      "feature_count": 5
+    },
+    "10/167/401": {
+      "feature_count": 52
+    },
+    "10/167/402": {
+      "feature_count": 29
+    },
+    "10/167/403": {
+      "feature_count": 9
+    },
+    "10/168/380": {
+      "feature_count": 11
+    },
+    "10/168/381": {
+      "feature_count": 10
+    },
+    "10/168/382": {
+      "feature_count": 37
+    },
+    "10/168/383": {
+      "feature_count": 20
+    },
+    "10/168/384": {
+      "feature_count": 18
+    },
     "10/168/385": {
-      "feature_count": 12
+      "feature_count": 18
     },
     "10/168/386": {
-      "feature_count": 18
+      "feature_count": 26
     },
     "10/168/387": {
       "feature_count": 25
     },
     "10/168/388": {
-      "feature_count": 65
+      "feature_count": 78
     },
     "10/168/389": {
-      "feature_count": 117
+      "feature_count": 136
     },
     "10/168/390": {
-      "feature_count": 103
+      "feature_count": 124
     },
     "10/168/391": {
-      "feature_count": 42
+      "feature_count": 49
     },
     "10/168/392": {
-      "feature_count": 13
+      "feature_count": 34
     },
     "10/168/393": {
-      "feature_count": 2
+      "feature_count": 10
+    },
+    "10/168/394": {
+      "feature_count": 3
     },
     "10/168/395": {
-      "feature_count": 2
-    },
-    "10/168/400": {
-      "feature_count": 6
-    },
-    "10/168/401": {
-      "feature_count": 2
-    },
-    "10/168/402": {
       "feature_count": 7
     },
+    "10/168/396": {
+      "feature_count": 12
+    },
+    "10/168/397": {
+      "feature_count": 17
+    },
+    "10/168/398": {
+      "feature_count": 8
+    },
+    "10/168/399": {
+      "feature_count": 26
+    },
+    "10/168/400": {
+      "feature_count": 14
+    },
+    "10/168/401": {
+      "feature_count": 3
+    },
+    "10/168/402": {
+      "feature_count": 10
+    },
     "10/168/403": {
-      "feature_count": 6
+      "feature_count": 41
     },
     "10/168/404": {
-      "feature_count": 24
+      "feature_count": 35
     },
     "10/168/405": {
       "feature_count": 1
     },
     "10/169/380": {
-      "feature_count": 18
-    },
-    "10/169/381": {
-      "feature_count": 13
-    },
-    "10/169/382": {
-      "feature_count": 12
-    },
-    "10/169/383": {
-      "feature_count": 27
-    },
-    "10/169/384": {
-      "feature_count": 9
-    },
-    "10/169/385": {
-      "feature_count": 2
-    },
-    "10/169/386": {
-      "feature_count": 2
-    },
-    "10/169/387": {
-      "feature_count": 15
-    },
-    "10/169/388": {
-      "feature_count": 44
-    },
-    "10/169/389": {
-      "feature_count": 127
-    },
-    "10/169/390": {
-      "feature_count": 54
-    },
-    "10/169/391": {
-      "feature_count": 29
-    },
-    "10/169/392": {
-      "feature_count": 55
-    },
-    "10/169/393": {
-      "feature_count": 16
-    },
-    "10/169/394": {
-      "feature_count": 13
-    },
-    "10/169/395": {
-      "feature_count": 13
-    },
-    "10/169/396": {
-      "feature_count": 4
-    },
-    "10/169/401": {
-      "feature_count": 2
-    },
-    "10/169/402": {
-      "feature_count": 9
-    },
-    "10/169/403": {
       "feature_count": 22
     },
-    "10/169/404": {
+    "10/169/381": {
+      "feature_count": 19
+    },
+    "10/169/382": {
       "feature_count": 20
     },
-    "10/169/405": {
-      "feature_count": 5
+    "10/169/383": {
+      "feature_count": 30
     },
-    "10/170/380": {
-      "feature_count": 14
+    "10/169/384": {
+      "feature_count": 12
     },
-    "10/170/381": {
+    "10/169/385": {
       "feature_count": 6
     },
-    "10/170/382": {
+    "10/169/386": {
+      "feature_count": 10
+    },
+    "10/169/387": {
+      "feature_count": 25
+    },
+    "10/169/388": {
+      "feature_count": 53
+    },
+    "10/169/389": {
+      "feature_count": 134
+    },
+    "10/169/390": {
+      "feature_count": 60
+    },
+    "10/169/391": {
+      "feature_count": 34
+    },
+    "10/169/392": {
+      "feature_count": 63
+    },
+    "10/169/393": {
+      "feature_count": 20
+    },
+    "10/169/394": {
+      "feature_count": 16
+    },
+    "10/169/395": {
+      "feature_count": 18
+    },
+    "10/169/396": {
       "feature_count": 5
     },
-    "10/170/383": {
+    "10/169/397": {
+      "feature_count": 4
+    },
+    "10/169/399": {
+      "feature_count": 26
+    },
+    "10/169/400": {
+      "feature_count": 8
+    },
+    "10/169/401": {
+      "feature_count": 5
+    },
+    "10/169/402": {
+      "feature_count": 16
+    },
+    "10/169/403": {
+      "feature_count": 48
+    },
+    "10/169/404": {
+      "feature_count": 41
+    },
+    "10/169/405": {
+      "feature_count": 18
+    },
+    "10/169/406": {
+      "feature_count": 45
+    },
+    "10/169/407": {
+      "feature_count": 1
+    },
+    "10/170/380": {
+      "feature_count": 18
+    },
+    "10/170/381": {
       "feature_count": 9
     },
+    "10/170/382": {
+      "feature_count": 8
+    },
+    "10/170/383": {
+      "feature_count": 13
+    },
     "10/170/384": {
+      "feature_count": 7
+    },
+    "10/170/385": {
       "feature_count": 3
     },
     "10/170/386": {
       "feature_count": 4
     },
     "10/170/387": {
-      "feature_count": 5
+      "feature_count": 14
     },
     "10/170/388": {
-      "feature_count": 21
+      "feature_count": 29
     },
     "10/170/389": {
-      "feature_count": 171
+      "feature_count": 172
     },
     "10/170/390": {
-      "feature_count": 60
-    },
-    "10/170/391": {
-      "feature_count": 6
-    },
-    "10/170/392": {
-      "feature_count": 20
-    },
-    "10/170/393": {
-      "feature_count": 35
-    },
-    "10/170/394": {
       "feature_count": 65
     },
+    "10/170/391": {
+      "feature_count": 8
+    },
+    "10/170/392": {
+      "feature_count": 30
+    },
+    "10/170/393": {
+      "feature_count": 38
+    },
+    "10/170/394": {
+      "feature_count": 67
+    },
     "10/170/395": {
-      "feature_count": 55
+      "feature_count": 59
     },
     "10/170/396": {
-      "feature_count": 24
+      "feature_count": 48
     },
     "10/170/397": {
-      "feature_count": 5
+      "feature_count": 13
     },
     "10/170/398": {
-      "feature_count": 5
+      "feature_count": 19
+    },
+    "10/170/399": {
+      "feature_count": 23
     },
     "10/170/400": {
-      "feature_count": 2
+      "feature_count": 22
     },
     "10/170/401": {
-      "feature_count": 2
+      "feature_count": 13
+    },
+    "10/170/402": {
+      "feature_count": 7
     },
     "10/170/403": {
-      "feature_count": 2
+      "feature_count": 5
     },
     "10/170/404": {
-      "feature_count": 242
+      "feature_count": 249
     },
     "10/170/405": {
-      "feature_count": 9
+      "feature_count": 11
     },
     "10/170/406": {
-      "feature_count": 3
+      "feature_count": 10
     },
     "10/170/407": {
-      "feature_count": 2
+      "feature_count": 5
     },
     "10/171/391": {
       "feature_count": 1
     },
     "10/171/392": {
-      "feature_count": 15
+      "feature_count": 19
     },
     "10/171/393": {
-      "feature_count": 15
+      "feature_count": 20
     },
     "10/171/394": {
       "feature_count": 1
     },
     "10/171/395": {
-      "feature_count": 10
+      "feature_count": 14
     },
     "10/171/396": {
-      "feature_count": 21
+      "feature_count": 34
     },
     "10/171/397": {
-      "feature_count": 20
-    },
-    "10/171/398": {
-      "feature_count": 15
-    },
-    "10/171/399": {
-      "feature_count": 1
-    },
-    "10/171/400": {
-      "feature_count": 1
-    },
-    "10/171/401": {
-      "feature_count": 3
-    },
-    "10/171/402": {
-      "feature_count": 4
-    },
-    "10/171/404": {
-      "feature_count": 96
-    },
-    "10/171/405": {
       "feature_count": 35
     },
-    "10/171/406": {
-      "feature_count": 4
+    "10/171/398": {
+      "feature_count": 25
     },
-    "10/171/407": {
-      "feature_count": 8
-    },
-    "10/172/392": {
-      "feature_count": 2
-    },
-    "10/172/393": {
+    "10/171/399": {
       "feature_count": 7
     },
+    "10/171/400": {
+      "feature_count": 5
+    },
+    "10/171/401": {
+      "feature_count": 9
+    },
+    "10/171/402": {
+      "feature_count": 10
+    },
+    "10/171/404": {
+      "feature_count": 97
+    },
+    "10/171/405": {
+      "feature_count": 39
+    },
+    "10/171/406": {
+      "feature_count": 7
+    },
+    "10/171/407": {
+      "feature_count": 13
+    },
+    "10/172/392": {
+      "feature_count": 6
+    },
+    "10/172/393": {
+      "feature_count": 32
+    },
     "10/172/394": {
-      "feature_count": 36
+      "feature_count": 42
     },
     "10/172/395": {
       "feature_count": 2
     },
     "10/172/396": {
-      "feature_count": 18
+      "feature_count": 24
     },
     "10/172/397": {
-      "feature_count": 47
+      "feature_count": 54
     },
     "10/172/398": {
-      "feature_count": 7
+      "feature_count": 9
     },
     "10/172/399": {
-      "feature_count": 6
+      "feature_count": 10
     },
     "10/172/400": {
-      "feature_count": 4
+      "feature_count": 7
     },
     "10/172/401": {
-      "feature_count": 6
+      "feature_count": 21
     },
     "10/172/402": {
-      "feature_count": 6
+      "feature_count": 16
     },
     "10/172/403": {
-      "feature_count": 2
+      "feature_count": 6
     },
     "10/172/404": {
-      "feature_count": 8
+      "feature_count": 24
     },
     "10/172/405": {
-      "feature_count": 14
-    },
-    "10/172/406": {
-      "feature_count": 12
-    },
-    "10/172/407": {
-      "feature_count": 4
-    },
-    "10/172/408": {
-      "feature_count": 1
-    },
-    "10/173/393": {
-      "feature_count": 1
-    },
-    "10/173/394": {
-      "feature_count": 41
-    },
-    "10/173/395": {
-      "feature_count": 122
-    },
-    "10/173/396": {
-      "feature_count": 88
-    },
-    "10/173/397": {
-      "feature_count": 6
-    },
-    "10/173/398": {
-      "feature_count": 6
-    },
-    "10/173/399": {
-      "feature_count": 49
-    },
-    "10/173/400": {
-      "feature_count": 13
-    },
-    "10/173/401": {
-      "feature_count": 4
-    },
-    "10/173/402": {
-      "feature_count": 14
-    },
-    "10/173/403": {
-      "feature_count": 5
-    },
-    "10/173/404": {
-      "feature_count": 11
-    },
-    "10/173/405": {
-      "feature_count": 1
-    },
-    "10/173/406": {
-      "feature_count": 34
-    },
-    "10/173/407": {
       "feature_count": 17
     },
-    "10/173/408": {
+    "10/172/406": {
+      "feature_count": 19
+    },
+    "10/172/407": {
+      "feature_count": 13
+    },
+    "10/172/408": {
       "feature_count": 2
+    },
+    "10/173/393": {
+      "feature_count": 9
+    },
+    "10/173/394": {
+      "feature_count": 49
+    },
+    "10/173/395": {
+      "feature_count": 126
+    },
+    "10/173/396": {
+      "feature_count": 93
+    },
+    "10/173/397": {
+      "feature_count": 9
+    },
+    "10/173/398": {
+      "feature_count": 7
+    },
+    "10/173/399": {
+      "feature_count": 53
+    },
+    "10/173/400": {
+      "feature_count": 16
+    },
+    "10/173/401": {
+      "feature_count": 21
+    },
+    "10/173/402": {
+      "feature_count": 43
+    },
+    "10/173/403": {
+      "feature_count": 17
+    },
+    "10/173/404": {
+      "feature_count": 16
+    },
+    "10/173/405": {
+      "feature_count": 5
+    },
+    "10/173/406": {
+      "feature_count": 54
+    },
+    "10/173/407": {
+      "feature_count": 38
+    },
+    "10/173/408": {
+      "feature_count": 24
     },
     "10/174/394": {
       "feature_count": 10
     },
     "10/174/395": {
-      "feature_count": 38
+      "feature_count": 43
     },
     "10/174/396": {
-      "feature_count": 187
+      "feature_count": 190
     },
     "10/174/397": {
       "feature_count": 70
@@ -739,224 +1588,523 @@
       "feature_count": 3
     },
     "10/174/401": {
-      "feature_count": 23
+      "feature_count": 24
     },
     "10/174/402": {
-      "feature_count": 60
+      "feature_count": 61
     },
     "10/174/403": {
-      "feature_count": 51
+      "feature_count": 58
     },
     "10/174/404": {
-      "feature_count": 18
+      "feature_count": 26
     },
     "10/174/405": {
-      "feature_count": 2
-    },
-    "10/174/406": {
       "feature_count": 10
     },
+    "10/174/406": {
+      "feature_count": 38
+    },
     "10/174/407": {
-      "feature_count": 31
+      "feature_count": 42
     },
     "10/174/408": {
-      "feature_count": 18
+      "feature_count": 57
+    },
+    "10/174/410": {
+      "feature_count": 2
+    },
+    "10/174/411": {
+      "feature_count": 3
     },
     "10/175/395": {
       "feature_count": 6
     },
     "10/175/396": {
-      "feature_count": 57
+      "feature_count": 61
     },
     "10/175/397": {
-      "feature_count": 156
+      "feature_count": 165
     },
     "10/175/398": {
-      "feature_count": 38
+      "feature_count": 46
     },
     "10/175/399": {
-      "feature_count": 49
+      "feature_count": 56
     },
     "10/175/400": {
-      "feature_count": 13
+      "feature_count": 14
     },
     "10/175/401": {
-      "feature_count": 37
+      "feature_count": 38
     },
     "10/175/402": {
-      "feature_count": 23
+      "feature_count": 25
     },
     "10/175/403": {
       "feature_count": 18
     },
     "10/175/404": {
-      "feature_count": 27
-    },
-    "10/175/405": {
-      "feature_count": 2
-    },
-    "10/175/406": {
-      "feature_count": 22
-    },
-    "10/175/407": {
       "feature_count": 47
     },
+    "10/175/405": {
+      "feature_count": 146
+    },
+    "10/175/406": {
+      "feature_count": 186
+    },
+    "10/175/407": {
+      "feature_count": 102
+    },
     "10/175/408": {
-      "feature_count": 22
+      "feature_count": 45
+    },
+    "10/175/409": {
+      "feature_count": 5
+    },
+    "10/175/410": {
+      "feature_count": 2
+    },
+    "10/175/411": {
+      "feature_count": 27
     },
     "10/176/396": {
-      "feature_count": 17
+      "feature_count": 19
     },
     "10/176/397": {
-      "feature_count": 24
+      "feature_count": 28
     },
     "10/176/398": {
-      "feature_count": 10
+      "feature_count": 34
     },
     "10/176/399": {
-      "feature_count": 42
+      "feature_count": 56
     },
     "10/176/400": {
-      "feature_count": 39
+      "feature_count": 53
     },
     "10/176/401": {
-      "feature_count": 46
+      "feature_count": 83
     },
     "10/176/402": {
-      "feature_count": 31
+      "feature_count": 58
     },
     "10/176/403": {
-      "feature_count": 17
+      "feature_count": 158
     },
     "10/176/404": {
-      "feature_count": 9
+      "feature_count": 39
     },
     "10/176/405": {
-      "feature_count": 1
+      "feature_count": 76
     },
     "10/176/406": {
-      "feature_count": 10
+      "feature_count": 113
     },
     "10/176/407": {
-      "feature_count": 22
+      "feature_count": 216
     },
     "10/176/408": {
-      "feature_count": 18
+      "feature_count": 22
+    },
+    "10/176/409": {
+      "feature_count": 1
+    },
+    "10/176/410": {
+      "feature_count": 9
     },
     "10/177/396": {
       "feature_count": 1
     },
     "10/177/397": {
-      "feature_count": 2
-    },
-    "10/177/399": {
-      "feature_count": 1
-    },
-    "10/177/400": {
-      "feature_count": 2
-    },
-    "10/177/404": {
-      "feature_count": 1
-    },
-    "10/177/405": {
-      "feature_count": 1
-    },
-    "10/177/406": {
-      "feature_count": 63
-    },
-    "10/177/407": {
-      "feature_count": 98
-    },
-    "10/177/408": {
-      "feature_count": 35
-    },
-    "10/177/409": {
-      "feature_count": 25
-    },
-    "10/177/410": {
-      "feature_count": 17
-    },
-    "10/178/407": {
-      "feature_count": 18
-    },
-    "10/178/408": {
-      "feature_count": 74
-    },
-    "10/178/409": {
-      "feature_count": 12
-    },
-    "10/178/410": {
       "feature_count": 16
     },
-    "10/178/411": {
+    "10/177/398": {
+      "feature_count": 4
+    },
+    "10/177/399": {
+      "feature_count": 14
+    },
+    "10/177/400": {
+      "feature_count": 54
+    },
+    "10/177/401": {
+      "feature_count": 67
+    },
+    "10/177/402": {
+      "feature_count": 32
+    },
+    "10/177/403": {
+      "feature_count": 162
+    },
+    "10/177/404": {
+      "feature_count": 35
+    },
+    "10/177/405": {
+      "feature_count": 70
+    },
+    "10/177/406": {
+      "feature_count": 235
+    },
+    "10/177/407": {
+      "feature_count": 909
+    },
+    "10/177/408": {
+      "feature_count": 51
+    },
+    "10/177/409": {
+      "feature_count": 36
+    },
+    "10/177/410": {
+      "feature_count": 35
+    },
+    "10/177/411": {
+      "feature_count": 1
+    },
+    "10/178/397": {
+      "feature_count": 1
+    },
+    "10/178/398": {
+      "feature_count": 2
+    },
+    "10/178/399": {
+      "feature_count": 4
+    },
+    "10/178/400": {
       "feature_count": 11
     },
+    "10/178/401": {
+      "feature_count": 36
+    },
+    "10/178/402": {
+      "feature_count": 31
+    },
+    "10/178/403": {
+      "feature_count": 9
+    },
+    "10/178/404": {
+      "feature_count": 1
+    },
+    "10/178/405": {
+      "feature_count": 21
+    },
+    "10/178/406": {
+      "feature_count": 128
+    },
+    "10/178/407": {
+      "feature_count": 309
+    },
+    "10/178/408": {
+      "feature_count": 82
+    },
+    "10/178/409": {
+      "feature_count": 139
+    },
+    "10/178/410": {
+      "feature_count": 115
+    },
+    "10/178/411": {
+      "feature_count": 29
+    },
     "10/178/412": {
-      "feature_count": 2
+      "feature_count": 13
     },
     "10/178/413": {
       "feature_count": 1
     },
-    "10/179/407": {
-      "feature_count": 48
+    "10/179/399": {
+      "feature_count": 7
     },
-    "10/179/408": {
-      "feature_count": 143
-    },
-    "10/179/409": {
-      "feature_count": 29
-    },
-    "10/179/410": {
-      "feature_count": 34
-    },
-    "10/179/411": {
-      "feature_count": 31
-    },
-    "10/179/412": {
-      "feature_count": 22
-    },
-    "10/179/413": {
-      "feature_count": 24
-    },
-    "10/180/407": {
+    "10/179/400": {
       "feature_count": 11
     },
-    "10/180/408": {
+    "10/179/401": {
+      "feature_count": 10
+    },
+    "10/179/402": {
+      "feature_count": 11
+    },
+    "10/179/403": {
+      "feature_count": 2
+    },
+    "10/179/404": {
+      "feature_count": 6
+    },
+    "10/179/405": {
+      "feature_count": 37
+    },
+    "10/179/406": {
+      "feature_count": 18
+    },
+    "10/179/407": {
+      "feature_count": 159
+    },
+    "10/179/408": {
+      "feature_count": 164
+    },
+    "10/179/409": {
+      "feature_count": 75
+    },
+    "10/179/410": {
+      "feature_count": 110
+    },
+    "10/179/411": {
       "feature_count": 58
     },
-    "10/180/409": {
+    "10/179/412": {
+      "feature_count": 82
+    },
+    "10/179/413": {
+      "feature_count": 40
+    },
+    "10/180/400": {
+      "feature_count": 9
+    },
+    "10/180/401": {
+      "feature_count": 28
+    },
+    "10/180/402": {
       "feature_count": 17
     },
+    "10/180/403": {
+      "feature_count": 8
+    },
+    "10/180/404": {
+      "feature_count": 2
+    },
+    "10/180/405": {
+      "feature_count": 88
+    },
+    "10/180/406": {
+      "feature_count": 47
+    },
+    "10/180/407": {
+      "feature_count": 68
+    },
+    "10/180/408": {
+      "feature_count": 400
+    },
+    "10/180/409": {
+      "feature_count": 55
+    },
     "10/180/410": {
-      "feature_count": 35
+      "feature_count": 92
     },
     "10/180/411": {
-      "feature_count": 33
+      "feature_count": 74
     },
     "10/180/412": {
-      "feature_count": 50
+      "feature_count": 67
     },
     "10/180/413": {
-      "feature_count": 29
+      "feature_count": 55
+    },
+    "10/181/401": {
+      "feature_count": 2
+    },
+    "10/181/402": {
+      "feature_count": 22
+    },
+    "10/181/403": {
+      "feature_count": 8
+    },
+    "10/181/404": {
+      "feature_count": 17
+    },
+    "10/181/405": {
+      "feature_count": 25
+    },
+    "10/181/406": {
+      "feature_count": 13
+    },
+    "10/181/407": {
+      "feature_count": 1
     },
     "10/181/408": {
-      "feature_count": 43
+      "feature_count": 357
     },
     "10/181/409": {
-      "feature_count": 2
+      "feature_count": 18
     },
     "10/181/410": {
-      "feature_count": 1
+      "feature_count": 26
     },
     "10/181/411": {
-      "feature_count": 2
+      "feature_count": 17
     },
     "10/181/412": {
-      "feature_count": 1
+      "feature_count": 45
     },
     "10/181/413": {
+      "feature_count": 57
+    },
+    "10/182/401": {
+      "feature_count": 1
+    },
+    "10/182/402": {
+      "feature_count": 110
+    },
+    "10/182/403": {
+      "feature_count": 18
+    },
+    "10/182/404": {
+      "feature_count": 70
+    },
+    "10/182/405": {
+      "feature_count": 36
+    },
+    "10/182/406": {
+      "feature_count": 8
+    },
+    "10/182/407": {
+      "feature_count": 3
+    },
+    "10/182/408": {
+      "feature_count": 119
+    },
+    "10/182/409": {
+      "feature_count": 16
+    },
+    "10/182/410": {
+      "feature_count": 14
+    },
+    "10/182/411": {
+      "feature_count": 17
+    },
+    "10/182/412": {
       "feature_count": 7
+    },
+    "10/182/413": {
+      "feature_count": 32
+    },
+    "10/183/402": {
+      "feature_count": 22
+    },
+    "10/183/403": {
+      "feature_count": 78
+    },
+    "10/183/404": {
+      "feature_count": 120
+    },
+    "10/183/405": {
+      "feature_count": 86
+    },
+    "10/183/406": {
+      "feature_count": 29
+    },
+    "10/183/407": {
+      "feature_count": 9
+    },
+    "10/183/408": {
+      "feature_count": 7
+    },
+    "10/183/409": {
+      "feature_count": 14
+    },
+    "10/183/410": {
+      "feature_count": 14
+    },
+    "10/183/411": {
+      "feature_count": 45
+    },
+    "10/183/412": {
+      "feature_count": 24
+    },
+    "10/183/413": {
+      "feature_count": 17
+    },
+    "10/184/403": {
+      "feature_count": 1
+    },
+    "10/184/404": {
+      "feature_count": 75
+    },
+    "10/184/405": {
+      "feature_count": 99
+    },
+    "10/184/406": {
+      "feature_count": 22
+    },
+    "10/184/407": {
+      "feature_count": 10
+    },
+    "10/184/408": {
+      "feature_count": 11
+    },
+    "10/184/409": {
+      "feature_count": 12
+    },
+    "10/184/410": {
+      "feature_count": 11
+    },
+    "10/184/411": {
+      "feature_count": 15
+    },
+    "10/184/412": {
+      "feature_count": 15
+    },
+    "10/184/413": {
+      "feature_count": 7
+    },
+    "10/185/404": {
+      "feature_count": 3
+    },
+    "10/185/405": {
+      "feature_count": 23
+    },
+    "10/185/406": {
+      "feature_count": 16
+    },
+    "10/185/407": {
+      "feature_count": 13
+    },
+    "10/185/408": {
+      "feature_count": 6
+    },
+    "10/185/409": {
+      "feature_count": 19
+    },
+    "10/185/410": {
+      "feature_count": 15
+    },
+    "10/185/411": {
+      "feature_count": 40
+    },
+    "10/185/412": {
+      "feature_count": 44
+    },
+    "10/185/413": {
+      "feature_count": 44
+    },
+    "10/186/406": {
+      "feature_count": 14
+    },
+    "10/186/407": {
+      "feature_count": 27
+    },
+    "10/186/408": {
+      "feature_count": 31
+    },
+    "10/186/409": {
+      "feature_count": 11
+    },
+    "10/186/410": {
+      "feature_count": 5
+    },
+    "10/186/412": {
+      "feature_count": 13
+    },
+    "10/186/413": {
+      "feature_count": 20
+    },
+    "10/187/407": {
+      "feature_count": 2
+    },
+    "10/187/408": {
+      "feature_count": 1
     }
   },
-  "verified_feature_count": 7400
+  "vector_display_simplification": "Densest road features are thinned when needed to fit coarse-zoom vector tiles; full GeoJSON candidates are retained",
+  "verification_method": "caltrans_geometry_proximity",
+  "verified_feature_count": 16754
 }

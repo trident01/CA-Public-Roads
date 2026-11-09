@@ -1,31 +1,687 @@
 {
   "base_zoom": 10,
-  "built_utc": "2026-08-22T22:05:24Z",
+  "built_utc": "2026-11-09T17:56:25Z",
+  "caltrans_cache_timestamp_fallback_tile_count": 149,
+  "caltrans_cache_timestamp_method": "Recorded fetched_utc; filesystem cache-write time for caches created before timestamp recording",
+  "caltrans_geometry_cache_fetched_utc_range": [
+    "2026-11-09T17:31:34.122461+00:00",
+    "2026-11-09T17:51:41+00:00"
+  ],
+  "caltrans_geometry_cache_tile_count": 496,
+  "caltrans_matched_utc": "2026-11-09T17:51:47Z",
   "caltrans_source_url": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/All_Roads/MapServer/0",
-  "candidate_count": 18842,
+  "candidate_count": 36497,
   "criteria": {
     "caltrans_match_distance_m": 30.0,
+    "caltrans_reference_extent": "All tiles intersected by each candidate geometry",
+    "excluded_general_access_values": [
+      "agricultural",
+      "customers",
+      "delivery",
+      "destination",
+      "emergency",
+      "employees",
+      "forestry",
+      "military",
+      "no",
+      "official",
+      "permit",
+      "permit_required",
+      "private",
+      "restricted"
+    ],
     "explicit_unpaved_surface_only": true,
     "minimum_caltrans_match_coverage": 0.85,
-    "minimum_length_m": 500.0
+    "minimum_length_m": 500.0,
+    "reject_both_bicycle_and_foot_access_restricted": true,
+    "reject_explicit_paved_contradictions": true,
+    "restricted_vehicle_access_requires_explicit_bicycle_or_foot_access": true
+  },
+  "input_manifest_path": "build/statewide_unpaved/candidates_manifest.json",
+  "input_path": "build/statewide_unpaved/candidates.geojson",
+  "input_scope": {
+    "area_filter": "ISO3166-2=US-CA; admin_level=4",
+    "bbox": [
+      -124.6,
+      32.4,
+      -114.0,
+      42.1
+    ],
+    "complete": true,
+    "complete_way_geometries": true,
+    "description": "California OSM administrative area, without a forest crop",
+    "kind": "statewide_california"
+  },
+  "input_source_metadata": {
+    "candidate_count": 72796,
+    "criteria": {
+      "blocked_general_access": [
+        "agricultural",
+        "customers",
+        "delivery",
+        "destination",
+        "emergency",
+        "employees",
+        "forestry",
+        "military",
+        "no",
+        "official",
+        "permit",
+        "permit_required",
+        "private",
+        "restricted"
+      ],
+      "explicit_unpaved_surface_only": true,
+      "minimum_length_m": null,
+      "public_network_verification": "Requires separate Caltrans matcher",
+      "road_classes": [
+        "living_street",
+        "residential",
+        "service",
+        "tertiary",
+        "track",
+        "unclassified"
+      ],
+      "surfaces": [
+        "cinder",
+        "clay",
+        "compacted",
+        "dirt",
+        "earth",
+        "fine_gravel",
+        "grass",
+        "gravel",
+        "ground",
+        "mud",
+        "pebblestone",
+        "rock",
+        "sand",
+        "stone",
+        "unpaved",
+        "woodchips"
+      ]
+    },
+    "downloads": [
+      {
+        "band": 0,
+        "bytes": 15385878,
+        "element_count": 7854,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:29:29Z",
+        "north": 33.4,
+        "path": "build/statewide_unpaved/raw/band_00.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(32.4,-124.6,33.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "b2839236f6387f0ecba4725ddd21c746b6ee9fdda6d2690f6a58475a25439d87",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 32.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 1,
+        "bytes": 25424141,
+        "element_count": 17123,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:31:31Z",
+        "north": 34.4,
+        "path": "build/statewide_unpaved/raw/band_01.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(33.4,-124.6,34.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "abdc04d908456da1c7dbf8f9b6634ebb7034fae0ba7995cb9f81e1e5895f7ecd",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 33.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 2,
+        "bytes": 24350059,
+        "element_count": 16098,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:31:59Z",
+        "north": 35.4,
+        "path": "build/statewide_unpaved/raw/band_02.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(34.4,-124.6,35.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_sha256": "da4037b22be4e8eae2706e693ae0408c0b09ce19787784ae5dad8400ea1d2331",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 34.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 3,
+        "bytes": 19951086,
+        "element_count": 9951,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:36:20Z",
+        "north": 36.4,
+        "path": "build/statewide_unpaved/raw/band_03.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(35.4,-124.6,36.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:36:20Z",
+            "north": 36.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:34:36Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(35.4,-124.6,36.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "29cd45b40ebe9a2c8e7b354f25c721b4654d7bbcbdfb8bb42779dc3f05499a8a",
+            "south": 35.4
+          }
+        ],
+        "query_sha256": "29cd45b40ebe9a2c8e7b354f25c721b4654d7bbcbdfb8bb42779dc3f05499a8a",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 35.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 4,
+        "bytes": 17789343,
+        "element_count": 9246,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:40:08Z",
+        "north": 37.4,
+        "path": "build/statewide_unpaved/raw/band_04.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.4,-124.6,37.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:39:45Z",
+            "north": 36.9,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.4,-124.6,36.9,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "810428141a40a9334da1447cdba02c8591ff2bc427d7ac1c0827d086088abbaf",
+            "south": 36.4
+          },
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:40:08Z",
+            "north": 37.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(36.9,-124.6,37.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "c1fc998a61d6e86b935f6b8c6195dfe41ac8aca588a6cc6e6288e154938c478f",
+            "south": 36.9
+          }
+        ],
+        "query_sha256": "d642ffa160c8b788542ce31de99fea985545253a33b102188d0f01add5bf8056",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 36.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 5,
+        "bytes": 22442089,
+        "element_count": 12663,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:37:02Z",
+        "north": 38.4,
+        "path": "build/statewide_unpaved/raw/band_05.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(37.4,-124.6,38.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:37:02Z",
+            "north": 38.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(37.4,-124.6,38.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "cf8c88eb860c8eb9a9c523c5bf0ec6f75f52e8260af33214f368f99652831b50",
+            "south": 37.4
+          }
+        ],
+        "query_sha256": "cf8c88eb860c8eb9a9c523c5bf0ec6f75f52e8260af33214f368f99652831b50",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 37.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 6,
+        "bytes": 25258937,
+        "element_count": 13758,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:40:36Z",
+        "north": 39.4,
+        "path": "build/statewide_unpaved/raw/band_06.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(38.4,-124.6,39.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+            "fetched_utc": "2026-11-09T17:40:36Z",
+            "north": 39.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:38:44Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(38.4,-124.6,39.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "750a0477edcc5abc85e53b7a045c726ebef1815d085394b8e12c2179d06fa20d",
+            "south": 38.4
+          }
+        ],
+        "query_sha256": "750a0477edcc5abc85e53b7a045c726ebef1815d085394b8e12c2179d06fa20d",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 38.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 7,
+        "bytes": 23510505,
+        "element_count": 7690,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:37:39Z",
+        "north": 40.4,
+        "path": "build/statewide_unpaved/raw/band_07.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(39.4,-124.6,40.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:37:38Z",
+            "north": 40.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(39.4,-124.6,40.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "7c48c260d899d79fa028655bdd85c821dcbdcccccab0cc8f05636e3617e9c8b0",
+            "south": 39.4
+          }
+        ],
+        "query_sha256": "7c48c260d899d79fa028655bdd85c821dcbdcccccab0cc8f05636e3617e9c8b0",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 39.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 8,
+        "bytes": 26927799,
+        "element_count": 7371,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:38:06Z",
+        "north": 41.4,
+        "path": "build/statewide_unpaved/raw/band_08.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(40.4,-124.6,41.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:38:05Z",
+            "north": 41.4,
+            "osm_base_timestamps": [
+              "2026-11-09T17:35:34Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(40.4,-124.6,41.4,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "77f93fb651ab9edb73247fefaf43fff8c804f2dcffbcc2c68ae9f69b17bcceca",
+            "south": 40.4
+          }
+        ],
+        "query_sha256": "77f93fb651ab9edb73247fefaf43fff8c804f2dcffbcc2c68ae9f69b17bcceca",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 40.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      },
+      {
+        "band": 9,
+        "bytes": 18773865,
+        "element_count": 4627,
+        "endpoint": "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+        "fetched_utc": "2026-11-09T17:38:42Z",
+        "north": 42.1,
+        "path": "build/statewide_unpaved/raw/band_09.json",
+        "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(41.4,-124.6,42.1,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+        "query_parts": [
+          {
+            "fetched_utc": "2026-11-09T17:38:42Z",
+            "north": 42.1,
+            "osm_base_timestamps": [
+              "2026-11-09T17:37:38Z"
+            ],
+            "query": "[out:json][timeout:180][maxsize:268435456];\narea[\"ISO3166-2\"=\"US-CA\"][\"admin_level\"=\"4\"]->.ca;\nway(area.ca)(41.4,-124.6,42.1,-114.0)[\"highway\"~\"^(living_street|residential|service|tertiary|track|unclassified)$\"][\"surface\"~\"^(cinder|clay|compacted|dirt|earth|fine_gravel|grass|gravel|ground|mud|pebblestone|rock|sand|stone|unpaved|woodchips)$\"];\nout body geom;\n",
+            "query_sha256": "9a5176482b18f42d2aa4209f02a100b45cfda7080f2975793e3f0aaef2bf00f2",
+            "south": 41.4
+          }
+        ],
+        "query_sha256": "9a5176482b18f42d2aa4209f02a100b45cfda7080f2975793e3f0aaef2bf00f2",
+        "road_classes": [
+          "living_street",
+          "residential",
+          "service",
+          "tertiary",
+          "track",
+          "unclassified"
+        ],
+        "snapshot": null,
+        "south": 41.4,
+        "surfaces": [
+          "cinder",
+          "clay",
+          "compacted",
+          "dirt",
+          "earth",
+          "fine_gravel",
+          "grass",
+          "gravel",
+          "ground",
+          "mud",
+          "pebblestone",
+          "rock",
+          "sand",
+          "stone",
+          "unpaved",
+          "woodchips"
+        ]
+      }
+    ],
+    "failed_bands": [],
+    "fetched_utc": "2026-11-09T17:40:45Z",
+    "normalization_notes": [
+      "Preserve legacy OSM paved tags so downstream checks can reject conflicting paved=yes alongside an unpaved surface."
+    ],
+    "normalization_updated_utc": "2026-11-09T17:53:16Z",
+    "osm_base_timestamps": [
+      "2026-11-09T17:28:33Z",
+      "2026-11-09T17:30:36Z",
+      "2026-11-09T17:34:36Z",
+      "2026-11-09T17:35:34Z",
+      "2026-11-09T17:37:38Z",
+      "2026-11-09T17:38:44Z"
+    ],
+    "rejected_counts": {
+      "both_recreation_modes_restricted": 59,
+      "general_access_restricted": 13512,
+      "service_driveway_or_parking": 14492,
+      "vehicle_restricted_without_explicit_recreation_access": 4999
+    },
+    "requested_snapshot": null,
+    "road_class_counts": {
+      "living_street": 21,
+      "residential": 12491,
+      "service": 11528,
+      "tertiary": 419,
+      "track": 42692,
+      "unclassified": 5645
+    },
+    "scope": {
+      "area_filter": "ISO3166-2=US-CA; admin_level=4",
+      "bbox": [
+        -124.6,
+        32.4,
+        -114.0,
+        42.1
+      ],
+      "complete": true,
+      "complete_way_geometries": true,
+      "description": "California OSM administrative area, without a forest crop",
+      "kind": "statewide_california"
+    },
+    "source_name": "OpenStreetMap explicit unpaved minor roads",
+    "source_urls": [
+      "https://www.openstreetmap.org/copyright",
+      "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+    ],
+    "surface_counts": {
+      "clay": 6,
+      "compacted": 2772,
+      "dirt": 24404,
+      "earth": 150,
+      "fine_gravel": 617,
+      "grass": 88,
+      "gravel": 4614,
+      "ground": 8036,
+      "mud": 12,
+      "pebblestone": 29,
+      "rock": 28,
+      "sand": 1549,
+      "unpaved": 30485,
+      "woodchips": 6
+    },
+    "unique_source_way_count": 105858
   },
   "layer_name": "verified_public_roads",
+  "limitations": [
+    "OSM surface tags are observations, not a current-surface guarantee",
+    "Caltrans proximity can match a distinct parallel road and does not establish legal bicycle or foot access",
+    "Candidate coverage is limited by input scope, OSM completeness, length and geometry thresholds"
+  ],
   "max_zoom": 14,
   "min_zoom": 0,
   "scope_bbox": null,
   "source_name": "Caltrans All Roads matched to OpenStreetMap explicit surface tags",
-  "staged_feature_count": 7400,
+  "staged_feature_count": 16754,
   "staging_path": "build/vector_tiles/verified_public_roads_staging.geojson",
   "surface_counts": {
-    "compacted": 331,
-    "dirt": 1861,
-    "earth": 24,
-    "fine_gravel": 121,
-    "grass": 1,
-    "gravel": 1019,
-    "ground": 1056,
-    "sand": 31,
-    "unpaved": 2956
+    "compacted": 907,
+    "dirt": 4336,
+    "earth": 29,
+    "fine_gravel": 161,
+    "grass": 4,
+    "gravel": 1738,
+    "ground": 1180,
+    "mud": 1,
+    "pebblestone": 5,
+    "rock": 1,
+    "sand": 235,
+    "unpaved": 8157
   },
-  "verified_feature_count": 7400
+  "vector_display_simplification": "Densest road features are thinned when needed to fit coarse-zoom vector tiles; full GeoJSON candidates are retained",
+  "verification_method": "caltrans_geometry_proximity",
+  "verified_feature_count": 16754
 }

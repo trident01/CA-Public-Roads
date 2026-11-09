@@ -1,364 +1,197 @@
-# CA Forest Service Roads
+# California Dirt Roads
 
-Interactive California forest-road map with:
+A map for exploring California dirt and gravel roads, with surface and access
+evidence available on click. It is a road-discovery tool, not a routing engine or
+a live closure feed.
 
-- Forest Service MVUM/NFSR road overlays
-- linked PDF MVUM sheets
-- place search
-- static road tiles for faster pan/zoom on GitHub Pages
+The interface keeps search and a small road key visible. **Layers** contains
+road toggles, a known-unpaved forest-road filter, forest PDFs, data limitations,
+and renderer settings. The URL retains the map view and selected layers so a
+shared link opens the same view. Location is requested only when its button is
+pressed.
 
-## Local Development
-
-Run:
+## Run locally
 
 ```bash
 ./serve.sh
 ```
 
-`./serve.sh` now starts a small local server with HTTP Range support, which is
-required for PMTiles-backed vector rendering to work well locally.
+Open <http://127.0.0.1:8080>. The server supports HTTP Range requests for PMTiles
+and concurrent tile requests. It uses `.venv-pmtiles/bin/python` when present,
+otherwise `python3`; `PYTHON_BIN` and `PORT` can override those defaults.
 
-Then open:
+Vector rendering is the default. `?mode=classic` uses the Leaflet fallback.
+Both renderers support the same layer controls, road evidence, forest PDFs, and
+shared views. Classic loads forest and candidate GeoJSON only from zoom 9 to
+avoid downloading the whole state at startup. Road details are available from
+zoom 11. Forest boundaries are context, not parcel ownership or access maps.
 
-```text
-http://127.0.0.1:8080
-```
+## What the roads mean
 
-The main map now has a renderer switch in the top-right panel:
-- `Classic GeoJSON` keeps the existing Leaflet road overlay
-- `Vector Preview` attempts to use the experimental PMTiles path in the main UI
+| Appearance | Source and meaning |
+|---|---|
+| Solid brown | Riverside County roads explicitly inventoried as maintained dirt or gravel |
+| Dashed green | Forest Service motor-vehicle road inventory with an explicit unpaved surface |
+| Dashed brown | OpenStreetMap unpaved road candidates near Caltrans road geometry |
+| Muted gray | Other Forest Service roads: paved or surface not recorded |
 
-If vector tiles are not built yet, the page falls back safely to classic mode.
-For the public site, the committed Forest Service files in `vector_tiles/` make
-the vector renderer available.
+Neither a motor-vehicle designation nor road maintenance establishes bike or
+foot permission. Access fields are shown when recorded; missing fields stay
+**Not recorded**. Local signs, closures, seasonal restrictions, and private
+inholdings still matter. An empty part of the map does not establish that no
+public roads exist there.
 
-## GitHub Pages
+### Forest Service roads
 
-This repo includes a Pages workflow at `.github/workflows/deploy-pages.yml`.
-
-To publish:
-
-1. Create a GitHub repository and push this project to the `main` branch.
-2. In GitHub, open `Settings` -> `Pages`.
-3. Set `Source` to `GitHub Actions`.
-4. Push to `main` or run the `Deploy GitHub Pages` workflow manually.
-
-The site publishes only the runtime assets selected by the Pages workflow:
-
-- `index.html`
-- `_roads_tiles/`
-- `roads_tiles_manifest.json`
-- the Forest Service PMTiles source and manifest
-- the opt-in verified-public-road tiles, manifest, and PMTiles source
-- `vendor/`
-
-## Road Tile Build
-
-The interactive road overlay now uses pre-generated road tiles from `_roads_tiles/` plus `roads_tiles_manifest.json`.
-
-To rebuild them from the source GeoJSON:
+Existing MVUM/NFSR geometry is in `_roads_geojson/`, classic tiles in
+`_roads_tiles/`, and vector tiles in `vector_tiles/forest_roads.pmtiles`.
+All forests are enabled initially in both renderers. Angeles has no interactive
+road geometry; Modoc and Six Rivers have very sparse coverage. The forest
+panel provides the 119 included MVUM PDFs, including these gaps.
 
 ```bash
 python3 scripts/generate_road_tiles.py
+python3 scripts/build_vector_tile_staging.py
+bash scripts/tippecanoe_build.sh
+bash scripts/pmtiles_convert.sh
 ```
 
-## BLM GTLF Audit (Disabled)
+### County-maintained unpaved roads
 
-BLM's public-display Ground Transportation Linear Features (GTLF) layer was
-tested with conservative filters, but is disabled in the public map and omitted
-from the Pages artifact. Despite its authoritative provenance, it has too many
-very short route fragments and inconsistent regional coverage to serve as a
-useful statewide road overlay.
+The first county source is Riverside County's official
+[Unpaved Roads (County Maintained)](https://gis.countyofriverside.us/arcgis_mapping/rest/services/Transportation/04_Online_Road_Book_Mapping_v2/MapServer/1)
+inventory. The initial addition contains 425 segments: 335 dirt and 90 gravel.
 
-The offline builder remains for future filtering research. It applies:
-
-- California records only
-- BLM route-designation authority
-- route designation `Open` and planned mode `Motorized`
-- observed surface is `Natural`, `Natural Improved`, or `Aggregate`
-- observed route-use class supports a full-size vehicle (`2WD Low`, `4WD Low`,
-  or `4WD High Clearance / Specialized`)
-- excludes administrative, permit-only, and all-access-restricted records
-
-The current audit set contains 4,216 segments covering 2,613.2 GIS miles. It
-must not be interpreted as a continuous public-road network.
-
-Rebuild the classic tiles and vector staging data from the official service:
+The builder accepts only `C07` (graveled surface maintained) and `C09` (dirt
+surface maintained). Mixed status, abandoned, merely traveled, non-county, and
+`TRAVEL_DIRECTIONS=N` records are excluded. This is county-specific coverage,
+not a statewide county-road inventory, and supplies no bike/foot permissions.
 
 ```bash
-python3 scripts/build_blm_public_roads.py
-bash scripts/tippecanoe_build_blm_roads.sh
-bash scripts/pmtiles_convert_blm_roads.sh
+python3 scripts/build_county_roads.py
 ```
 
-Source: [BLM National GTLF Public Display, public motorized roads](https://gis.blm.gov/arcgis/rest/services/transportation/BLM_Natl_GTLF_Public_Display/MapServer/0)
+Output is `_county_roads/riverside.geojson` plus a manifest recording the source,
+fetch date, field definitions, selection rule, counts, bounds, and SHA256.
 
-## Experimental OSM Supplemental Roads (Disabled)
+### Unpaved road candidates: conservative, not verified access
 
-The OpenStreetMap-derived brown road overlay is disabled in `index.html` and
-excluded from the GitHub Pages artifact. The existing source data and build
-scripts remain in the repository only for offline analysis.
+A candidate must have:
 
-The July 2026 dataset is not trustworthy enough to imply useful or legal public
-motor-vehicle access:
+- An explicit supported OSM unpaved surface, never a surface inferred from road
+  class or track grade.
+- At least 500 metres of mapped geometry.
+- At least 85% of that geometry within 30 metres of Caltrans All Roads geometry.
+- No restricted general-access value, inferred-surface flag, or explicit paved
+  contradiction in retained surface fields.
+- No prohibition on both biking and walking. Motor/vehicle restrictions require
+  an explicit positive bicycle or foot tag to retain the candidate.
 
-| Audit result | Ways | Share |
-|---|---:|---:|
-| Total included ways | 137,182 | 100% |
-| No explicit surface tag | 103,430 | 75.4% |
-| Unnamed | 106,730 | 77.8% |
-| No `access` tag | 135,373 | 98.7% |
-| No `motor_vehicle` tag | 135,061 | 98.5% |
+**The geometry match does not establish road identity or legal access.** A
+separate road 20 metres away can match at 100%; a regression test records this
+limitation. OSM surface observations can also be stale. The UI therefore calls
+these **Unpaved road candidates**, never verified public roads. The historical
+`verified_public_roads` filenames remain for compatibility.
 
-The old filter treated a missing restriction as evidence that a road was public
-and motorable. It also used padded forest bounding boxes rather than actual land
-ownership or road jurisdiction, and it rendered the layer at every zoom. Surface,
-road class, and proximity to a forest cannot establish legal access.
+The older input `_public_roads_tiles/10` was cropped to padded forest bounding
+boxes. It was not statewide, even with `scope_bbox: null`. Manifests now record
+the actual input scope, OSM snapshot metadata, and the Caltrans match date.
+Reclassifying stored matches preserves the original match date rather than
+pretending to refresh the source. The audit removed six existing candidates
+with permit/agricultural/forestry general-access tags.
 
-A future OSM experiment should be opt-in and separately labeled. At minimum it
-should require an explicit unpaved surface plus an explicit positive access tag
-(`access` or `motor_vehicle` equal to `yes`, `permissive`, or `designated`), use
-actual forest polygons, and be validated against authoritative agency data. Only
-2,350 current ways pass even that preliminary filter, and those still require
-validation before publication.
+A new resumable statewide source fetch avoids the forest crop and retains
+bicycle, foot, general, motor-vehicle, and conditional access fields. It queries
+explicitly unpaved minor road classes in the California OSM administrative area;
+it does not add untagged tracks. Complete source extraction is still distinct
+from complete road coverage. See the published manifests for the scope of the
+currently displayed build.
 
-## Verified Unpaved Public-road Candidates
-
-The map includes an opt-in, zoom-11-only candidate layer that avoids the old
-blanket brown overlay. It does not claim that a route is currently open or
-legally accessible. A candidate is retained only when it has all three of:
-
-- an explicit OpenStreetMap unpaved surface tag;
-- at least 500 m of mapped length; and
-- at least 85% of its geometry within 30 m of the Caltrans All Roads network.
-
-Caltrans All Roads is used solely as a statewide public-network geometry check;
-OpenStreetMap supplies only the explicit surface observation. The August 2026
-build has 7,400 candidates from 18,842 eligible explicit-surface ways. The
-toggle is enabled by default at every zoom level, and its popup repeats the
-verification evidence.
-
-To rebuild the layer and its browser assets:
+The November 9, 2026 statewide build contains **16,754 candidates**, compared
+with 7,394 after the initial legacy-data cleanup. Of those, 11,223 lie wholly
+outside the supplied national-forest boundaries, including 8,556 newly added
+roads. Boundary exclusion describes geography, not land ownership or access.
+The build retains 7,376 previous candidates, adds 9,378, and drops 18 after
+refreshing source tags and applying the current geometry checks.
 
 ```bash
-python3 scripts/build_verified_public_unpaved_roads.py
+python3 scripts/fetch_statewide_unpaved_roads.py
+python3 scripts/build_verified_public_unpaved_roads.py \
+  --input-file build/statewide_unpaved/candidates.geojson \
+  --input-manifest build/statewide_unpaved/candidates_manifest.json \
+  --workers 4
 bash scripts/tippecanoe_build_verified_public_roads.sh
 bash scripts/pmtiles_convert_verified_public_roads.sh
 ```
 
-The Caltrans tile cache in `build/caltrans_all_roads_cache/` is resumable and
-is not published. Source: [Caltrans Roadway Data](https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data).
+The fetcher caches completed latitude bands under `build/statewide_unpaved/`,
+rejects incomplete Overpass responses, and records per-response timestamps.
+`--endpoint` selects another Overpass service; `--band` creates an explicitly
+partial extraction for investigation. Partial extraction is not a statewide
+release. The matcher supports `--output-root` for isolated staging and uses a
+resumable cache under `build/caltrans_all_roads_cache/`.
+Reference geometry is gathered from every tile crossed by a road, fixing the
+former centroid-only lookup that missed matches on long or curved roads.
 
-## Vector Tile Build (Experimental)
+To reapply current eligibility checks to the existing matched dataset without
+refetching Caltrans, use `--reclassify-existing`, then rebuild its vector tiles.
+This preserves the old Caltrans evidence date. It cannot discover new roads.
 
-This is the experimental vector-tile pipeline for replacing the large GeoJSON road
-overlay with lightweight vector tiles (`.pbf` via Tippecanoe / MBTiles / PMTiles).
+Source: [Caltrans Roadway Data](https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data).
 
-Today there are two ways to use it locally:
-- `vector_preview.html` is a dedicated MapLibre preview page
-- `index.html?mode=vector` enables the main map's vector renderer
-
-The classic Leaflet/GeoJSON renderer is still the more complete path for forest
-toggles. The BLM and OSM supplemental-road experiments are disabled in
-`index.html` and are not deployed.
-
-### Fast start
-
-If you already have Tippecanoe and the PMTiles CLI installed:
+## Validation and publishing
 
 ```bash
-# 1. Build everything (staging + MBTiles + PMTiles)
-bash scripts/build_vector_preview_tiles.sh
-
-# 2. Verify outputs
+python3 -m unittest discover -s scripts -p 'test_*.py'
+node scripts/test_map_ui.mjs
+node scripts/test_cameras.mjs
+python3 scripts/check_site_assets.py
 python3 scripts/check_vector_preview_outputs.py
-
-# 3. Serve and view
-./serve.sh
-# Open http://127.0.0.1:8080/vector_preview.html
 ```
 
-**Expected artifacts** after a successful build:
+Python geometry builders/tests require Shapely. Vector generation requires
+Tippecanoe and the PMTiles CLI. The existing `.venv-pmtiles` environment includes
+the Python tooling used for local data work.
 
-| File | Description |
-|------|-------------|
-| `build/vector_tiles/forest_roads_staging.geojson` | Combined, property-stripped MVUM GeoJSON |
-| `build/vector_tiles/forest_roads_staging_manifest.json` | MVUM metadata: counts, bounds, zoom, layer name |
-| `build/vector_tiles/forest_roads.mbtiles` | MVUM MBTiles |
-| `build/vector_tiles/forest_roads.pmtiles` | MVUM PMTiles |
-| `build/vector_tiles/blm_public_roads_staging.geojson` | Validated official BLM public-road GeoJSON |
-| `build/vector_tiles/blm_public_roads_staging_manifest.json` | BLM metadata: query, counts, bounds, zoom, layer name |
-| `build/vector_tiles/blm_public_roads.mbtiles` | BLM-road MBTiles |
-| `build/vector_tiles/blm_public_roads.pmtiles` | BLM-road PMTiles |
-| `vector_tiles/forest_roads_staging_manifest.json` | Published MVUM manifest copy |
-| `vector_tiles/forest_roads.pmtiles` | Published MVUM PMTiles copy |
-| `vector_tiles/blm_public_roads_staging_manifest.json` | Local BLM audit manifest copy (not deployed) |
-| `vector_tiles/blm_public_roads.pmtiles` | Local BLM audit PMTiles copy (not deployed) |
+The GitHub Pages workflow validates the exact runtime asset list before
+packaging, then validates the staged artifact again. It includes the HTML,
+UI assets, vendor assets, enabled road layers and manifests, forest boundaries,
+PDF catalog, and all linked PDFs. Missing files, corrupt tile headers,
+inconsistent catalogs, and county checksum mismatches fail the build.
+Raw downloads, source staging, and disabled experiments are not published.
+Push to `main` or run **Deploy GitHub Pages** to deploy.
 
-### Stage 1: Combine source data
+## Retained experiments
 
-[`scripts/build_vector_tile_staging.py`](scripts/build_vector_tile_staging.py) reads every
-`_roads_geojson/*.geojson`, strips properties down to the set needed for styling and popups
-(`forest_id`, `name`, `symbol`, `surfacetype`, `seasonal`, `system`, `districtname`), and
-writes a single staging file:
+`vector_preview.html` is a development preview of the original vector pipeline.
+The former broad OSM road overlay and fragmented BLM GTLF overlay remain disabled
+and are excluded from publication. Their scripts and local data are retained
+for research; they should not be enabled as an undifferentiated public-road
+network. In particular, missing access restrictions are not positive access
+evidence, and forest bounding boxes are not land ownership polygons.
+
+## ALERTCalifornia cameras
+
+The camera layer uses the official
+[ALERTCalifornia public map feed](https://services8.arcgis.com/X84q166Srnyl4JMV/ArcGIS/rest/services/ALERTCalifornia_Camera_Feed/FeatureServer/0).
+It is enabled initially but makes no queries below zoom 9. At zooms 9–11 it
+shows compact camera markers without requesting images. At zoom 12 and above,
+it shows at most eight full-image thumbnails, with collision avoidance and
+colocated camera grouping. Clicking a marker or thumbnail opens that camera's
+ALERTCalifornia page, including its history tools.
+
+Queries cover the visible area, respect the feed's 50-record page limit, cache
+recent results, and abort when the view changes. There is no background image
+polling. Missing/offline images retain a usable camera link. The displayed view
+time is reported by the source; imagery is not a live closure or road-condition
+feed. Disabling cameras is saved in shared map URLs.
+
+Images remain uncropped, including the source information bar and partner
+marks. Credit is **ALERTCalifornia | UC San Diego**. The provider's
+[imagery/data terms](https://alertcalifornia.org/terms/) use CC BY-NC-ND 4.0;
+[crediting requirements](https://alertcalifornia.org/crediting-and-branding/)
+apply. Source images are displayed directly, not copied into this repository.
 
 ```bash
-python3 scripts/build_vector_tile_staging.py
+node scripts/test_cameras.mjs
 ```
-
-Output:
-- `build/vector_tiles/forest_roads_staging.geojson` — combined FeatureCollection
-- `build/vector_tiles/forest_roads_staging_manifest.json` — source/staged counts, bounds, layer name, zoom settings, and canonical Tippecanoe command
-- `vector_tiles/forest_roads_staging_manifest.json` — published manifest copy for the site
-
-[`scripts/build_blm_public_roads.py`](scripts/build_blm_public_roads.py) fetches
-and independently validates the official BLM records, then writes classic tiles
-and vector staging:
-
-- `_blm_roads_tiles/10/*.geojson`
-- `blm_public_roads_tiles_manifest.json`
-- `build/vector_tiles/blm_public_roads_staging.geojson`
-- `build/vector_tiles/blm_public_roads_staging_manifest.json`
-- `vector_tiles/blm_public_roads_staging_manifest.json` (offline only)
-
-### Stage 2: Generate vector tiles (requires Tippecanoe)
-
-**Prerequisite:** Install [Tippecanoe](https://github.com/felt/tippecanoe).
-
-```bash
-# macOS
-brew install tippecanoe
-
-# Linux
-sudo apt install tippecanoe
-```
-
-Then run the build wrapper (or the `tippecanoe` command directly):
-
-```bash
-bash scripts/tippecanoe_build.sh
-bash scripts/tippecanoe_build_blm_roads.sh
-```
-
-The command inside (also written to the manifest as `tippecanoe_command`) is:
-
-```bash
-tippecanoe \
-  --no-tile-compression \
-  --layer=forest_roads \
-  --minimum-zoom=0 \
-  --maximum-zoom=14 \
-  --base-zoom=10 \
-  --drop-densest-as-needed \
-  --extend-zooms-if-still-dropping \
-  -o build/vector_tiles/forest_roads.mbtiles \
-  build/vector_tiles/forest_roads_staging.geojson
-```
-
-Outputs:
-- `build/vector_tiles/forest_roads.mbtiles`
-- `build/vector_tiles/blm_public_roads.mbtiles`
-
-The manifest also records:
-- layer name: `forest_roads`
-- zoom range: `0` to `14`
-- base zoom: `10`
-- future output paths for both `MBTiles` and `PMTiles`
-
-### Stage 3: Convert MBTiles to PMTiles for browser use
-
-The browser-based vector renderers can load `PMTiles` directly, but they cannot
-load raw `MBTiles` directly.
-
-Install the CLI once:
-
-```bash
-pip install pmtiles
-```
-
-Then convert:
-
-```bash
-bash scripts/pmtiles_convert.sh
-bash scripts/pmtiles_convert_blm_roads.sh
-```
-
-Output:
-- `build/vector_tiles/forest_roads.pmtiles`
-- `vector_tiles/forest_roads.pmtiles` — published site copy
-- `build/vector_tiles/blm_public_roads.pmtiles`
-- `vector_tiles/blm_public_roads.pmtiles` — offline audit copy, not deployed
-
-### One-command preview build
-
-Once `tippecanoe` and the `pmtiles` CLI are installed, you can run the whole
-preview pipeline in one shot:
-
-```bash
-bash scripts/build_vector_preview_tiles.sh
-```
-
-That wrapper runs:
-1. `python3 scripts/build_vector_tile_staging.py`
-2. `python3 scripts/build_blm_public_roads.py`
-3. both Tippecanoe build scripts
-4. both PMTiles conversion scripts
-
-After step 4, browser-facing files are synced into `vector_tiles/`. The Pages
-workflow publishes only the Forest Service source and manifest.
-
-### Stage 4: Preview the vector tiles locally
-
-[`vector_preview.html`](vector_preview.html) is an experimental MapLibre GL JS viewer
-that renders forest roads from the vector-tile pipeline.
-
-To use it:
-
-1. Install Tippecanoe and the PMTiles CLI.
-2. Run:
-   ```bash
-   bash scripts/build_vector_preview_tiles.sh
-   ```
-3. Serve the repo locally (`./serve.sh`) and open:
-   ```
-   http://127.0.0.1:8080/vector_preview.html
-   ```
-
-The preview page auto-detects whether the PMTiles file exists. If it does not,
-a notice displays the exact build commands.
-
-You can also test the same PMTiles build inside the main app:
-
-```text
-http://127.0.0.1:8080/index.html?mode=vector
-```
-
-Or use the `Renderer` select box in the top-right panel and switch to
-`Vector Preview`.
-
-**Known limitation:** MBTiles cannot be loaded directly by a browser without a
-tile server (e.g., [Martin](https://github.com/maplibre/martin) or
-[tileserver-gl](https://github.com/maplibre/tileserver-gl)). PMTiles conversion
-is currently the simplest way to preview locally.
-
-### Preview troubleshooting
-
-| Symptom | Likely cause | Fix |
-|---------|-------------|-----|
-| Notice says "PMTiles: missing" | `forest_roads.pmtiles` not yet built | Run `bash scripts/pmtiles_convert.sh` |
-| Notice says "MBTiles exists — convert needed" | MBTiles built but PMTiles not | `pip install pmtiles && bash scripts/pmtiles_convert.sh` |
-| Notice shows full build sequence | Neither MBTiles nor PMTiles exist | Install Tippecanoe + PMTiles CLI, then run `bash scripts/build_vector_preview_tiles.sh` |
-| Page loads, basemap visible, but no roads at any zoom | PMTiles exists but the source/layer wiring is wrong | Check the browser console for vector-source errors, confirm `forest_roads.pmtiles` exists, and rerun `python3 scripts/check_vector_preview_outputs.py` |
-| Vector mode loads very slowly or appears sparse locally | Local server does not support HTTP Range requests | Start the repo with `./serve.sh` rather than `python3 -m http.server` |
-| Tippecanoe not found when running build | Tippecanoe not installed | `brew install tippecanoe` (macOS) or `sudo apt install tippecanoe` (Linux) |
-| MapLibre CDN failed to load | No internet / CDN blocked | Open browser devtools Network tab and confirm `maplibre-gl` and `pmtiles` scripts loaded. If offline, vendor the files into `vendor/maplibre/` |
-
-The status panel in the bottom-right corner of the preview page shows the
-detected state of the manifest, PMTiles, and MBTiles files at load time.
-
-### Next steps
-
-- Improve vector-mode interactivity and popup behavior in the main app
-- Replace the disabled supplemental-road experiment only if an authoritative,
-  legally meaningful access dataset becomes available
-- Tune low-zoom styling/generalization now that PMTiles loading is working locally

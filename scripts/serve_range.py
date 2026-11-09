@@ -7,7 +7,7 @@ import os
 import re
 import sys
 from http import HTTPStatus
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 
 class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
@@ -82,7 +82,7 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
     os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    server = HTTPServer(("", port), RangeHTTPRequestHandler)
+    server = ThreadingHTTPServer(("127.0.0.1", port), RangeHTTPRequestHandler)
     print(f"Serving with Range support at http://127.0.0.1:{port}")
     try:
         server.serve_forever()

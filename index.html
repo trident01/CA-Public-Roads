@@ -3,579 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CA Forest Service Roads</title>
+<title>California Dirt Roads</title>
+<meta name="description" content="Explore California dirt and gravel roads with clear surface and access evidence.">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 <script src="vendor/leaflet/leaflet.js"></script>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #eef3ef; }
-body { color: #15231a; }
-#map { height: 100%; width: 100%; }
-
-.notice {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 1100;
-  max-width: min(440px, calc(100vw - 36px));
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255, 248, 227, 0.96);
-  border: 1px solid rgba(186, 144, 51, 0.35);
-  box-shadow: 0 10px 30px rgba(38, 44, 35, 0.15);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.notice strong { display: block; margin-bottom: 4px; }
-.notice code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-
-.controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  width: min(360px, calc(100vw - 40px));
-  max-height: calc(100vh - 40px);
-  display: flex;
-  flex-direction: column;
-  background: rgba(250, 252, 249, 0.96);
-  border: 1px solid rgba(39, 71, 50, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 22px 60px rgba(16, 24, 20, 0.18);
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-}
-
-.controls-header {
-  padding: 18px 18px 14px;
-  border-bottom: 1px solid rgba(39, 71, 50, 0.08);
-  background: linear-gradient(180deg, rgba(234, 242, 232, 0.92), rgba(250, 252, 249, 0.96));
-}
-
-.controls-header h1 {
-  font-size: 21px;
-  line-height: 1.15;
-  margin-bottom: 6px;
-}
-
-.controls-header p {
-  font-size: 13px;
-  color: #4d6252;
-  line-height: 1.45;
-}
-
-.mode-row {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.mode-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #67806d;
-}
-
-.mode-select {
-  flex: 1;
-  min-width: 0;
-  padding: 7px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(39, 71, 50, 0.16);
-  background: rgba(255, 255, 255, 0.95);
-  color: #173321;
-  font: inherit;
-  font-size: 12px;
-}
-
-.search-panel {
-  padding: 14px 18px 12px;
-  border-bottom: 1px solid rgba(39, 71, 50, 0.08);
-  background: rgba(246, 249, 245, 0.92);
-}
-
-.search-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-}
-
-.search-input {
-  width: 100%;
-  min-width: 0;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(39, 71, 50, 0.16);
-  background: #fff;
-  font: inherit;
-  color: #173321;
-}
-
-.search-input:focus {
-  outline: 2px solid rgba(82, 183, 136, 0.35);
-  outline-offset: 1px;
-}
-
-.search-button {
-  border: 0;
-  border-radius: 12px;
-  padding: 0 14px;
-  background: #214f37;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.search-button:disabled {
-  cursor: wait;
-  opacity: 0.75;
-}
-
-.search-hint {
-  margin-top: 8px;
-  font-size: 11px;
-  line-height: 1.45;
-  color: #5d705f;
-}
-
-.search-status {
-  min-height: 18px;
-  margin-top: 8px;
-  font-size: 12px;
-  color: #49604f;
-}
-
-.search-results {
-  display: none;
-  margin-top: 10px;
-  gap: 8px;
-}
-
-.search-results.has-results {
-  display: grid;
-}
-
-.search-result {
-  text-align: left;
-  border: 1px solid rgba(39, 71, 50, 0.1);
-  background: #fff;
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
-.search-result:hover {
-  background: #f0f6f1;
-}
-
-.search-result-title {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #1a3b28;
-}
-
-.search-result-subtitle {
-  display: block;
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 1.4;
-  color: #5a6d5d;
-}
-
-.forest-list {
-  overflow-y: auto;
-  padding: 10px 12px 14px;
-  flex: 1;
-}
-
-.mode-note {
-  margin: 0 12px 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(39, 71, 50, 0.08);
-  background: rgba(246, 249, 245, 0.92);
-  font-size: 12px;
-  line-height: 1.45;
-  color: #49604f;
-}
-
-.forest-item {
-  padding: 10px 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(34, 66, 44, 0.08);
-}
-
-.forest-item + .forest-item { margin-top: 10px; }
-
-.forest-toggle {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.forest-toggle input { accent-color: #2d6a4f; }
-
-.forest-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #173321;
-}
-
-.forest-meta {
-  margin: 8px 0 0 28px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  min-height: 22px;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 22px;
-  padding: 0 9px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.pill-neutral { color: #51685b; background: #edf3ee; }
-.pill-ok { color: #1f5138; background: #dff2e6; }
-.pill-warn { color: #8a5b0a; background: #fff1cf; }
-.pill-bad { color: #8d1d2c; background: #ffe0e6; }
-.pill-disabled { color: #6d6457; background: #f2ede4; }
-
-.forest-pdfs {
-  margin: 10px 0 0 28px;
-  border-top: 1px solid rgba(34, 66, 44, 0.08);
-  padding-top: 10px;
-}
-
-.forest-pdfs summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 12px;
-  font-weight: 600;
-  color: #284734;
-}
-
-.forest-pdfs summary::-webkit-details-marker { display: none; }
-
-.pdf-links {
-  margin-top: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.pdf-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 9px;
-  border-radius: 10px;
-  background: #eef5ef;
-  color: #1f4d35;
-  text-decoration: none;
-  font-size: 12px;
-}
-
-.pdf-link:hover { background: #dfece2; }
-
-.legend {
-  border-top: 1px solid rgba(39, 71, 50, 0.08);
-  padding: 14px 18px 16px;
-  font-size: 11px;
-  color: #506456;
-  background: rgba(244, 247, 243, 0.92);
-}
-
-.legend-title {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 8px;
-  color: #67806d;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.legend-item + .legend-item { margin-top: 5px; }
-
-.legend-color {
-  width: 18px;
-  height: 4px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.legend-color-dashed {
-  background-image: repeating-linear-gradient(
-    to right,
-    currentColor 0 8px,
-    transparent 8px 12px
-  );
-  background-color: transparent !important;
-}
-
-.supplemental-layer-toggle {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 11px;
-  border-top: 1px solid rgba(39, 71, 50, 0.1);
-  color: #344d3b;
-  cursor: pointer;
-}
-
-.supplemental-layer-toggle input { margin-top: 2px; }
-
-.supplemental-layer-note {
-  margin: 5px 0 0 25px;
-  color: #708076;
-  line-height: 1.35;
-}
-
-@media (max-width: 900px) {
-  .controls {
-    left: 10px;
-    right: 10px;
-    top: auto;
-    bottom: 10px;
-    width: auto;
-    max-height: min(45vh, 380px);
-    border-radius: 14px;
-  }
-
-  .controls-header {
-    padding: 12px 14px 8px;
-  }
-
-  .controls-header h1 {
-    font-size: 17px;
-  }
-
-  .controls-header p {
-    font-size: 12px;
-    line-height: 1.35;
-  }
-
-  .mode-row {
-    margin-top: 6px;
-    gap: 6px;
-  }
-
-  .mode-select {
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-
-  .mode-label {
-    font-size: 10px;
-  }
-
-  .search-panel {
-    padding: 10px 14px 8px;
-  }
-
-  .search-input {
-    padding: 8px 10px;
-    font-size: 13px;
-  }
-
-  .search-button {
-    padding: 0 10px;
-    font-size: 13px;
-  }
-
-  .search-hint {
-    display: none;
-  }
-
-  .search-status {
-    font-size: 11px;
-    min-height: 14px;
-    margin-top: 6px;
-  }
-
-  .mode-note {
-    margin: 0 10px 6px;
-    padding: 8px 10px;
-    font-size: 11px;
-  }
-
-  .forest-list {
-    padding: 6px 10px 10px;
-  }
-
-  .forest-item {
-    padding: 6px 10px 8px;
-  }
-
-  .forest-item + .forest-item {
-    margin-top: 6px;
-  }
-
-  .forest-toggle {
-    grid-template-columns: 16px minmax(0, 1fr) auto;
-    gap: 6px;
-  }
-
-  .forest-name {
-    font-size: 13px;
-  }
-
-  .forest-meta {
-    margin: 4px 0 0 22px;
-    gap: 4px;
-  }
-
-  .forest-pdfs {
-    margin: 6px 0 0 22px;
-    padding-top: 6px;
-  }
-
-  .pdf-link {
-    font-size: 11px;
-    padding: 4px 8px;
-  }
-
-  .pill {
-    font-size: 10px;
-    min-height: 18px;
-    padding: 0 6px;
-  }
-
-  .legend {
-    padding: 10px 14px 12px;
-  }
-
-  .legend-item {
-    gap: 5px;
-  }
-
-  .notice {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    max-width: none;
-    font-size: 12px;
-    padding: 8px 10px;
-    border-radius: 10px;
-  }
-
-  .search-results {
-    gap: 6px;
-  }
-
-  .search-result {
-    padding: 8px 10px;
-  }
-}
-
-@media (max-width: 480px) {
-  .controls {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 14px 14px 0 0;
-    max-height: min(38vh, 300px);
-  }
-
-  .controls-header {
-    padding: 10px 12px 6px;
-  }
-
-  .controls-header h1 {
-    font-size: 15px;
-  }
-
-  .controls-header p {
-    display: none;
-  }
-
-  .mode-row {
-    margin-top: 4px;
-  }
-
-  .search-panel {
-    padding: 8px 12px 6px;
-  }
-
-  .forest-list {
-    padding: 4px 8px 8px;
-  }
-
-  .legend {
-    padding: 8px 12px 10px;
-  }
-
-  .notice {
-    top: 6px;
-    left: 6px;
-    right: 6px;
-    font-size: 11px;
-    padding: 6px 8px;
-    border-radius: 8px;
-  }
-
-}
-</style>
+<link rel="stylesheet" href="assets/map-ui.css">
+<link rel="stylesheet" href="assets/cameras.css">
 </head>
 <body>
 <div id="map"></div>
 <div id="notice" class="notice" hidden></div>
 
-<aside class="controls">
-  <div class="controls-header">
-    <h1>CA Forest Service Roads</h1>
-    <p>Road layers load at all zoom levels. PDF MVUM sheets are linked for forests with missing or partial vector data.</p>
-    <div class="mode-row">
-      <span class="mode-label">Renderer</span>
-      <select id="modeSelect" class="mode-select">
-        <option value="classic">Classic GeoJSON</option>
-        <option value="vector">Vector Preview</option>
-      </select>
-    </div>
-  </div>
+<header class="map-header">
+  <div class="brand"><span class="brand-mark" aria-hidden="true">⌁</span><h1>California Dirt Roads</h1></div>
   <div class="search-panel">
     <div class="search-row">
-      <input id="searchInput" class="search-input" type="search" placeholder="Search for a city, trailhead, lake, or campground">
-      <button id="searchButton" class="search-button" type="button">Search</button>
+      <input id="searchInput" type="search" aria-label="Search places" placeholder="Search a town, trailhead, or place" autocomplete="off">
+      <button id="searchButton" type="button" aria-label="Search">Search</button>
     </div>
-    <div id="searchStatus" class="search-status"></div>
+    <div id="searchStatus" class="search-status" role="status"></div>
     <div id="searchResults" class="search-results"></div>
-    <div class="search-hint">Search runs only when you submit. Results are powered by OpenStreetMap Nominatim and biased to the current map view when possible.</div>
   </div>
-  <div id="modeNote" class="mode-note" hidden></div>
-  <div id="forestList" class="forest-list"></div>
-  <label class="supplemental-layer-toggle" for="verifiedPublicRoadsToggle">
-    <input type="checkbox" id="verifiedPublicRoadsToggle" checked>
-    <span>Show verified unpaved public-road candidates</span>
-  </label>
-  <p class="supplemental-layer-note">Enabled by default: explicit OSM unpaved surface, at least 500 m long, and aligned to Caltrans’ public-road network. Always verify access and conditions.</p>
-  <div class="legend">
-    <div class="legend-title">Road Legend</div>
-    <div class="legend-item"><div class="legend-color" style="background:#1b4332"></div>All Vehicles</div>
-    <div class="legend-item"><div class="legend-color" style="background:#52b788"></div>All Vehicles (Seasonal)</div>
-    <div class="legend-item"><div class="legend-color" style="background:#1d3557"></div>Highway Legal Only</div>
-    <div class="legend-item"><div class="legend-color" style="background:#4895ef"></div>Highway Legal (Seasonal)</div>
-    <div class="legend-item"><div class="legend-color legend-color-dashed" style="color:#4d5c52"></div>Dashed = unpaved / native / gravel</div>
-    <div class="legend-item"><div class="legend-color" style="background:rgba(46,125,50,0.5);height:10px;border-radius:2px"></div>National Forest (boondocking OK)</div>
-  </div>
+  <button id="layersButton" class="toolbar-button" aria-expanded="false" aria-controls="layersPanel">Layers</button>
+</header>
+<aside id="layersPanel" class="controls" aria-label="Map layers" hidden>
+  <div class="panel-heading"><h2>Map layers</h2><button id="closeLayers" aria-label="Close layers">×</button></div>
+  <label class="layer-option"><input type="checkbox" id="countyRoadsToggle" checked><span><i class="key-line county"></i> County dirt / gravel roads<small>Riverside County maintained roads.</small></span></label>
+  <label class="layer-option"><input type="checkbox" id="verifiedPublicRoadsToggle" checked><span><i class="key-line candidate"></i> Unpaved road candidates<small>Mapped dirt or gravel; access needs checking.</small></span></label>
+  <label class="layer-option"><input type="checkbox" id="forestRoadsToggle" checked><span><i class="key-line forest"></i> Forest Service roads<small>Published motor-vehicle routes.</small></span></label>
+  <label class="layer-option"><input type="checkbox" id="boundariesToggle" checked><span><i class="key-area"></i> National forest boundaries<small>May include private inholdings.</small></span></label>
+  <label class="layer-option"><input type="checkbox" id="camerasToggle" checked><span>ALERTCalifornia cameras<small id="cameraStatus">Images appear when you zoom in.</small></span></label>
+  <label class="field-label" for="surfaceFilter">Forest road surfaces</label>
+  <select id="surfaceFilter"><option value="all">All surfaces</option><option value="unpaved">Known unpaved only</option></select>
+  <details class="panel-details"><summary>Forests &amp; official maps</summary><div id="forestList" class="forest-list"></div></details>
+  <details class="panel-details"><summary>About the road data</summary><div class="details-content">
+    <p>Solid brown roads use Riverside County’s maintained dirt/gravel inventory. County maintenance does not establish bike or foot permission.</p>
+    <p>Dashed brown roads have an explicit unpaved tag in OpenStreetMap and align with Caltrans road geometry. Alignment is evidence, not a public-access guarantee.</p>
+    <p>Forest road colors describe surfaces. Motor-vehicle designations do not establish bike or foot permission. Check local signs and current closures.</p>
+    <p id="coverageSummary">Coverage is incomplete. An empty area does not mean there are no public roads.</p>
+    <p>Angeles, Modoc, and Six Rivers have limited road data here; use their official maps.</p>
+    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a> · <a href="https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data" target="_blank" rel="noreferrer">Caltrans</a>
+  </div></details>
+  <details class="panel-details"><summary>Map settings</summary><div class="details-content"><label for="modeSelect">Rendering</label><select id="modeSelect"><option value="vector">Vector</option><option value="classic">Classic</option></select><div id="modeNote" class="mode-note" hidden></div></div></details>
 </aside>
+<div class="map-actions"><button id="locateButton" title="Show my location" aria-label="Show my location">◎</button><button id="shareButton" title="Copy link to this map" aria-label="Copy link to this map">↗</button></div>
+<div class="map-key" aria-label="Road legend"><span><i class="key-line county"></i> County dirt / gravel</span><span><i class="key-line forest"></i> Forest dirt / gravel</span><span><i class="key-line candidate"></i> Unpaved candidates</span><span><i class="key-line other"></i> Other forest roads</span><small id="mapStatus" role="status">Select a road to see its evidence.</small></div>
+<div id="actionStatus" class="action-status" role="status" hidden></div>
 
 <script>
 const FORESTS = [
@@ -608,15 +81,7 @@ const DISPLAY = {
   tahoe_national_forest: "Tahoe"
 };
 
-const DEFAULTS = [
-  "eldorado_national_forest",
-  "lake_tahoe_basin_management_unit",
-  "los_padres_national_forest",
-  "mendocino_national_forest",
-  "sierra_national_forest",
-  "stanislaus_national_forest",
-  "tahoe_national_forest"
-];
+const DEFAULTS = FORESTS;
 const SEARCH_ENDPOINT = "https://nominatim.openstreetmap.org/search";
 const CARTO_BASEMAP_API_KEY = "cb1_3jm6_1_0298652f5910f1b090f548bf";
 const VECTOR_MODE_LIBRARIES = {
@@ -643,6 +108,8 @@ const ENABLE_EXPERIMENTAL_OSM_ROADS = false;
 const ENABLE_BLM_ROADS = false;
 const ENABLE_VERIFIED_PUBLIC_ROADS = true;
 const FOREST_RENDER_MIN_ZOOM = 0;
+// The fallback uses whole GeoJSON tiles; avoid fetching the entire state at once.
+const CLASSIC_ROADS_MIN_ZOOM = 9;
 const FOREST_INTERACTIVE_MIN_ZOOM = 11;
 const ROAD_TILE_ZOOM = 10;
 const ROAD_TILE_VIEW_PAD = 0.2;
@@ -747,6 +214,9 @@ let blmRoadTileSyncTimer = null;
 let blmRoadsManifest = null;
 let blmRoadsEnabled = false;
 let verifiedPublicRoadsEnabled = true;
+let forestRoadsEnabled = true;
+let surfaceFilter = "all";
+let boundariesEnabled = true;
 let verifiedPublicRoadsManifest = null;
 let verifiedPublicRoadTileSyncTimer = null;
 const verifiedPublicRoadTileCache = new Map();
@@ -760,7 +230,7 @@ const VERIFIED_PUBLIC_VECTOR_LAYER_ID = "verified_public_roads";
 const PUBLIC_ROAD_UNPAVED_SURFACES = ["dirt", "gravel", "ground", "unpaved"];
 
 function createClassicMap() {
-  map = L.map("map", { center: [37.5, -119.5], zoom: 7, zoomControl: false, preferCanvas: true });
+  map = L.map("map", { center: [37.4, -119.5], zoom: 6, zoomControl: false, preferCanvas: true });
   L.control.zoom({ position: "bottomright" }).addTo(map);
   forestRenderer = L.canvas({ padding: 0.5 });
   publicRoadsRenderer = L.canvas({ padding: 0.5 });
@@ -803,8 +273,8 @@ function setModeNote(message) {
 function setForestPanelEnabled(enabled) {
   const list = document.getElementById("forestList");
   if (!list) return;
-  list.style.opacity = enabled ? "1" : "0.45";
-  list.style.pointerEvents = enabled ? "auto" : "none";
+  list.style.opacity = "1";
+  list.style.pointerEvents = "auto";
 }
 
 function updateModeSelectUi(mode) {
@@ -878,7 +348,7 @@ async function initVectorMode() {
     await loadExternalScript(VECTOR_MODE_LIBRARIES.maplibreJs);
   } catch (error) {
     console.error("Failed to load vector renderer libraries", error);
-    setNotice("Vector preview mode could not load its browser libraries. Falling back to the classic renderer.");
+    setNotice("Using the standard map because the vector map is unavailable.");
     return initClassicMode(true);
   }
 
@@ -945,7 +415,7 @@ async function initVectorMode() {
   }
 
   if (!pmtilesExists || !manifest) {
-    setNotice("<strong>Vector preview mode is available, but vector tiles are not ready yet.</strong>Build them with <code>bash scripts/build_vector_preview_tiles.sh</code>, or switch the renderer back to <code>Classic GeoJSON</code>.");
+    setNotice("Using the standard map because the vector road data is unavailable.");
     return initClassicMode(true);
   }
 
@@ -977,8 +447,8 @@ async function initVectorMode() {
       },
       layers: [{ id: "basemap", type: "raster", source: "basemap" }]
     },
-    center: [-119.5, 37.5],
-    zoom: 7,
+    center: [-119.5, 37.4],
+    zoom: 6,
     minZoom: 2,
     maxZoom: Math.max(manifest.max_zoom || 14, 14)
   });
@@ -1004,8 +474,8 @@ async function initVectorMode() {
         filter: ["all", ["==", ["get", "symbol"], sym], vectorSurfaceFilter(false)],
         layout: vectorLineLayout(),
         paint: {
-          "line-color": SYMBOL_COLORS[sym],
-          "line-width": vectorLineWidth(),
+          "line-color": ["case", ["in", ["get", "surfacetype"], ["literal", Array.from(UNPAVED_SURFACES)]], "#285b47", "#8c9895"],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 11, 2.3, 15, 3.5],
           "line-opacity": 0.9
         }
       });
@@ -1017,10 +487,10 @@ async function initVectorMode() {
         filter: ["all", ["==", ["get", "symbol"], sym], vectorSurfaceFilter(true)],
         layout: vectorLineLayout(),
         paint: {
-          "line-color": SYMBOL_COLORS[sym],
-          "line-width": vectorLineWidth(),
+          "line-color": ["case", ["in", ["get", "surfacetype"], ["literal", Array.from(UNPAVED_SURFACES)]], "#285b47", "#8c9895"],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 11, 2.3, 15, 3.5],
           "line-opacity": 0.9,
-          "line-dasharray": vectorDashArray()
+          "line-dasharray": [3, 1.4]
         }
       });
     });
@@ -1059,7 +529,7 @@ async function initVectorMode() {
           "line-color": "#c26d1f",
           "line-width": 3,
           "line-opacity": 0.95,
-          "line-dasharray": vectorDashArray()
+          "line-dasharray": [3, 1.4]
         }
       });
       map.addLayer({
@@ -1101,7 +571,7 @@ async function initVectorMode() {
           "line-color": "#a24f17",
           "line-width": ["interpolate", ["linear"], ["zoom"], 8, 1.4, 11, 2.4, 14, 3.2],
           "line-opacity": 0.92,
-          "line-dasharray": vectorDashArray()
+          "line-dasharray": [3, 1.4]
         }
       });
       map.on("click", BLM_VECTOR_LAYER_ID, (event) => {
@@ -1134,15 +604,10 @@ async function initVectorMode() {
         layout: { ...vectorLineLayout(), visibility: verifiedPublicRoadsEnabled ? "visible" : "none" },
         paint: {
           "line-color": "#9b5a18",
-          "line-width": ["interpolate", ["linear"], ["zoom"], 11, 1.4, 14, 2.5],
+          "line-width": ["interpolate", ["linear"], ["zoom"], 5, 0.55, 8, 1, 11, 1.5, 14, 2.5],
           "line-opacity": 0.8,
           "line-dasharray": [1.8, 1.2]
         }
-      });
-      map.on("click", VERIFIED_PUBLIC_VECTOR_LAYER_ID, (event) => {
-        const feature = event.features?.[0];
-        if (!feature) return;
-        new maplibregl.Popup({ offset: 8 }).setLngLat(event.lngLat).setHTML(mkVerifiedPublicRoadPopup(feature)).addTo(map);
       });
       map.on("mouseenter", VERIFIED_PUBLIC_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", VERIFIED_PUBLIC_VECTOR_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
@@ -1150,9 +615,6 @@ async function initVectorMode() {
       console.warn("Vector mode: verified public-road tiles are unavailable.");
     }
 
-    if (manifest.bounds) {
-      map.fitBounds([[manifest.bounds[0], manifest.bounds[1]], [manifest.bounds[2], manifest.bounds[3]]], { padding: 40, maxZoom: 7 });
-    }
     updateInteractivityHint();
   });
 
@@ -1162,7 +624,7 @@ async function initVectorMode() {
   });
 
   map.on("error", (event) => {
-    if (event.sourceId && !["forest_roads", "blm_public_roads"].includes(event.sourceId)) return;
+    if (event.sourceId && !["forest_roads", "blm_public_roads", "verified_public_roads", "county-roads"].includes(event.sourceId)) return;
     const status = event.error?.status || event.status;
     const msg = event.error?.message || String(event.error || "unknown error");
     console.error("Vector renderer error", {
@@ -1192,9 +654,9 @@ function roadStyle(feature) {
   const surface = feature.properties.surfacetype || "";
   const isUnpaved = UNPAVED_SURFACES.has(surface);
   return {
-    color: SYMBOL_COLORS[symbol] || "#666",
-    weight: SYMBOL_WIDTHS[symbol] || 1.5,
-    opacity: 0.9,
+    color: isUnpaved ? "#285b47" : "#8c9895",
+    weight: isUnpaved ? (map.getZoom() < 9 ? 1.2 : 2.6) : 1.5,
+    opacity: isUnpaved ? 0.95 : 0.6,
     dashArray: isUnpaved ? unpavedDash() : null,
     lineCap: isUnpaved ? "butt" : "round"
   };
@@ -1310,6 +772,10 @@ function humanizeKey(value) {
 
 function bindLazyPopup(layerRef, htmlFactory) {
   layerRef.on("click", () => {
+    if (map.getZoom() < FOREST_INTERACTIVE_MIN_ZOOM) {
+      showActionStatus("Zoom in to inspect this road.");
+      return;
+    }
     if (!layerRef.getPopup()) layerRef.bindPopup(htmlFactory());
     layerRef.openPopup();
   });
@@ -1317,23 +783,9 @@ function bindLazyPopup(layerRef, htmlFactory) {
 
 function mkPopup(feature) {
   const p = feature.properties || {};
-  const symbol = p.symbol || "0";
-  const name = p.name || "(unnamed road)";
-  const surfaceClass = UNPAVED_SURFACES.has(p.surfacetype || "")
-    ? "Unpaved"
-    : PAVED_SURFACES.has(p.surfacetype || "")
-      ? "Paved"
-      : "Surface unknown";
-  const parts = [
-    `<strong>${name}</strong>`,
-    `<span style="color:${SYMBOL_COLORS[symbol] || "#666"}">${SYMBOL_LABELS[symbol] || "Unknown access"}</span>`
-  ];
-  if (p.districtname) parts.push(`${p.districtname} District`);
-  if (p.system) parts.push(p.system);
-  parts.push(surfaceClass);
-  if (p.surfacetype) parts.push(`Surface: ${p.surfacetype}`);
-  if (p.seasonal) parts.push(`Seasonal: ${p.seasonal}`);
-  return parts.join("<br>");
+  const unpaved = UNPAVED_SURFACES.has(p.surfacetype || "");
+  const surface = unpaved ? "Unpaved" : PAVED_SURFACES.has(p.surfacetype || "") ? "Paved" : "Surface unknown";
+  return `<div class="road-popup"><span class="popup-source">FOREST SERVICE ROAD</span><h3>${escapeHtml(p.name || "Unnamed forest road")}</h3><p class="surface-badge">${surface}</p><dl><dt>Surface</dt><dd>${escapeHtml(p.surfacetype || "Not recorded")}</dd><dt>Motor vehicles</dt><dd>${escapeHtml(SYMBOL_LABELS[p.symbol] || "Not recorded")}</dd>${p.seasonal ? `<dt>Season</dt><dd>${escapeHtml(p.seasonal)}</dd>` : ""}</dl><p class="popup-note">Bike and foot access are not recorded in this road dataset. Check local signs and closures.</p>${p.forest_id ? `<button class="popup-map-link" onclick="openForestMaps('${FORESTS.includes(p.forest_id) ? p.forest_id : ''}')">Forest maps &amp; coverage</button>` : ""}</div>`;
 }
 
 function mkSupplementalPopup(feature) {
@@ -1368,15 +820,24 @@ function mkBlmRoadPopup(feature) {
 
 function mkVerifiedPublicRoadPopup(feature) {
   const p = feature.properties || {};
-  const parts = [
-    `<strong>${escapeHtml(p.name || "Verified unpaved public-road candidate")}</strong>`,
-    `Explicit OSM surface: ${escapeHtml(humanizeKey(p.surface || "unpaved"))}`,
-    `Caltrans public-network alignment: ${Math.round(Number(p.caltrans_match_coverage || 0) * 100)}%`,
-    `${Number(p.verified_length_m || 0).toLocaleString()} m mapped segment`,
-    "<em>Candidate only; check local access restrictions, closures, and conditions before travel.</em>",
-    '<a href="https://dot.ca.gov/programs/traffic-operations/office-of-traffic-safety-and-data/roadway-data" target="_blank" rel="noreferrer">Caltrans All Roads network</a>'
-  ];
-  return parts.join("<br>");
+  const sourceId = String(p.osm_way_id || p.osm_id || p.source_id || p.source_detail || "").match(/(?:way[ /])?(\d{4,})/);
+  const accessLabel = (value) => value ? humanizeKey(value) : "Not recorded";
+  const conditions = [["access", "Access conditions"], ["bicycle", "Bike conditions"], ["foot", "Foot conditions"]]
+    .filter(([key]) => p[`${key}:conditional`])
+    .map(([key, label]) => `<dt>${label}</dt><dd>${escapeHtml(p[`${key}:conditional`])}</dd>`).join("");
+  return `<div class="road-popup">
+    <span class="popup-source">UNPAVED ROAD CANDIDATE</span>
+    <h3>${escapeHtml(p.name || "Unnamed unpaved road")}</h3>
+    <p class="surface-badge">${escapeHtml(humanizeKey(p.surface || "unpaved"))}</p>
+    <dl><dt>Bike access</dt><dd>${escapeHtml(accessLabel(p.bicycle))}</dd>
+      <dt>Foot access</dt><dd>${escapeHtml(accessLabel(p.foot))}</dd>
+      ${p.access ? `<dt>General access</dt><dd>${escapeHtml(humanizeKey(p.access))}</dd>` : ""}${conditions}</dl>
+    <p class="popup-note">Unpaved surface is mapped, but public access is not confirmed. Check signs and current restrictions.</p>
+    <details><summary>Why this road is shown</summary>
+      <p>Explicit OpenStreetMap surface tag. ${Math.round(Number(p.caltrans_match_coverage || 0) * 100)}% of this ${(Number(p.verified_length_m || 0) / 1000).toFixed(1)} km segment is within 30 m of Caltrans road geometry.</p>
+      <p>Nearby or parallel roads can match; this is not proof of a right of way.</p>
+      ${sourceId ? `<a href="https://www.openstreetmap.org/way/${sourceId[1]}" target="_blank" rel="noreferrer">View OpenStreetMap source ↗</a>` : ""}
+    </details></div>`;
 }
 
 function buildPublicRoadsTileLayer(geojson) {
@@ -1593,7 +1054,7 @@ function setBlmRoadsEnabled(enabled) {
 function verifiedPublicRoadStyle() {
   return {
     color: "#9b5a18",
-    weight: map.getZoom() >= 14 ? 2.5 : 1.5,
+    weight: map.getZoom() >= 14 ? 2.5 : map.getZoom() < 8 ? 0.7 : 1.5,
     opacity: 0.8,
     dashArray: "5 4",
     lineCap: "round",
@@ -1653,7 +1114,7 @@ async function ensureVerifiedPublicRoadTileLoaded(tileKeyRef) {
 }
 
 function getWantedVerifiedPublicRoadTileKeys() {
-  if (!verifiedPublicRoadsEnabled || !verifiedPublicRoadsManifest || map.getZoom() < VERIFIED_PUBLIC_ROADS_MIN_ZOOM) return [];
+  if (!verifiedPublicRoadsEnabled || !verifiedPublicRoadsManifest || map.getZoom() < CLASSIC_ROADS_MIN_ZOOM) return [];
   const bounds = getPaddedBounds(VERIFIED_PUBLIC_ROADS_TILE_VIEW_PAD);
   const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), VERIFIED_PUBLIC_ROADS_TILE_ZOOM);
   const se = lonLatToTile(bounds.getEast(), bounds.getSouth(), VERIFIED_PUBLIC_ROADS_TILE_ZOOM);
@@ -1672,10 +1133,12 @@ async function syncVerifiedPublicRoadTiles() {
   for (const key of Array.from(verifiedPublicRoadTileLayers.keys())) if (!wanted.has(key)) clearVerifiedPublicRoadTile(key);
   try {
     await Promise.all(Array.from(wanted).map(ensureVerifiedPublicRoadTileLoaded));
-    wanted.forEach(renderVerifiedPublicRoadTile);
+    const currentWanted = new Set(getWantedVerifiedPublicRoadTileKeys());
+    wanted.forEach((key) => { if (currentWanted.has(key)) renderVerifiedPublicRoadTile(key); });
     updateDebugStamp();
   } catch (error) {
     console.error("Failed to load verified public-road tiles", error);
+    showActionStatus("Some unpaved roads could not load. Try moving the map to retry.");
   }
 }
 
@@ -1721,23 +1184,19 @@ async function loadPublicLands() {
       interactive: false,
       bubblingMouseEvents: false
     });
-    map.addLayer(publicLandsLayer);
+    if (boundariesEnabled) map.addLayer(publicLandsLayer);
   } catch (error) {
     console.error("Failed to load public lands overlay", error);
   }
 }
 
 function updateInteractivityHint() {
-  const zoom = map.getZoom();
-  const searchHasText = document.getElementById("searchInput")?.value.trim();
-  if (searchHasText) return;
-
-  if (zoom < FOREST_INTERACTIVE_MIN_ZOOM) {
-    setSearchStatus(`Zoom to ${FOREST_INTERACTIVE_MIN_ZOOM}+ for clickable road details.`);
-    return;
-  }
-
-  setSearchStatus("");
+  const el = document.getElementById("mapStatus");
+  if (el) el.textContent = activeRenderMode === "classic" && map.getZoom() < CLASSIC_ROADS_MIN_ZOOM
+    ? "Zoom in to load forest & candidate roads"
+    : map.getZoom() < FOREST_INTERACTIVE_MIN_ZOOM
+    ? "Zoom in for road details · Coverage is incomplete"
+    : "Select a road for surface & access evidence";
 }
 
 function setNotice(message) {
@@ -1821,7 +1280,7 @@ function filterTileGeoJson(geojson) {
   const allowedForests = selectedForests();
   return {
     type: "FeatureCollection",
-    features: (geojson.features || []).filter((feature) => allowedForests.has(feature.properties?.forest_id))
+    features: (geojson.features || []).filter((feature) => forestRoadsEnabled && allowedForests.has(feature.properties?.forest_id) && (surfaceFilter !== "unpaved" || UNPAVED_SURFACES.has(feature.properties?.surfacetype)))
   };
 }
 
@@ -1875,7 +1334,7 @@ async function ensureRoadTileLoaded(tileKeyRef) {
 }
 
 function getWantedRoadTileKeys() {
-  if (!roadTileManifest || map.getZoom() < FOREST_RENDER_MIN_ZOOM) return [];
+  if (!roadTileManifest || !forestRoadsEnabled || !selectedForests().size || map.getZoom() < CLASSIC_ROADS_MIN_ZOOM) return [];
 
   const bounds = getPaddedBounds(ROAD_TILE_VIEW_PAD);
   const nw = lonLatToTile(bounds.getWest(), bounds.getNorth(), ROAD_TILE_ZOOM);
@@ -1907,7 +1366,8 @@ async function syncRoadTiles() {
 
   try {
     await Promise.all(Array.from(wanted).map((key) => ensureRoadTileLoaded(key)));
-    wanted.forEach((key) => renderRoadTile(key));
+    const currentWanted = new Set(getWantedRoadTileKeys());
+    wanted.forEach((key) => { if (currentWanted.has(key)) renderRoadTile(key); });
     updateDebugStamp();
   } catch (error) {
     console.error("Failed to load road tiles", error);
@@ -1942,6 +1402,7 @@ function buildForestItem(id) {
       return;
     }
 
+    if (activeRenderMode === "vector") { applyForestFilters(); return; }
     if (this.checked) {
       const bounds = getForestBounds(id);
       if (bounds && !map.getBounds().pad(0.1).intersects(bounds)) {
@@ -1979,9 +1440,15 @@ function setSearchStatus(message) {
   document.getElementById("searchStatus").textContent = message || "";
 }
 
+function cancelSearch() {
+  if (searchAbortController) searchAbortController.abort();
+  searchAbortController = null;
+  document.getElementById("searchButton").disabled = false;
+}
+
 function getSearchViewbox() {
   const bounds = map.getBounds();
-  if (!bounds || !bounds.isValid()) return null;
+  if (!bounds || (typeof bounds.isValid === "function" && !bounds.isValid())) return null;
   return [
     bounds.getWest().toFixed(5),
     bounds.getNorth().toFixed(5),
@@ -2004,8 +1471,8 @@ function renderSearchResults(results) {
     button.type = "button";
     button.className = "search-result";
     button.innerHTML = `
-      <span class="search-result-title">${chooseResultLabel(result)}</span>
-      <span class="search-result-subtitle">${result.display_name}</span>
+      <span class="search-result-title">${escapeHtml(chooseResultLabel(result))}</span>
+      <span class="search-result-subtitle">${escapeHtml(result.display_name)}</span>
     `;
     button.addEventListener("click", () => focusSearchResult(result));
     container.appendChild(button);
@@ -2013,6 +1480,8 @@ function renderSearchResults(results) {
 }
 
 function focusSearchResult(result) {
+  renderSearchResults([]);
+  setSearchStatus("");
   clearSearchMarker();
   const lat = Number(result.lat);
   const lon = Number(result.lon);
@@ -2041,14 +1510,14 @@ function focusSearchResult(result) {
 
   if (activeRenderMode === "vector") {
     searchMarker = new maplibregl.Marker().setLngLat([lon, lat]).setPopup(
-      new maplibregl.Popup({ offset: 20 }).setHTML(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`)
+      new maplibregl.Popup({ offset: 20 }).setHTML(`<strong>${escapeHtml(chooseResultLabel(result))}</strong><br>${escapeHtml(result.display_name)}`)
     ).addTo(map);
-    searchMarker.getPopup().addTo(map);
+    searchMarker.getPopup().setLngLat([lon, lat]).addTo(map);
     return;
   }
 
   searchMarker = L.marker([lat, lon]).addTo(map);
-  searchMarker.bindPopup(`<strong>${chooseResultLabel(result)}</strong><br>${result.display_name}`).openPopup();
+  searchMarker.bindPopup(`<strong>${escapeHtml(chooseResultLabel(result))}</strong><br>${escapeHtml(result.display_name)}`).openPopup();
 }
 
 async function runSearch() {
@@ -2057,13 +1526,15 @@ async function runSearch() {
   const query = input.value.trim();
 
   if (!query) {
+    cancelSearch();
     setSearchStatus("Enter a place name to search.");
     renderSearchResults([]);
     return;
   }
 
   if (searchAbortController) searchAbortController.abort();
-  searchAbortController = new AbortController();
+  const controller = new AbortController();
+  searchAbortController = controller;
   button.disabled = true;
   setSearchStatus(`Searching for "${query}"...`);
   renderSearchResults([]);
@@ -2081,7 +1552,7 @@ async function runSearch() {
 
   try {
     const response = await fetch(`${SEARCH_ENDPOINT}?${params.toString()}`, {
-      signal: searchAbortController.signal,
+      signal: controller.signal,
       headers: {
         "Accept": "application/json"
       }
@@ -2090,6 +1561,7 @@ async function runSearch() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const results = await response.json();
+    if (searchAbortController !== controller) return;
 
     if (!Array.isArray(results) || results.length === 0) {
       setSearchStatus("No matches found. Try a nearby city, trailhead, lake, campground, or pass.");
@@ -2099,14 +1571,14 @@ async function runSearch() {
 
     setSearchStatus(`Found ${results.length} match${results.length === 1 ? "" : "es"}.`);
     renderSearchResults(results);
-    focusSearchResult(results[0]);
+    // Let the user choose a result; avoid jumping the map during comparison.
   } catch (error) {
-    if (error.name === "AbortError") return;
+    if (error.name === "AbortError" || searchAbortController !== controller) return;
     console.error("Search failed", error);
-    setSearchStatus("Search failed. If this keeps happening, try again in a moment or swap to another geocoder.");
+    setSearchStatus("Place search is unavailable. Try again in a moment.");
     renderSearchResults([]);
   } finally {
-    button.disabled = false;
+    if (searchAbortController === controller) button.disabled = false;
   }
 }
 
@@ -2160,6 +1632,8 @@ async function loadCatalog() {
 }
 
 async function initClassicMode(fromVectorFallback = false) {
+  activeRenderMode = "classic";
+  updateModeSelectUi("classic");
   if (!map) createClassicMap();
   setForestPanelEnabled(true);
   setModeNote(fromVectorFallback
@@ -2172,16 +1646,10 @@ async function initClassicMode(fromVectorFallback = false) {
 
   const list = document.getElementById("forestList");
   if (!list.dataset.ready) {
-    FORESTS.forEach((id) => list.appendChild(buildForestItem(id)));
+    FORESTS.forEach((id) => { list.appendChild(buildForestItem(id)); renderForestMeta(id); renderPdfLinks(id); });
     list.dataset.ready = "1";
 
-    document.getElementById("searchButton").addEventListener("click", runSearch);
-    document.getElementById("searchInput").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        runSearch();
-      }
-    });
+
   }
 
   if (!map.__classicBindingsApplied) {
@@ -2208,6 +1676,8 @@ async function initClassicMode(fromVectorFallback = false) {
       if (!checkbox) continue;
       checkbox.checked = true;
     }
+
+    readMapState();
 
     try {
       await loadRoadTileManifest();
@@ -2260,7 +1730,7 @@ async function initClassicMode(fromVectorFallback = false) {
   if (!location.protocol.startsWith("http")) return;
 
   if (weakDataForests.length) {
-    setNotice(`<strong>Some forests only have PDF coverage right now.</strong>${weakDataForests.join(", ")} have missing or very sparse vector data in the current GeoJSON set, so the linked MVUM PDFs are the safer source for those areas.`);
+    // Coverage limitations live in the layers panel, leaving the map unobstructed.
   }
 }
 
@@ -2304,7 +1774,9 @@ async function init() {
   await initClassicMode(false);
 }
 
-init();
 </script>
+<script src="assets/cameras.js"></script>
+<script src="assets/map-ui.js"></script>
+<script>init().then(initializeMapUI).catch((error) => { console.error(error); setNotice("The map could not start. Please reload to try again."); });</script>
 </body>
 </html>
