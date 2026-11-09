@@ -80,16 +80,22 @@ function fixture({zoom = 12, rows = [camera()], mode = "vector", header = null} 
   };
 }
 
-test("both renderers request no camera data below zoom 9 and no images at zoom 9–11", async () => {
+test("both renderers show overview icons from zoom 6 and previews from zoom 11", async () => {
   for (const mode of ["classic", "vector"]) {
-    const f = fixture({zoom: 8, mode}); await f.flush();
+    const f = fixture({zoom: 5, mode}); await f.flush();
     assert.equal(f.requests.length, 0); assert.equal(f.map.markers.size, 0);
-    for (const zoom of [9, 11]) {
+    for (const zoom of [6, 9, 10]) {
       f.map.zoom = zoom; f.map.emit("zoomend"); await f.flush();
       assert.equal(f.map.markers.size, 1); assert.equal(f.imageRequests.length, 0);
       assert.match(f.links()[0].className, /alert-camera-icon/);
     }
-    f.map.zoom = 8; f.map.emit("zoom");
+    f.map.zoom = 11; f.map.emit("zoomend"); await f.flush();
+    assert.equal(f.map.markers.size, 1); assert.equal(f.imageRequests.length, 1);
+    assert.match(f.links()[0].className, /alert-camera-card/);
+    f.map.zoom = 10; f.map.emit("zoomend"); await f.flush();
+    assert.equal(f.map.markers.size, 1); assert.equal(f.imageRequests.length, 1);
+    assert.match(f.links()[0].className, /alert-camera-icon/);
+    f.map.zoom = 5; f.map.emit("zoom");
     assert.equal(f.map.markers.size, 0);
     f.controller.destroy();
   }

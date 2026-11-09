@@ -7,7 +7,7 @@
   const FEED = "https://services8.arcgis.com/X84q166Srnyl4JMV/ArcGIS/rest/services/ALERTCalifornia_Camera_Feed/FeatureServer/0/query";
   const CREDIT = "ALERTCalifornia | UC San Diego";
   const FIELDS = "OBJECTID,cameraName,cameraURL,imageURL,isOnline,viewTime,siteId,isActive";
-  const MIN_ZOOM = 9, IMAGE_ZOOM = 12, PAGE_SIZE = 50, MAX_CARDS = 8, MAX_MARKERS = 64;
+  const MIN_ZOOM = 6, IMAGE_ZOOM = 11, PAGE_SIZE = 50, MAX_CARDS = 8, MAX_MARKERS = 64;
   const CACHE_AGE = 5 * 60 * 1000, MAX_QUERY_CAMERAS = 2000;
   const CALIFORNIA = {west: -124.6, south: 32.3, east: -113.9, north: 42.1};
 

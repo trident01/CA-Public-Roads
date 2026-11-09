@@ -174,8 +174,9 @@ evidence, and forest bounding boxes are not land ownership polygons.
 
 The camera layer uses the official
 [ALERTCalifornia public map feed](https://services8.arcgis.com/X84q166Srnyl4JMV/ArcGIS/rest/services/ALERTCalifornia_Camera_Feed/FeatureServer/0).
-It is enabled initially but makes no queries below zoom 9. At zooms 9–11 it
-shows compact camera markers without requesting images. At zoom 12 and above,
+It is enabled initially but makes no queries below zoom 6. At zooms 6–10 it
+shows compact camera markers without requesting images, including in the
+default statewide view. At zoom 11 and above,
 it shows at most eight full-image thumbnails, with collision avoidance and
 colocated camera grouping. Clicking a marker or thumbnail opens that camera's
 ALERTCalifornia page, including its history tools.
